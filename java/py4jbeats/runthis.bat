@@ -1,0 +1,1 @@
+java -jar ./target/py4jbeats-1.0-SNAPSHOT-jar-with-dependencies.jar

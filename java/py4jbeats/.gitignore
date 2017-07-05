@@ -1,0 +1,12 @@
+*.txt
+.idea
+*.iml
+*.exe
+*.jar
+*.pdf
+*.asv
+*.bmp
+*.jpg
+*.class
+*.lst
+target/

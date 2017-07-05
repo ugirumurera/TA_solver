@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<scenario>
+
+	<commodities>
+		<commodity id="1" name="bla" pathfull="true" subnetworks="1,2"/>
+	</commodities>
+
+	<network>
+
+		<nodes>
+			<node id="0" />
+			<node id="1" />
+			<node id="2" />
+            <node id="3" />
+			<node id="4" />
+			<node id="5" />
+			<node id="6" />
+		</nodes>
+
+		<links>
+			<link id="0" length="100" start_node_id="0" end_node_id="1" roadparam="1" full_lanes="2"/>
+			<link id="1" length="1000" start_node_id="1" end_node_id="2" roadparam="1" full_lanes="1"/>
+			<link id="2" length="2000" start_node_id="1" end_node_id="3" roadparam="1" full_lanes="1"/>
+			<link id="3" length="1000" start_node_id="2" end_node_id="4" roadparam="1" full_lanes="1"/>
+			<link id="4" length="2000" start_node_id="3" end_node_id="4" roadparam="1" full_lanes="1"/>
+			<link id="5" length="1000" start_node_id="2" end_node_id="5" roadparam="1" full_lanes="1"/>
+			<link id="6" length="1000" start_node_id="4" end_node_id="6" roadparam="1" full_lanes="1"/>
+		</links>
+
+		<roadconnections>
+			<roadconnection id="1" in_link="0" in_link_lanes="1#2" out_link="1" out_link_lanes="1#1" />
+			<roadconnection id="2" in_link="0" in_link_lanes="1#2" out_link="2" out_link_lanes="1#1" />
+			<roadconnection id="3" in_link="1" in_link_lanes="1#1" out_link="3" out_link_lanes="1#1" />
+			<roadconnection id="4" in_link="1" in_link_lanes="1#1" out_link="5" out_link_lanes="1#1" />
+			<roadconnection id="5" in_link="2" in_link_lanes="1#1" out_link="4" out_link_lanes="1#1" />
+			<roadconnection id="6" in_link="3" in_link_lanes="1#1" out_link="6" out_link_lanes="1#1" />
+			<roadconnection id="7" in_link="4" in_link_lanes="1#1" out_link="6" out_link_lanes="1#1" />
+		</roadconnections>
+
+		<roadparams>
+			<roadparam id="1" capacity="500" speed="60" jam_density="80"/>
+		</roadparams>
+
+	</network>
+
+	<subnetworks>
+		<subnetwork id="1">0,1,3,6</subnetwork>
+		<subnetwork id="2">0,2,4,6</subnetwork>
+		<subnetwork id="3">0,1,5</subnetwork>
+	</subnetworks>
+
+	<demands>
+		<demand commodity_id="1" subnetwork="1" start_time="0" dt="00">1</demand>
+		<demand commodity_id="1" subnetwork="2" start_time="0" dt="00">1</demand>
+	</demands>
+
+</scenario>
