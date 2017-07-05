@@ -78,30 +78,5 @@ class Abstract_Traffic_Model:
     # if no gradient can be provided, then return None.
     @abstractmethod
     def Model_Gradient(self, demands, initial_state, dt, T):
-        pass
+        return None
 
-    #Construct a dictionary OD dictionary of the form origin: ([destination],[demand]) for static model and
-    # of the form origin: ([time_period], [destination], [demand]) for dynamic models
-    @abstractmethod
-    def construct_od(self):
-        pass
-
-    #Returns a dictionary  of all the demands values with time_period: [demand]
-    #For static models, returns a list of demands values since the demand is fixed.
-    @abstractmethod
-    def get_demand_values(self):
-        pass
-
-    #This function returns the a list of link ids
-    def get_list_link_ids(self):
-        link_id_list = list()
-        for link_info in self.beats_api.get_links():
-            link_id_list.append(link_info.getId())
-        return link_id_list
-
-    #This function returns a list of commodities
-    def get_list_commodities(self):
-        commodity_list = list()
-        for commodity_info in self.beats_api.get_commodities():
-            commodity_list.append(commodity_info.getId())
-        return commodity_list
