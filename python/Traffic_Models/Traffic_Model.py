@@ -10,63 +10,53 @@ class Abstract_Traffic_Model:
     # The Traffic Class initiates connection to Beats object
     def __init__(self, configfile):
         port_number = 25335
-        self.gateway = JavaGateway(gateway_parameters=GatewayParameters(port=port_number))
-        self.beats_api = self.gateway.entry_point.get_BeATS_API()
+        self.__gateway = JavaGateway(gateway_parameters=GatewayParameters(port=port_number))
+        self.beats_api = self.__gateway.entry_point.get_BeATS_API()
         self.beats_api.load(configfile)
 
         if not self.Validate_Configfile():
             self.beats_api = None
             return
 
+    def get_beats_api(self):
+        return self.beats_api
+
     # Validate the scenario loaded from the configuration file.
     # Returns: A boolean. True if the scenario is valid, False otherwise.
-    @abstractmethod
+    # This is optional to implement
     def Validate_Configfile(self):
-        pass
+        return True
 
-    # Map from path demands to link states
-    #
-    # Arguments:
-    # demands: A list of DemandInfo objects, as returned by self.beats_api.get_demands()
-    # initial_state: An initial state, as returned by self.beats_api.get_initial_state()
-    #                Ignore in the case of a static model.
-    # dt: simulation time step in seconds. (Ignore in the case of a static model)
-    # T: simulation time horizon in second. (Ignore in the case of a static model)
-    #
-    # Returns: A dictionary with these entries:
-    #   link_ids: A list of link ids, ordered as the rows of the flow, vehicles, and queue matrices.
-    #   commodity_ids: A list of commodity ids, ordered as the columns of the flows, vehicles, and
-    #      queue matrices.
-    #   flows: A numpy ndarray of dimension 3.
-    #      The (i,j,k)th entry corresponds to the average flow on link_id(i) of commodity(j) over time
-    #      interval k (ie from t=k*dt to t=(k+1)*dt).
-    #      Units: vehicles/hour
-    #      Size: length(link_ids) X length(commodity_ids) X (T/dt)
-    #   vehicles: A numpy ndarray of dimension 3.
-    #      The (i,j,k)th entry corresponds to the total number of vehicles on link_id(i)
-    #      of commodity(j) at time instant k (ie t=k*dt)
-    #      Units: vehicles
-    #      Size: length(link_ids) X length(commodity_ids) X (1 + T/dt)
-    #   queue: A numpy ndarray of dimension 3.
-    #      The (i,j,k)th entry corresponds to the number of vehicles in link_id(i) of commodity(j)
-    #      that are in a queue at time instant k (ie t=k*dt).
-    #      Units: vehicles
-    #      Size: length(link_ids) X length(commodity_ids) X (1 + T/dt)
-    #
-    # Assumptions on the input:
-    # + It can be assumed that all of the DemandInfo objects have equal start_time, corresponding to
-    #   the time of the initial state. All have equal dt, which is an integer multiple of the simulation dt.
-    # + Any origin with no corresponding DemandInfo object is assigned zero demand
-    # + Any link/commodity not covered by the initial_state has zero initial condition.
-    # + T is an integer multiple of dt.
-    #
-    # Assumtpions on the output:
-    # + link_ids covers all links with non-zero output flow and state.
-    # + commodity_ids covers all commodities with non-zero demand
-    # + the order of the rows and columns in flows, vehicles, and queue corresponds to the order
-    #   of link_ids and commodity_ids respectively.
+    '''
+    Map from path demands to link states
+
+    Arguments:
+    A Demand_Assignment object, demand_assignments
+        This object stores a three dimensional array of size (number of paths x number of commodities x number of time steps).
+        This is to be initialized in the solver algorithm by user and shows the demand per path, per commodity and per
+        per time step.
+    initial_state: An State Trajectory object that specifies the initial state of links in terms of flow, number of vehicles
+                  and queue per link (Ignore in the case of stati model)
+    dt: simulation time step in seconds. (Ignore in the case of a static model)
+    T: simulation time horizon in second. (Ignore in the case of a static model)
+
+    Returns: A State_Trajectory object, which stores a three dimensional array of size (number of links x number of
+    commodities x number of time steps) of Traffic_State objects. Each Traffic_State object can have:
+        flows: corresponds to the average flow on link_id(i) of commodity(j) over time interval k (ie from t=k*dt to t=(k+1)*dt).
+            Units: vehicles/hour
+        vehicles: corresponds to the total number of vehicles on link_id(i) of commodity(j) at time instant k (ie t=k*dt)
+            Units: vehicles
+        queue: corresponds to the number of vehicles in link_id(i) of commodity(j) that are in a queue at time instant k (ie t=k*dt).
+            Units: vehicles
+
+    Assumtpions on the output:
+    + link_ids covers all links with non-zero output flow and state.
+    + commodity_ids covers all commodities with non-zero demand
+    + Assume that link_ids and commodity ids start from 0, 1, 2,...
+
+    '''
     @abstractmethod
-    def Run_Model(self, demands, initial_state, dt, T):
+    def Run_Model(self, demand_assignments, initial_state, dt, T):
         pass
 
     # Gradient of the model
@@ -76,7 +66,6 @@ class Abstract_Traffic_Model:
     # side, the values should be interpreted as variations.
     # Implementation of this function is optional. It enables gradient-based algorithms, however,
     # if no gradient can be provided, then return None.
-    @abstractmethod
-    def Model_Gradient(self, demands, initial_state, dt, T):
+    def Model_Gradient(self, demand_assignments, initial_state, dt, T):
         return None
 

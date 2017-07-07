@@ -20,7 +20,7 @@ def Frank_Wolfe_Solver(traffic_scenario, cost_function,past=10, max_iter=1000, e
     #Construct igraph object
     graph_object = construct_igraph(traffic_scenario, cost_function)
     #Constructing a dictionary for demand: origin: ([destination],[demand])
-    od = traffic_scenario.construct_od()
+    od = traffic_scenario.beats_api.get_od_info()
 
     f = np.zeros(traffic_scenario.beats_api.get_num_links(), dtype="float64")  # initial flow assignment is null
     fs = np.zeros((traffic_scenario.beats_api.get_num_links(), past), dtype="float64")  # to keep track of the past q

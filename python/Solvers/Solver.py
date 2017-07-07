@@ -5,13 +5,13 @@
 from Frank_Wolfe_Algorithm import Frank_Wolfe_Solver
 
 class Solver_class():
-    def __init__(self, traffic_model, F_function):
+    def __init__(self, traffic_model, Cost_Function):
         self.traffic_scenario = traffic_model
-        self.F_function = F_function
+        self.Cost_Function = Cost_Function
 
     #This is the function that actually solves a problem
     def Solver_function(self):
-        if self.traffic_scenario.is_positive_definite() and self.F_function.is_positive_definite():
+        if self.traffic_scenario.is_positive_definite() and self.Cost_Function.is_positive_definite():
             #call an optimization algorithm like Frank-Wolfe
-            return Frank_Wolfe_Solver(self.traffic_scenario, self.F_function)
+            return Frank_Wolfe_Solver(self.traffic_scenario, self.Cost_Function)
             #Call a algorithm to solve the variational inequality problem - to be developed
