@@ -15,4 +15,4 @@ This a general software framework for solving Traffic Assignment problems, both 
 **Step 5.** Download or clone the ta_solver repository to your computer. For this you need a bitbucket account and access to the repo. If you do not have access, send an [email](mailto:gomes@me.berkeley.edu).
 
 **Step 6.** Run Test to validate installation:
-Run Test_on_Windows.py for windows systems, and Test_on_Linux.py for Linux systems. This will initialize a small instance of the static traffic assignment problem and solve it using the Frank-Wolfe algorithm. Installation successful if program prints out "Installation Successful!" at the end.
+Run **Test_on_Windows.py** for windows systems, and **Test_on_Linux.py** for Linux systems. This will initialize a small instance of the static traffic assignment problem and solve it using the Frank-Wolfe algorithm. Installation successful if program prints out "Installation Successful!" at the end.
