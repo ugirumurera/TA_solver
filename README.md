@@ -8,7 +8,7 @@ This a general software framework for solving Traffic Assignment problems, both 
 
 **Step 2.** Install Python on your system if not already installed. Codes was developed with Python 2.7.
 
-** Step 3.** Install[Python-igraph](http://igraph.org/python/#pyinstall). This library is necessary to validate installation, by solving a small static traffic assignment problem using the Frank-Wolfe algorithm.
+** Step 3.** Install [Python-igraph](http://igraph.org/python/#pyinstall). This library is necessary to validate installation, by solving a small static traffic assignment problem using the Frank-Wolfe algorithm.
 
 **Step 4.** Request a copy of the py4jbeats jar file by [emai](mailto:gomes@me.berkeley.edu). The py4jbeats allows to utilize the Beats simulator api to encode traffic scenarios. You will receive an invitation to join a Dropbox folder containing the py4jbeats jar file. You should have Dropbox sync this folder with your computer so that you always have the latest version of the simulator. 
 
