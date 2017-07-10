@@ -3,13 +3,13 @@
 
 from abc import ABCMeta, abstractmethod
 
-class Abstract_Traffic_State:
+class Abstract_Traffic_State_class:
     __metaclass__ = ABCMeta
 
     # The user has to specify the variables that are important for their traffic state
     #
     def __init__(self):
-        self.flow = None
+        pass
 
     # Function to print all the link states.
     # All subclasses should implement this function to allow viewing the Traffic states

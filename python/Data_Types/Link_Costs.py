@@ -146,3 +146,12 @@ class Link_Costs_class():
             return
 
         self.__link_costs[:, :, time_step] = costs
+
+
+    # Prints out all the traffic states
+    def print_all(self):
+        for i in range(self.__num_links):
+            for j in range(self.__num_commodities):
+                for k in range(self.__num_time_steps):
+                    print "link ", i, " commodity ", j, " time step ", k, " cost",
+                    print(self.__link_costs[i,j,k])

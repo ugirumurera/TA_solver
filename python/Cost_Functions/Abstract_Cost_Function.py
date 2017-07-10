@@ -3,7 +3,7 @@
 
 from abc import ABCMeta, abstractmethod,abstractproperty
 
-class Abstract_Function_F:
+class Abstract_Cost_Function:
     __metaclass__ = ABCMeta
 
     #Function to evaluate function F

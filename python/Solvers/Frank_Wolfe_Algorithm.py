@@ -1,6 +1,6 @@
 import igraph
 import numpy as np
-from All_or_Nothing_Function import all_or_nothing
+from All_or_Nothing_Function import all_or_nothing, all_or_nothing_beats
 
 def Frank_Wolfe_Solver(traffic_scenario, cost_function,past=10, max_iter=1000, eps=1e-8, \
     q=50, display=1, stop=1e-2):
@@ -20,6 +20,7 @@ def Frank_Wolfe_Solver(traffic_scenario, cost_function,past=10, max_iter=1000, e
     #Construct igraph object
     graph_object = construct_igraph(traffic_scenario, cost_function)
     #Constructing a dictionary for demand: origin: ([destination],[demand])
+    #od = construct_od(traffic_scenario.beats_api.get_od_info())
     od = traffic_scenario.beats_api.get_od_info()
 
     f = np.zeros(traffic_scenario.beats_api.get_num_links(), dtype="float64")  # initial flow assignment is null
@@ -31,7 +32,7 @@ def Frank_Wolfe_Solver(traffic_scenario, cost_function,past=10, max_iter=1000, e
     if K < eps:
         K = np.sum(traffic_scenario.get_demand_values())
     elif display >= 1:
-        print 'average free-flow travel time', K / np.sum(traffic_scenario.get_demand_values())
+        print 'average free-flow travel time', K / traffic_scenario.get_total_demand()
 
     #import pdb; pdb.set_trace()
     for i in range(max_iter):

@@ -11,7 +11,7 @@ class Solver_class():
 
     #This is the function that actually solves a problem
     def Solver_function(self):
-        if self.traffic_scenario.is_positive_definite() and self.Cost_Function.is_positive_definite():
-            #call an optimization algorithm like Frank-Wolfe
-            return Frank_Wolfe_Solver(self.traffic_scenario, self.Cost_Function)
-            #Call a algorithm to solve the variational inequality problem - to be developed
+        #if problem can be solved as an optimization problem:
+        #call an optimization algorithm like Frank-Wolfe
+        return Frank_Wolfe_Solver(self.traffic_scenario, self.Cost_Function)
+        #Call a algorithm to solve the variational inequality problem - to be developed

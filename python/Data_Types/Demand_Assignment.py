@@ -144,3 +144,9 @@ class Demand_Assignment_class():
             return
 
         self.__assignment[:, :, time_step] = demands
+
+    def print_all(self):
+        for i in range(self.__num_paths):
+            for j in range(self.__num_commodities):
+                for k in range(self.__num_time_steps):
+                    print "path ", i, " commodity ", j, " time step ", k, " demand ", self.__assignment[i, j, k]

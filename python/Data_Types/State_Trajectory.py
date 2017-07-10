@@ -2,13 +2,13 @@
 # The traffic state object stores the traffic state per link_id(i), per commodity(j) and per time step k, where
 # a traffic state can include flow, number of vehicles (density, and queue
 
-from Traffic_States.Traffic_State import Abstract_Traffic_State
+from Traffic_States.Abstract_Traffic_State import Abstract_Traffic_State_class
 class State_Trajectory_class():
     def __init__(self, num_links, num_commodities, num_time_steps):
         self.__num_links = num_links
         self.__num_commodities = num_commodities
         self.__num_time_steps = num_time_steps
-        self.__state_trajectory = [[[Abstract_Traffic_State for k in range(num_time_steps)] for j in range (num_commodities)]
+        self.__state_trajectory = [[[Abstract_Traffic_State_class for k in range(num_time_steps)] for j in range (num_commodities)]
                                  for i in range(num_links)]
 
     def get_num_links(self):
@@ -37,6 +37,7 @@ class State_Trajectory_class():
         for i in range(self.__num_links):
             for j in range(self.__num_commodities):
                 for k in range(self.__num_time_steps):
+                    print "link ", i, " commodity ", j, " time step ", k, " flow ",
                     self.__state_trajectory[i][j][k].print_state()
 
 

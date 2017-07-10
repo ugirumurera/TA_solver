@@ -4,7 +4,7 @@
 from abc import ABCMeta, abstractmethod
 from py4j.java_gateway import JavaGateway,GatewayParameters
 
-class Abstract_Traffic_Model:
+class Abstract_Traffic_Model_class:
     __metaclass__ = ABCMeta
 
     # The Traffic Class initiates connection to Beats object

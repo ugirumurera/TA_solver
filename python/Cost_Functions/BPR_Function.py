@@ -2,10 +2,10 @@
 #The cost is calculated based on the BPR function: a0 + a1*f + a2*f^2 + a3*f^3 + a4*f^4
 # In this way, this cost function always expects static traffic models
 
-from Cost_Function import Abstract_Function_F
+from Abstract_Cost_Function import Abstract_Cost_Function
 import numpy as np
 
-class BPR_Function_class(Abstract_Function_F):
+class BPR_Function_class(Abstract_Cost_Function):
     def __init__(self, BPR_Coefficients):
         self.__Coefficients = BPR_Coefficients
 

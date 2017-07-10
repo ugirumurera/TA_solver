@@ -1,16 +1,16 @@
 #Static Traffic Model, assuming the demand is fixed
 
-from Traffic_Model import Abstract_Traffic_Model
+from Abstract_Traffic_Model import Abstract_Traffic_Model_class
 from Data_Types.State_Trajectory import State_Trajectory_class
 from Traffic_States.Static_Traffic_State import Static_Traffic_State_class
 import abc
 
 
-class Static_Model_Class(Abstract_Traffic_Model):
+class Static_Model_Class(Abstract_Traffic_Model_class):
     #Configfile is needed to initialize the model's scenario via beats_api
     def __init__(self, configfile):
         self.model_type = 's'     #Indicates that this is a static model
-        Abstract_Traffic_Model.__init__(self, configfile)
+        Abstract_Traffic_Model_class.__init__(self, configfile)
 
     def Validate_Configfile(self):
         # If the configfile indicates varying demand, return with an error
@@ -49,3 +49,12 @@ class Static_Model_Class(Abstract_Traffic_Model):
             path_id = path_id + 1
 
         return link_states
+
+    def get_total_demand(self):
+        demands = self.beats_api.get_demands()
+        total_demand = 0
+
+        for demand in demands:
+            total_demand = total_demand + demand.getProfile().get_value(0)*3600
+
+        return total_demand
