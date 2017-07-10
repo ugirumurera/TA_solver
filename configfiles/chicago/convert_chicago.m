@@ -8,7 +8,7 @@ node_struct = struct('id',nan,'x',nan,'y',nan);
 link_struct = struct('id',nan,'start_node',nan,'end_node',nan,'full_lanes',nan,'roadparam',nan);
 road_param_struct = struct('id',nan,'capacity',nan,'speed',nan,'jam_density',nan);
 
-% load network
+%% load network
 fid = fopen(fullfile(root,'ChicagoRegional_net.txt'));
 line = fgetl(fid);
 while line(1)~='~'
@@ -24,6 +24,7 @@ end_nodes   = raw_links{2};
 capacity    = double(raw_links{3});              % veh/hr -> veh/hr
 link_lengths = double(raw_links{4})*1609.34;     % miles -> meters
 speed       =  double(raw_links{8})*1.6;         % miles/hr -> km/hr
+clear raw_links
 
 [unique_params,~,link_params] = unique([capacity speed],'rows');
 road_params = repmat(road_param_struct,size(unique_params,1),1);
@@ -44,7 +45,7 @@ for i=1:num_links
     links(i).roadparam = link_params(i);
 end
 
-% load nodes
+%% load nodes
 fid = fopen(fullfile(root,'ChicagoRegional_node.txt'));
 line = fgetl(fid);
 raw_nodes=textscan(fid,'%d%d%d');
@@ -58,7 +59,30 @@ for i=1:numel(raw_nodes{1})
 end
 clear raw_nodes
 
-% construct beats network
+%% load trips
+% tic
+% fid = fopen(fullfile(root,'ChicagoRegional_trips.txt'));
+% c=0;
+% while ~feof(fid)
+%     line = fgetl(fid);
+%     
+%     % find next Origin
+%     while isempty(strfind(line,'Origin'))
+%         line = fgetl(fid);
+%     end
+%     
+%     % read the data
+%     raw_links=textscan(fid,'%d:%f;');
+%     
+%     c = c + length(raw_links{1});
+%     
+%     
+% end
+% 
+% fclose(fid);
+% disp(toc)
+
+%% construct beats network
 sb = ScenarioBuilder;
 sb.add_nodes(nodes);
 sb.add_links(links);
