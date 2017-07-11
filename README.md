@@ -67,3 +67,9 @@ In addition to evaluating the traffic model and link cost functions, there are a
 * Antiderivative: If convex optimization is used, then the cost function of the optimization problem will be the antiderivative of the demand-to-cost function. Some numerical algorithms will require this information. To use these algorithms, you should implement the "evaluate_Antiderivative" method of the cost function. 
 
 * Gradient: Similarly with the gradient of both the cost function and the traffic model.
+
+##  Description of Networks Provided under configfiles Folder ##
+* The *three_links.xml* describes a small, three links, network as shown below:
+![three_links.PNG](https://bitbucket.org/repo/kM5M6MM/images/1528697373-three_links.PNG)
+* The *seven_links.xml* describes a network with seven links shown below:
+![Seven_links.PNG](https://bitbucket.org/repo/kM5M6MM/images/1757541522-Seven_links.PNG)
