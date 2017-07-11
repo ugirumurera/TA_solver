@@ -9,8 +9,8 @@ This a general software framework for solving traffic assignment problems, both 
 **Step 2.** Install Python on your system if not already installed. Codes was developed with Python 2.7.
 
 ** Step 3.** Install Python-igraph library. This library is necessary to validate the installation. It solves a small static traffic assignment problem using the Frank-Wolfe algorithm.
-* On Windows: Download [Python-igraph wheel](http://www.lfd.uci.edu/~gohlke/pythonlibs/#python-igraph) and run the command python -m pip install *location_of_wheel*
-* On Linux/MacOS: Run **Test_on_Linux.py**
+* On Windows: Download [Python-igraph wheel](http://www.lfd.uci.edu/~gohlke/pythonlibs/#python-igraph) and run the command python -m pip install *location_of_wheel
+* On Linux/MacOS: follow [these instructions](http://igraph.org/python/doc/tutorial/install.html)
 
 **Step 4.** Send an email to Gabriel Gomes (gomes@path.berkeley.edu) requesting access to the BeATS Dropbox folder. Please include your Dropbox user name. This folder contains a jar file named py4jbeats-1.0-SNAPSHOT-jar-with-dependencies.jar. This file includes the BeATS API and a utility called py4j which establishes a connection between Python and Java. You should have Dropbox sync this folder with your computer so that you always have the latest version of the BeATS API.
 
