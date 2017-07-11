@@ -9,6 +9,7 @@ This a general software framework for solving traffic assignment problems, both 
 **Step 2.** Install Python on your system if not already installed. Codes was developed with Python 2.7.
 
 ** Step 3.** Install Python-igraph library. This library is necessary to validate the installation. It solves a small static traffic assignment problem using the Frank-Wolfe algorithm.
+
 * On Windows: Download [Python-igraph wheel](http://www.lfd.uci.edu/~gohlke/pythonlibs/#python-igraph) and run the command python -m pip install *location_of_wheel
 * On Linux/MacOS: follow [these instructions](http://igraph.org/python/doc/tutorial/install.html)
 
