@@ -87,6 +87,8 @@ if(scenario.beats_api != None):
     scenario_solver = Solver_class(scenario, BPR_cost_function)
     print(scenario_solver.Solver_function())
 
+    print("\nInstallation Successful!!")
+
 # Want to stop the java server
 #===========================================================================================
 # This is used on linux systems to kill the started java process

@@ -74,7 +74,6 @@ def Frank_Wolfe_Solver(traffic_scenario, cost_function,past=10, max_iter=1000, e
             d = v if gamma_1 < gamma_2 else w
             # step 5 of Fukushima
             s = line_search(lambda a: cost_function.evaluate_BPR_Potential(f+a*d))
-            lineSearchResult = s
             if s < eps:
                 if display >= 1: print 'stop with step_size: {}'.format(s)
                 return f
@@ -90,7 +89,7 @@ def search_direction(flow, Cost_Function, graph_object, od):
     # the most recent edge costs
     grad =  Cost_Function.evaluate_Cost_Function(flow)
     graph_object.es["weight"] = grad.tolist()
-    L = all_or_nothing(graph_object, od)
+    L = all_or_nothing_beats(graph_object, od)
     return L, grad
 
 def line_search(f, res=10):

@@ -76,10 +76,11 @@ if(scenario.beats_api != None):
     scenario_solver = Solver_class(scenario, BPR_cost_function)
     print(scenario_solver.Solver_function())
 
+    print("\nInstallation Successful!!")
+
 #======================================================
 # Want to stop the java server
-time.sleep(10)
-print("\nStopping java server")
-os.kill(process.pid, signal.SIGTERM)
+print("\nStopping the java server")
+os.kill(process.pid,  signal.CTRL_C_EVENT)
 #=====================================================
 
