@@ -1,5 +1,5 @@
 # Description #
-This a general software framework for solving Traffic Assignment problems, both static and dynamic, utilizing the [Beats Simulator api](https://bitbucket.org/gcgomes/beats-tools) to express/encode traffic scenarios. 
+This a general software framework for solving traffic assignment problems, both static and dynamic, utilizing the [BeATS API](https://bitbucket.org/gcgomes/beats-sim) to encode traffic scenarios. 
 
 # SET UP #
 
@@ -8,13 +8,20 @@ This a general software framework for solving Traffic Assignment problems, both 
 
 **Step 2.** Install Python on your system if not already installed. Codes was developed with Python 2.7.
 
-** Step 3.** Install [Python-igraph](http://igraph.org/python/#pyinstall). This library is used by numerical algorithms such as Frank-Wolfe. You will need it to run the tests.
+** Step 3.** Install [Python-igraph](http://igraph.org/python/#pyinstall). This library is necessary to validate installation, by solving a small static traffic assignment problem using the Frank-Wolfe algorithm.
 
-**Step 4.** Send and email to Gabriel Gomes (gomes@path.berkeley.edu) requesting access to the TA solver. Include in this email your Bitbucket user name. You will receive two things:
-
-a) An invitation to the BeATS Dropbox folder. From this folder you will need the py4jbeats jar file. py4jbeats allows to utilize the Beats simulator api to encode traffic scenarios. Sync this Dropbox folder with your computer so that you always have the latest version of the simulator. 
-
-b) An invitation to the ta_solver repo on Bitbucket. Fork and clone this repo. 
+**Step 4.** Send an email to Gabriel Gomes (gomes@path.berkeley.edu) requesting access to the BeATS Dropbox folder. Please include your Dropbox user name. This folder contains a jar file named py4jbeats-1.0-SNAPSHOT-jar-with-dependencies.jar. This file packages both the BeATS API as well as a utility called py4j which establishes a connection between Python and Java. You should have Dropbox sync this folder with your computer so that you always have the latest version of the BeATS API.
 
 **Step 5.** Run Test to validate installation:
-Run **Test_on_Windows.py** for windows systems, and **Test_on_Linux.py** for Linux systems. This will initialize a small instance of the static traffic assignment problem and solve it using the Frank-Wolfe algorithm. Installation successful if program prints out "Installation Successful!" at the end.
+
+* On Windows: Run **Test_on_Windows.py**
+* On Linux/MacOS: Run **Test_on_Linux.py**
+
+This will initialize a small instance of the static traffic assignment problem and solve it using the Frank-Wolfe algorithm. 
+
+It will print "Installation Successful!" to the console if everything goes well. 
+
+# Contacts #
+
+* **Juliette Ugirumurera**: julymurera@gmail.com
+* **Gabriel Gomes**: gomes@path.berkeley.edu
