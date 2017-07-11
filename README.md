@@ -8,12 +8,12 @@ This a general software framework for solving traffic assignment problems, both 
 
 **Step 2.** Install Python on your system if not already installed. Codes was developed with Python 2.7.
 
-** Step 3.** Install Python-igraph library. This library is necessary to validate the installation. It solves a small static traffic assignment problem using the Frank-Wolfe algorithm.
+** Step 3.** Install Python-igraph library. This library is necessary to validate the installation. The installation test solves a small static traffic assignment problem using the Frank-Wolfe algorithm.
 
 * On Windows: Download [the appropriate cp27 Python-igraph](http://www.lfd.uci.edu/~gohlke/pythonlibs/#python-igraph) for your system and run the command python -m pip install location_of_wheel
 * On Linux/MacOS: Follow [these instructions](http://igraph.org/python/#pyinstallosx)
 
-** Step 4.** Install [Py4J](https://www.py4j.org/install.html) to establish a connection between Python and Java.
+** Step 4.** Install [Py4J](https://www.py4j.org/install.html) to establish a connection between Python and Java code.
 
 ** Step 5.** Download or clone the ta_solver repository to your computer. For this you need a bitbucket account. Here we also suggest to install [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) and setting the ssh interface for your bitbucket account in order to pull updates using git.
 
