@@ -70,7 +70,11 @@ In addition to evaluating the traffic model and link cost functions, there are a
 
 ##  Description of Networks Provided under configfiles Folder ##
 * The *three_links.xml* file describes a small, three links, network as shown below:
+
 ![three_links.PNG](https://bitbucket.org/repo/kM5M6MM/images/2125839927-three_links.PNG)
+
 * The *seven_links.xml* file describes a network with seven links shown below:
+
 ![Seven_links.PNG](https://bitbucket.org/repo/kM5M6MM/images/1757541522-Seven_links.PNG)
-* The *chicago_regional.xml* file describes the chicago regional network, obtained from [this github repository](https://github.com/bstabler/TransportationNetworks/tree/master/chicago-regional)
+
+* The *chicago_regional.xml* file describes the chicago regional network, obtained from [this github repository](https://github.com/bstabler/TransportationNetworks/tree/master/chicago-regional).
