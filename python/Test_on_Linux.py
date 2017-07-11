@@ -40,7 +40,7 @@ time.sleep(1)
 #======================================================================================
 
 # Contains local path to input configfile, for the three_links.xml network
-configfile =  'C:/Users/Juliette Ugirumurera/Documents/Post-Doc/Code/ta_solver/configfiles/three_links.xml'
+configfile = os.path.abspath('../configfiles/three_links.xml')
 coefficients = {0L:[1,0,0,0,1],1L:[1,0,0,0,1],2L:[2,0,0,0,2]}
 
 #This initializes an instance of static model from configfile
