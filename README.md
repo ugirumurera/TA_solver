@@ -69,7 +69,7 @@ In addition to evaluating the traffic model and link cost functions, there are a
 * Gradient: Similarly with the gradient of both the cost function and the traffic model.
 
 ##  Description of Networks Provided under configfiles Folder ##
-* The *three_links.xml* describes a small, three links, network as shown below:
-![three_links.PNG](https://bitbucket.org/repo/kM5M6MM/images/1528697373-three_links.PNG)
-* The *seven_links.xml* describes a network with seven links shown below:
+* The *three_links.xml* file describes a small, three links, network as shown below:
+![three_links.PNG](https://bitbucket.org/repo/kM5M6MM/images/2125839927-three_links.PNG)
+* The *seven_links.xml* file describes a network with seven links shown below:
 ![Seven_links.PNG](https://bitbucket.org/repo/kM5M6MM/images/1757541522-Seven_links.PNG)
