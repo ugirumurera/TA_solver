@@ -31,8 +31,11 @@ It will print "Installation Successful!" to the console if everything goes well.
 The goal of this project is to establish an interface between the traffic modeling and the numerical sides of the traffic assignment problem. The intended users are the modelers. 
 
 To use the system, you must implement three things:
+
 1. A link state data class. This is an implementation of the Traffic_States.Abstract_Traffic_State class. Objects of this class should hold state information for a single link of the network. If your model is multi-commodity, then all commodities should be included. 
+
 2. A traffic model. This is an implementation of Traffic_Models.Abstract_Traffic_Model. 
+
 3. A link cost function. This is an implementation of Cost_Functions.Abstract_Cost_Function. 
 
 ## Architecture ##
@@ -40,6 +43,11 @@ To use the system, you must implement three things:
 Below is a diagram of the assumed data flow. The algorithms team (lead by Juliette) is in charge of the SOLVER, which includes numerical methods for convex optimization problems and variational inequalities, running in the HPC environment. 
 
 ![Picture1.png](https://bitbucket.org/repo/5q9q4pE/images/1708996569-Picture1.png)
+
+
+The data classes depicted in the figure are described below. 
+
+![Picture2.png](https://bitbucket.org/repo/5q9q4pE/images/2822392912-Picture2.png)
 
 The generic SOLVER works in a loop in which it generates candidate demand assignments, and expects to be given the corresponding network cost trajectory (`trajectory' here means trajectory in time). This loop continues until an equilibrium demand assignment is reached. 
 
@@ -49,13 +57,4 @@ In addition to evaluating the traffic model and link cost functions, there are a
 
 * Antiderivative: If convex optimization is used, then the cost function of the optimization problem will be the antiderivative of the demand-to-cost function. Some numerical algorithms will require this information. To use these algorithms, you should implement the "evaluate_Antiderivative" method of the cost function. 
 
-* Gradient: Similarly with the gradient of both the cost function and the traffic model. 
-
-Some solvers (e.g. Frank-Wolfe) will take adv
-
-
-
-## Data classes ##
-
-
-![Picture2.png](https://bitbucket.org/repo/5q9q4pE/images/2822392912-Picture2.png)
+* Gradient: Similarly with the gradient of both the cost function and the traffic model.
