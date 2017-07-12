@@ -6,7 +6,7 @@ This a general software framework for solving traffic assignment problems, both 
 **Step 1.** Install the [JAVA 8](http://www.oracle.com/technetwork/java/javase/downloads/index.html) JDK on your computer.
 [This](https://www.java.com/en/download/help/version_manual.xml) will show you how to check your current version of JAVA.
 
-**Step 2.** Install Python on your system if not already installed. Codes was developed with Python 2.7.
+**Step 2.** Install Python on your system if not already installed. Code was developed with Python 2.7.
 
 ** Step 3.** Install Python-igraph library. This library is necessary to validate the installation. The installation test solves a small static traffic assignment problem using the Frank-Wolfe algorithm.
 
