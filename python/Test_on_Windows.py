@@ -9,32 +9,42 @@ from Solvers.Solver import Solver_class
 from Data_Types.Demand_Assignment import Demand_Assignment_class
 from Data_Types.Link_Costs import Link_Costs_class
 
-#==========================================================================================
+# ==========================================================================================
 # This code is used on any Windows systems to self start the Entry_Point_BeATS java code
 # This code launches a java server that allow to use Beasts java object
 import os
 import signal
 import subprocess
 import time
+import sys
+import inspect
 
-jar_file_name = 'py4jbeats-1.0-SNAPSHOT-jar-with-dependencies.jar'
+this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+
+jar_file_name = os.path.join(this_folder,'py4jbeats-1.0-SNAPSHOT-jar-with-dependencies.jar')
 port_number = '25335'
 print("Staring up the java gateway to access the Beats object")
-process = subprocess.Popen(['java', '-jar', jar_file_name, port_number])
+try:
+    process = subprocess.Popen(['java', '-jar', jar_file_name, port_number],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    # stdout_data, stderr_data = process.communicate()
+    time.sleep(0.5)
+except subprocess.CalledProcessError:
+    print("caught exception")
+    sys.exit()
 
-time.sleep(0.5)
 
-#End of Linux specific code
-#======================================================================================
+# End of Linux specific code
+# ======================================================================================
 
 # Contains local path to input configfile, for the three_links.xml network
-configfile =  'C:/Users/Juliette Ugirumurera/Documents/Post-Doc/Code/ta_solver/configfiles/three_links.xml'
+configfile = os.path.join(this_folder,os.path.pardir,'configfiles','three_links.xml')
+
 coefficients = {0L:[1,0,0,0,1],1L:[1,0,0,0,1],2L:[2,0,0,0,2]}
 
-#This initializes an instance of static model from configfile
+# This initializes an instance of static model from configfile
 scenario  = Static_Model_Class(configfile)
 
-#If scenario.beas_api is none, it means the configfile provided was not valid for the particular traffic model type
+# If scenario.beast_api is none, it means the configfile provided was not valid for the particular traffic model type
 if(scenario.beats_api != None):
     print("\nSuccessfully initialized a static model")
 
@@ -47,7 +57,6 @@ if(scenario.beats_api != None):
     demand_assignments.set_all_demands(demands)
     print("\nDemand Assignment on path is as follows (Demand_Assignment class):")
     demand_assignments.print_all()
-
 
     # Test the Run_Model function
     print ("\nDemand Distributed from paths onto links as flows (State_Trajectory class)")
@@ -64,7 +73,7 @@ if(scenario.beats_api != None):
     # Initialize the BPR cost function
     BPR_cost_function = BPR_Function_class(coefficients)
     link_costs = Link_Costs_class(num_links, num_commodities, time_period)
-    #Setting the link costs using the results returned by evaluating the BPR function given flows
+    # Setting the link costs using the results returned by evaluating the BPR function given flows
 
     print("\nThe costs per link are as follows (Link_Costs class):")
     l_costs = BPR_cost_function.evaluate_Cost_Function(flows)
@@ -75,10 +84,11 @@ if(scenario.beats_api != None):
     scenario_solver = Solver_class(scenario, BPR_cost_function)
     print(scenario_solver.Solver_function())
 
-#======================================================
+    print("\nInstallation Successful!!")
+
+# ======================================================
 # Want to stop the java server
-time.sleep(10)
-print("\nStopping java server")
-os.kill(process.pid, signal.SIGTERM)
-#=====================================================
+print("\nStopping the java server")
+os.kill(process.pid,  signal.CTRL_C_EVENT)
+# =====================================================
 

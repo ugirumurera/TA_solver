@@ -74,7 +74,6 @@ def Frank_Wolfe_Solver(traffic_scenario, cost_function,past=10, max_iter=1000, e
             d = v if gamma_1 < gamma_2 else w
             # step 5 of Fukushima
             s = line_search(lambda a: cost_function.evaluate_BPR_Potential(f+a*d))
-            lineSearchResult = s
             if s < eps:
                 if display >= 1: print 'stop with step_size: {}'.format(s)
                 return f
@@ -90,7 +89,7 @@ def search_direction(flow, Cost_Function, graph_object, od):
     # the most recent edge costs
     grad =  Cost_Function.evaluate_Cost_Function(flow)
     graph_object.es["weight"] = grad.tolist()
-    L = all_or_nothing(graph_object, od)
+    L = all_or_nothing_beats(graph_object, od)
     return L, grad
 
 def line_search(f, res=10):
@@ -120,10 +119,26 @@ def construct_igraph(traffic_scenario, Cost_Function):
     edges = list(edges_array[:,1:])
 
     graph_object = igraph.Graph(vertex_attrs={"label":vertices}, edges=edges, directed=True)
-    coeff_array = np.array(Cost_Function.Coefficients.values())
+    coeff_array = np.array(Cost_Function.get_coefficients().values())
 
     graph_object.es["weight"] =coeff_array[0,:].tolist() # feel with free-flow travel times
     return graph_object
 
+#def construct_od(od_info_list)
+
+
 def total_free_flow_cost(graph_object, od):
-    return np.array(graph_object.es["weight"]).dot(all_or_nothing(graph_object, od))
+    return np.array(graph_object.es["weight"]).dot(all_or_nothing_beats(graph_object, od))
+
+def construct_od(od_info_list):
+    # construct a dictionary of the form
+    # origin: ([destination],[demand])
+    out = {}
+    #import pdb; pdb.set_trace()
+    for o in od_info_list:
+        origin = o.get_origin_node_id()
+        if origin not in out.keys():
+            out[origin] = ([],[])
+        out[origin][0].append(o.get_destination_node_id())
+        out[origin][1].append(o.get_total_demand_vps().get_value(0)*3600)
+    return out

@@ -17,8 +17,12 @@ import os
 import sys
 import signal
 import time
+import inspect
 
-jar_file_name = 'py4jbeats-1.0-SNAPSHOT-jar-with-dependencies.jar'
+
+this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+
+jar_file_name = os.path.join(this_folder,'py4jbeats-1.0-SNAPSHOT-jar-with-dependencies.jar')
 port_number = '25335'
 
 pid = os.fork()
@@ -40,7 +44,7 @@ time.sleep(1)
 #======================================================================================
 
 # Contains local path to input configfile, for the three_links.xml network
-configfile =  'C:/Users/Juliette Ugirumurera/Documents/Post-Doc/Code/ta_solver/configfiles/three_links.xml'
+configfile = os.path.join(this_folder,os.path.pardir,'configfiles','three_links.xml')
 coefficients = {0L:[1,0,0,0,1],1L:[1,0,0,0,1],2L:[2,0,0,0,2]}
 
 #This initializes an instance of static model from configfile
@@ -86,6 +90,8 @@ if(scenario.beats_api != None):
     print("\nRunning Frank-Wolfe on the three links network")
     scenario_solver = Solver_class(scenario, BPR_cost_function)
     print(scenario_solver.Solver_function())
+
+    print("\nInstallation Successful!!")
 
 # Want to stop the java server
 #===========================================================================================
