@@ -1,4 +1,7 @@
 import py4j.GatewayServer;
+import py4j.Py4JNetworkException;
+
+import java.net.InetAddress;
 
 public class Entry_Point_BeATS {
 
@@ -12,19 +15,21 @@ public class Entry_Point_BeATS {
 		return api;
 	}
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
+		GatewayServer gatewayServer=null;
 		try{
-			GatewayServer gatewayServer;
+//			InetAddress s = gatewayServer.getAddress();
 			if(1==args.length)
 				gatewayServer = new GatewayServer(new Entry_Point_BeATS(),Integer.parseInt(args[0]));
 			else
 				gatewayServer = new GatewayServer(new Entry_Point_BeATS());
 			gatewayServer.start();
 			System.out.println("Gateway Server Started on port " + gatewayServer.getPort());
-			
-		} catch((Py4JNetworkException e){
-			System.out.println("Could not initialize Java Gateway");
-			System.exit(1);
+
+		} catch(Exception e){
+			if(gatewayServer!=null)
+				gatewayServer.shutdown();
+			throw new Exception("Could not initialize Java Gateway");
 		}
 	}
 
