@@ -14,14 +14,14 @@ from Data_Types.Link_Costs import Link_Costs_class
 # This code launches a java server that allow to use Beasts java object
 import os
 import signal
-import subprocess
+from subprocess import Popen, PIPE
 import time
 
-jar_file_name = 'py4jbeats-1.0-SNAPSHOT-jar-with-dependencies.jar'
+jar_file_name = os.path.abspath('py4jbeats-1.0-SNAPSHOT-jar-with-dependencies.jar')
+#jar_file_name = 'py4jbeats-1.0-SNAPSHOT-jar-with-dependencies.jar'
 port_number = '25335'
 print("Staring up the java gateway to access the Beats object")
-process = subprocess.Popen(['java', '-jar', jar_file_name, port_number])
-
+process = Popen(['java', '-jar', jar_file_name, port_number])
 time.sleep(0.5)
 
 #End of Linux specific code
