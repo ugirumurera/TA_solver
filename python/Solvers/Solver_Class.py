@@ -2,7 +2,7 @@
 #It combines an instance of a traffic model with a solver depending whether it is an optimization problem
 #or a variational inequality problem
 
-from Frank_Wolfe_Algorithm import Frank_Wolfe_Solver
+from Frank_Wolfe_Solver_Static import Frank_Wolfe_Solver
 
 class Solver_class():
     def __init__(self, traffic_model, Cost_Function):

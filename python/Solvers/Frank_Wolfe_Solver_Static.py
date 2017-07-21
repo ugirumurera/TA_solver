@@ -28,7 +28,6 @@ def Frank_Wolfe_Solver(traffic_scenario, cost_function,past=10, max_iter=1000, e
                                                                                         # assignments
     K = total_free_flow_cost(graph_object, od)
 
-    # why this?
     if K < eps:
         K = np.sum(traffic_scenario.get_demand_values())
     elif display >= 1:

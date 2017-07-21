@@ -16,3 +16,9 @@ class Abstract_Traffic_State_class:
     @abstractmethod
     def print_state(self):
         pass
+
+    # Function to check if any value in traffic state is negative
+    # All subclasses should implement this function
+    @abstractmethod
+    def is_negative(self):
+         pass
