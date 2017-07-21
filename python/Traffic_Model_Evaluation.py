@@ -6,8 +6,8 @@
 
 from Cost_Functions.BPR_Function import BPR_Function_class
 from Traffic_Models.Static_Model import Static_Model_Class
-from Solvers.Solver import Solver_class
-from Data_Types.Demand_Assignment import Demand_Assignment_class
+from Solvers.Solver_Class import Solver_class
+from Data_Types.Demand_Assignment_Class import Demand_Assignment_class
 
 '''
 #==========================================================================================

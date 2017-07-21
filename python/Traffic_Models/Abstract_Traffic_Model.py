@@ -8,18 +8,8 @@ class Abstract_Traffic_Model_class:
     __metaclass__ = ABCMeta
 
     # The Traffic Class initiates connection to Beats object
-    def __init__(self, configfile):
-        port_number = 25335
-        self.__gateway = JavaGateway(gateway_parameters=GatewayParameters(port=port_number))
-        self.beats_api = self.__gateway.entry_point.get_BeATS_API()
-        self.beats_api.load(configfile)
-
-        if not self.Validate_Configfile():
-            self.beats_api = None
-            return
-
-    def get_beats_api(self):
-        return self.beats_api
+    def __init__(self, beats_api):
+        self.beats_api = beats_api
 
     # Validate the scenario loaded from the configuration file.
     # Returns: A boolean. True if the scenario is valid, False otherwise.
@@ -32,16 +22,16 @@ class Abstract_Traffic_Model_class:
 
     Arguments:
     A Demand_Assignment object, demand_assignments
-        This object stores a three dimensional array of size (number of paths x number of commodities x number of time steps).
+        This object stores a dictionary of the form [path_id, commodity_id] : [demand_t1, demand_t2,...]
         This is to be initialized in the solver algorithm by user and shows the demand per path, per commodity and per
         per time step.
     initial_state: An State Trajectory object that specifies the initial state of links in terms of flow, number of vehicles
-                  and queue per link (Ignore in the case of stati model)
+                  and queue per link (Ignore in the case of static model)
     dt: simulation time step in seconds. (Ignore in the case of a static model)
     T: simulation time horizon in second. (Ignore in the case of a static model)
 
-    Returns: A State_Trajectory object, which stores a three dimensional array of size (number of links x number of
-    commodities x number of time steps) of Traffic_State objects. Each Traffic_State object can have:
+    Returns: A State_Trajectory object, which stores a dictionary of the form [link_id, commodity_id] : [traffic_state_t1, traffic_state_t2,...]
+    Each Traffic_State object can have:
         flows: corresponds to the average flow on link_id(i) of commodity(j) over time interval k (ie from t=k*dt to t=(k+1)*dt).
             Units: vehicles/hour
         vehicles: corresponds to the total number of vehicles on link_id(i) of commodity(j) at time instant k (ie t=k*dt)
@@ -52,7 +42,7 @@ class Abstract_Traffic_Model_class:
     Assumtpions on the output:
     + link_ids covers all links with non-zero output flow and state.
     + commodity_ids covers all commodities with non-zero demand
-    + Assume that link_ids and commodity ids start from 0, 1, 2,...
+    + Assume that time steps are numbered from 0,1,2,...
 
     '''
     @abstractmethod
