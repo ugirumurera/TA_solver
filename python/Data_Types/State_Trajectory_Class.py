@@ -19,11 +19,20 @@ class State_Trajectory_class():
     def get_num_links(self):
         return len(self.__links_list)
 
-    def get_commodities(self):
+    def get_num_commodities(self):
         return len(self.__commodity_list)
 
     def get_num_time_step(self):
         return self.__num_time_steps
+
+    def get_links_list(self):
+        return self.__links_list
+
+    def get_comm_list(self):
+        return self.__commodity_list
+
+    def get_dt(self):
+        return self.__dt
 
     # Return all the states
     def get_all_states(self):
