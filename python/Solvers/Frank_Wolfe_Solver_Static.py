@@ -1,6 +1,6 @@
 import igraph
 import numpy as np
-from All_or_Nothing_Function import all_or_nothing, all_or_nothing_beats
+from All_or_Nothing_Function import all_or_nothing_beats
 
 def Frank_Wolfe_Solver(traffic_scenario, cost_function,past=10, max_iter=1000, eps=1e-8, \
     q=50, display=1, stop=1e-2):
@@ -86,7 +86,7 @@ def search_direction(flow, Cost_Function, graph_object, od):
     # computes the Frank-Wolfe step
     # g is just a canvas containing the link information and to be updated with
     # the most recent edge costs
-    grad =  Cost_Function.evaluate_Cost_Function(flow)
+    grad =  Cost_Function.evaluate_Cost_Function_FW(flow)
     graph_object.es["weight"] = grad.tolist()
     L = all_or_nothing_beats(graph_object, od)
     return L, grad

@@ -3,6 +3,7 @@
 # In this way, this cost function always expects static traffic models
 
 from Abstract_Cost_Function import Abstract_Cost_Function
+from Data_Types.Link_Costs_Class import Link_Costs_class
 import numpy as np
 
 class BPR_Function_class(Abstract_Cost_Function):
@@ -18,11 +19,31 @@ class BPR_Function_class(Abstract_Cost_Function):
         self.__Coefficients = coefficients
 
     # Overides the evaluate_Cost_Function in the base class
-    # Expects Traffic states to only have flow values
-    def evaluate_Cost_Function(self, flows):
+    # Expects Traffic states to only have flow values. This is the cost function specific to Frank_Wolfe
+    def evaluate_Cost_Function_FW(self, flows):
         flows = np.array(flows)
         x = np.power(flows.reshape((flows.shape[0], 1)), np.array([0, 1, 2, 3, 4]))
         link_costs = np.einsum('ij,ij->i', x, np.array(self.__Coefficients.values()))
+        return link_costs
+
+    def evaluate_Cost_Function(self, link_states):
+        # Getting the flows from link_states object as list
+        flows = list()
+        for state in link_states.get_all_states().values():
+            flows.append(state[0].get_flow())
+
+        flows = np.array(flows)
+        x = np.power(flows.reshape((flows.shape[0], 1)), np.array([0, 1, 2, 3, 4]))
+        l_costs = np.einsum('ij,ij->i', x, np.array(self.__Coefficients.values()))
+
+        link_costs = Link_Costs_class(link_states.get_links_list(), link_states.get_comm_list(),
+                                   link_states.get_num_time_step())
+
+        i = 0
+        for key in link_states.get_all_states().keys():
+            link_costs.set_all_costs_on_link_comm(key[0], key[1],[l_costs[i]])
+            i += 1
+
         return link_costs
 
     # Overides the evaluate_Gradient in the base class
