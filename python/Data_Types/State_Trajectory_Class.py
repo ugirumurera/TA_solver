@@ -3,8 +3,8 @@
 # dimensional array of traffic state objects per (link, commodity) pair.
 # a traffic state can include flow, number of vehicles (density), and queue
 
-
 from Traffic_States.Abstract_Traffic_State import Abstract_Traffic_State_class
+from copy import deepcopy
 
 class State_Trajectory_class():
     # The constructor receives a list of link ids (link_list), a list of commodities (commodity_list), the number
@@ -143,7 +143,7 @@ class State_Trajectory_class():
             print("Error: Negative value in state object")
             return
 
-        self._state_trajectory = states
+        self._state_trajectory = deepcopy(states)
 
     # set state for a particular link, commodity, and time_step or adds the entry if did not exist in the dictionary
     def set_state_on_link_comm_time(self, link_id, comm_id, time_step, state):
@@ -324,7 +324,7 @@ class State_Trajectory_class():
 
 
     def print_all(self):
-        for key in self.__state_trajectory.keys():
+        for key, value in sorted(self.__state_trajectory.items()):
             for k in range(self.__num_time_steps):
                 print "link ", key[0], " commodity ", key[1], " time step ", k, " state ",
                 self.__state_trajectory[key][k].print_state()

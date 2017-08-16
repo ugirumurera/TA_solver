@@ -40,9 +40,11 @@ except subprocess.CalledProcessError:
 # ======================================================================================
 
 # Contains local path to input configfile, for the three_links.xml network
-configfile = os.path.join(this_folder,os.path.pardir,'configfiles','three_links.xml')
+configfile = os.path.join(this_folder,os.path.pardir,'configfiles','seven_links.xml')
 
-coefficients = {0L:[1,0,0,0,1],1L:[1,0,0,0,1],2L:[2,0,0,0,2]}
+#coefficients = {0L:[1,0,0,0,1],1L:[1,0,0,0,1],2L:[2,0,0,0,2]}
+
+coefficients = {0L:[1,0,0,0,1],1L:[1,0,0,0,1],2L:[5,0,0,0,5], 3L:[2,0,0,0,2], 4L:[2,0,0,0,2], 5L:[1,0,0,0,1], 6L:[5,0,0,0,5]}
 
 port_number = int(port_number)
 gateway = JavaGateway(gateway_parameters=GatewayParameters(port=port_number))
@@ -50,11 +52,17 @@ beats_api = gateway.entry_point.get_BeATS_API()
 beats_api.load(configfile)
 
 # This initializes an instance of static model from configfile
-scenario  = Static_Model_Class(beats_api)
+scenario  = Static_Model_Class(beats_api, 1, 1)
 
 # If scenario.beast_api is none, it means the configfile provided was not valid for the particular traffic model type
 if(scenario.beats_api != None):
     print("\nSuccessfully initialized a static model")
+
+    od = scenario.beats_api.get_od_info()
+
+    total_demand = np.sum(o.get_total_demand_vps().get_value(0)*3600 for o in od)
+
+    subnetwork_list = list(scenario.beats_api.get_subnetworks())
 
     time_period = 1  # Only have one time period for static model
     paths_list = list(scenario.beats_api.get_path_ids())
@@ -72,8 +80,8 @@ if(scenario.beats_api != None):
     demands = {}
     demand_value = np.zeros((time_period))
     demand_value1 = np.zeros((time_period))
-    demand_value[0] = 20
-    demand_value1[0] = 20
+    demand_value[0] = 2
+    demand_value1[0] = 2
     demands[(1L,1L)] = demand_value
     demands[(2L,1L)] = demand_value1
     demand_assignments.set_all_demands(demands)
@@ -104,14 +112,14 @@ if(scenario.beats_api != None):
 
     # Setting the link costs using the results returned by evaluating the BPR function given flows
     print("\nThe costs per link are as follows (Link_Costs class):")
-    l_costs = BPR_cost_function.evaluate_Cost_Function_FW(flows)
-    l_cost_dict = {}
-    l_cost_dict[(0L, 1L)] = [l_costs[0]]
-    l_cost_dict[(1L, 1L)] = [l_costs[1]]
-    l_cost_dict[(2L, 1L)] = [l_costs[2]]
+    #l_costs = BPR_cost_function.evaluate_Cost_Function_FW(flows)
+    #l_cost_dict = {}
+    #l_cost_dict[(0L, 1L)] = [l_costs[0]]
+    #l_cost_dict[(1L, 1L)] = [l_costs[1]]
+    #l_cost_dict[(2L, 1L)] = [l_costs[2]]
 
-    link_costs.set_all_costs(l_cost_dict)
-    link_costs.print_all()
+    #link_costs.set_all_costs(l_cost_dict)
+    #link_costs.print_all()
 
 
     print("\nRunning Frank-Wolfe on the three links network")
