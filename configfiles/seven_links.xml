@@ -3,7 +3,7 @@
 <scenario>
 
 	<commodities>
-		<commodity id="1" name="bla" pathfull="true" subnetworks="1,2"/>
+		<commodity id="1" name="bla" pathfull="true" subnetworks="1,2,3"/>
 	</commodities>
 
 	<network>
@@ -51,8 +51,9 @@
 	</subnetworks>
 
 	<demands>
-		<demand commodity_id="1" subnetwork="1" start_time="0" dt="00">1</demand>
-		<demand commodity_id="1" subnetwork="2" start_time="0" dt="00">1</demand>
+		<demand commodity_id="1" subnetwork="1" start_time="0" dt="00">0.5</demand>
+		<demand commodity_id="1" subnetwork="2" start_time="0" dt="00">0.5</demand>
+		<demand commodity_id="1" subnetwork="3" start_time="0" dt="00">1</demand>
 	</demands>
 
 </scenario>

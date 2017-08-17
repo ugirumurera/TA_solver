@@ -3,6 +3,8 @@
 # dimensional array of demands per (path,commodity) pair.
 
 import numpy as np
+from copy import deepcopy
+from collections import OrderedDict
 
 class Demand_Assignment_class():
 
@@ -14,7 +16,7 @@ class Demand_Assignment_class():
         self.__commodity_list = commodity_list
         self.__num_time_steps = num_time_steps
         self.__dt = dt
-        self.__assignment = {}
+        self.__assignment = OrderedDict()
 
     def get_num_paths(self):
         return len(self.__path_list.keys())
@@ -28,8 +30,14 @@ class Demand_Assignment_class():
     def get_all_demands(self):
         return self.__assignment
 
+    def get_commodity_list(self):
+        return self.__commodity_list
+
     def get_path_list(self):
         return self.__path_list
+
+    def get_dt(self):
+        return self.__dt
 
     # Adds new routes to the Demand_Assignment object using a [path_id]:[link_id_1, link_id_2, ...]
     def add_path(self, route_list):
@@ -142,7 +150,7 @@ class Demand_Assignment_class():
             print("path id or commodity id not in input demand info")
             return
 
-        self.__assignment = demands
+        self.__assignment = deepcopy(demands)
 
     # Adds demands with an assignment and path dictionaries
     def add_demands(self, demands, route_list):
@@ -255,7 +263,7 @@ class Demand_Assignment_class():
             print("Error: Negative value for demand")
             return
 
-        self.__assignment[(path_id, comm_id)] = demands
+        self.__assignment[(path_id, comm_id)] = deepcopy(demands)
 
     # Adds demands assigned to a new path, and existing commodity with an array of size: number of time steps
     def add_all_demands_on_path_comm(self, path_id, route, comm_id, demands):
@@ -410,6 +418,31 @@ class Demand_Assignment_class():
             else:
                 self.__assignment[key] = np.zeros((self.__num_time_steps))
                 self.__assignment[key][time_step] = demands[key]
+
+    # Creates an empty assignment with keys
+    def set_keys(self, keys):
+        # first check if the keys contain the right commodity ids and path ids
+        if any(len(key) != 2 or key[0] not in self.__path_list.keys()
+               or key[1] not in self.__commodity_list for key in keys):
+            print "Demand assignment keys not right format or contain unknown path id or commodity id"
+            return
+        else:
+            for key in keys:
+                self.__assignment[key] = np.zeros(self.__num_time_steps)
+
+    # Creates a vector out of the demand_assignment values
+    def vector_assignment(self):
+        return np.concatenate(self.__assignment.values())
+
+    def set_demand_with_vector(self, demand_vector):
+        a, b = 0, self.__num_time_steps -1
+        for key in self.__assignment.keys():
+            if a == b:
+                self.__assignment[key][0] = deepcopy(demand_vector[a])
+            else:
+                self.__assignment[key][0, self.__num_time_steps-1] = deepcopy(demand_vector[a:b])
+            a += self.__num_time_steps
+            b += self.__num_time_steps
 
 
     def print_all(self):

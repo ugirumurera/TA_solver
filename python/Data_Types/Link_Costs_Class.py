@@ -3,6 +3,7 @@
 # dimensional array of costs per (link, commodity) pair
 
 import numpy as np
+from copy import deepcopy
 class Link_Costs_class():
     #To initialize the link_costs dictionary, the constructor has to receive a list of all links, a list of all commodities and
     # number of time steps in the period considered
@@ -129,7 +130,7 @@ class Link_Costs_class():
         if any(value < 0 for value in costs.values()):
             print("Error: Negative value for cost")
             return
-        self.__link_costs = costs
+        self.__link_costs = deepcopy(costs)
 
     # set cost for a particular link, commodity, and time_step or adds the entry if did not exist in the dictionary
     def set_cost_at_link_comm_time(self, link_id, comm_id, time_step, cost):

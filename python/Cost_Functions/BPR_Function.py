@@ -58,12 +58,24 @@ class BPR_Function_class(Abstract_Cost_Function):
         return True
 
     # Evaluates the potential of the cost function: a0*f + 1/2*a1*f^2 + 1/3*a2*f^3 + 1/4*a3*f^4 + 1/5*a4*f^5
-    def evaluate_BPR_Potential(self, flows):
+    def evaluate_BPR_Potential(self, link_states):
+        # Getting the flows from link_states object as list
+        flows = list()
+        for key, state in sorted(link_states.get_all_states().items()):
+            flows.append(state[0].get_flow())
+
         flows = np.array(flows)
         # this routine is useful for doing a line search
         # computes the potential at flow assignment f
         new_coefficients= np.array(self.__Coefficients.values())*[1, 1/2.,1/3.,1/4.,1/5.]
         x = np.power(flows.reshape((flows.shape[0], 1)), np.array([1,2,3,4,5]))
+
         return np.sum(np.einsum('ij,ij->i', x, new_coefficients))
 
-
+    def evaluate_BPR_Potential_FW(self, flows):
+        flows = np.array(flows)
+        # this routine is useful for doing a line search
+        # computes the potential at flow assignment f
+        new_coefficients = np.array(self.__Coefficients.values()) * [1, 1 / 2., 1 / 3., 1 / 4., 1 / 5.]
+        x = np.power(flows.reshape((flows.shape[0], 1)), np.array([1, 2, 3, 4, 5]))
+        return np.sum(np.einsum('ij,ij->i', x, new_coefficients))

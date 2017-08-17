@@ -56,7 +56,7 @@ beats_api = gateway.entry_point.get_BeATS_API()
 beats_api.load(configfile)
 
 # This initializes an instance of static model from configfile
-scenario  = Static_Model_Class(beats_api)
+scenario  = Static_Model_Class(beats_api, 1, 1)
 
 # If scenario.beast_api is none, it means the configfile provided was not valid for the particular traffic model type
 if(scenario.beats_api != None):

@@ -7,13 +7,21 @@ from Traffic_States.Static_Traffic_State import Static_Traffic_State_class
 
 class Static_Model_Class(Abstract_Traffic_Model_class):
     #Configfile is needed to initialize the model's scenario via beats_api
-    def __init__(self, beats_api):
+    def __init__(self, beats_api, num_steps, dt):
         Abstract_Traffic_Model_class.__init__(self, beats_api)
         self.model_type = 's'     #Indicates that this is a static model
+        self.num_time_steps = num_steps    # Keeps track of the number of time_steps associated with the model
+        self.dt = dt
 
         if not self.Validate_Configfile():
             self.beats_api = None
             return
+
+    def get_num_steps(self):
+        return self.num_time_steps
+
+    def get_dt(self):
+        return self.dt
 
     def Validate_Configfile(self):
         # If the configfile indicates varying demand, return with an error

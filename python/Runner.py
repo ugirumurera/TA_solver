@@ -4,6 +4,7 @@
 # This particular model uses a Static model and BPR Cost_Function model
 
 import numpy as np
+from copy import deepcopy
 
 from Cost_Functions.BPR_Function import BPR_Function_class
 from Traffic_Models.Static_Model import Static_Model_Class
@@ -42,9 +43,10 @@ except subprocess.CalledProcessError:
 # ======================================================================================
 
 # Contains local path to input configfile, for the three_links.xml network
-configfile = os.path.join(this_folder,os.path.pardir,'configfiles','three_links.xml')
+configfile = os.path.join(this_folder,os.path.pardir,'configfiles','seven_links.xml')
 
-coefficients = {0L:[1,0,0,0,1],1L:[1,0,0,0,1],2L:[1,0,0,0,1]}
+#coefficients = {0L:[1,0,0,0,1],1L:[1,0,0,0,1],2L:[1,0,0,0,1]}
+coefficients = {0L:[1,0,0,0,1],1L:[1,0,0,0,1],2L:[5,0,0,0,5], 3L:[2,0,0,0,2], 4L:[2,0,0,0,2], 5L:[1,0,0,0,1], 6L:[5,0,0,0,5]}
 
 port_number = int(port_number)
 gateway = JavaGateway(gateway_parameters=GatewayParameters(port=port_number))
@@ -52,39 +54,24 @@ beats_api = gateway.entry_point.get_BeATS_API()
 beats_api.load(configfile)
 
 # This initializes an instance of static model from configfile
-scenario  = Static_Model_Class(beats_api)
+scenario  = Static_Model_Class(beats_api, 1, 1)
 
 # If scenario.beast_api is none, it means the configfile provided was not valid for the particular traffic model type
 if(scenario.beats_api != None):
     # Initialize the BPR cost function
     BPR_cost_function = BPR_Function_class(coefficients)
+    scenario_solver = Solver_class(scenario, BPR_cost_function)
+    assignment, flow_sol = scenario_solver.Solver_function()
 
-    # Initializing the Link_Model_Manager
-    link_model_manager = Link_Model_Manager_class(scenario, BPR_cost_function)
 
-    # This is to initialize the demand
-    time_period = 1  # Only have one time period for static model
-    paths_list = list(scenario.beats_api.get_path_ids())
-    link_list = list(scenario.beats_api.get_link_ids())
-    commodity_list = list(scenario.beats_api.get_commodity_ids())
+    # Cost resulting from the path_based Frank-Wolfe
+    link_states = scenario.Run_Model(assignment)
+    cost_path_based = BPR_cost_function.evaluate_BPR_Potential(link_states)
 
-    # rout_list is a dictionary of [path_id]:[link_1, ...]
-    route_list = {}
+    # Cost resulting from link-based Frank-Wolfe
+    cost_link_based = BPR_cost_function.evaluate_BPR_Potential_FW(flow_sol)
 
-    for path_id in paths_list:
-        route_list[path_id] = scenario.beats_api.get_subnetwork_with_id(path_id).get_link_ids()
-
-    # Creating the demand assignment for initialization
-    demand_assignments = Demand_Assignment_class(route_list,commodity_list,time_period, dt = time_period)
-    demands = {}
-    demand_value = np.zeros((time_period))
-    demand_value1 = np.zeros((time_period))
-    demand_value[0] = 1
-    demand_value1[0] = 1
-    demands[(1L,1L)] = demand_value
-    demands[(2L,1L)] = demand_value1
-    demand_assignments.set_all_demands(demands)
-
-    # Calling the evaluate function from the Link_Model class to determine the costs per path
-    path_costs = link_model_manager.evaluate(demand_assignments, None, time_period, time_period,)
-    path_costs.print_all()
+    link_states.print_all()
+    print flow_sol
+    print "path-based cost: ", cost_path_based
+    print "link-based cost: ", cost_link_based
