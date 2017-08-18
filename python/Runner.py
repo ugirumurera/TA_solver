@@ -71,7 +71,8 @@ if(scenario.beats_api != None):
     # Cost resulting from link-based Frank-Wolfe
     cost_link_based = BPR_cost_function.evaluate_BPR_Potential_FW(flow_sol)
 
+    print "\n"
     link_states.print_all()
-    print flow_sol
+    print "\n", flow_sol
     print "path-based cost: ", cost_path_based
     print "link-based cost: ", cost_link_based

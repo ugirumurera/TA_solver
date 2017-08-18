@@ -31,7 +31,7 @@ class Solver_class():
             elapsed1 = timeit.default_timer() - start_time1
             print ("Decomposition Path-based took  %s seconds" % elapsed1)
         '''
-
+        print "\n"
         start_time1 = timeit.default_timer()
         frank_sol = Frank_Wolfe_Solver(self.traffic_scenario, self.Cost_Function)
         elapsed1 = timeit.default_timer() - start_time1

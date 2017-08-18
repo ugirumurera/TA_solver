@@ -207,19 +207,22 @@ def line_search(traffic_model, cost_function, assignment, x_assignment_vector, d
     # of continuous convex function
     d = 1./(2**res-1)
     l, r = 0, 2**res-1
+
+    #First check on edges
+    if potential_func(traffic_model, cost_function, assignment, x_assignment_vector, d_vector, l * d) <= \
+            potential_func(traffic_model, cost_function, assignment, x_assignment_vector, d_vector,
+                           l * d + d): return l * d
+    if potential_func(traffic_model, cost_function, assignment, x_assignment_vector, d_vector, r * d - d) >= \
+            potential_func(traffic_model, cost_function, assignment, x_assignment_vector, d_vector, r * d): return r * d
+
     while r-l > 1:
-        if potential_func(traffic_model, cost_function, assignment, x_assignment_vector, d_vector,l*d) <= \
-                potential_func(traffic_model, cost_function, assignment, x_assignment_vector, d_vector,l*d+d): return l*d
-        if potential_func(traffic_model, cost_function, assignment, x_assignment_vector, d_vector,r*d-d) >= \
-                potential_func(traffic_model, cost_function, assignment, x_assignment_vector, d_vector,r*d): return r*d
         # otherwise potential_func(l) > potential_func(l+d) and potential_func(r-d) < potential_func(r)
         m1, m2 = (l+r)/2, 1+(l+r)/2
-        if potential_func(traffic_model, cost_function, assignment, x_assignment_vector, d_vector,m1*d) < \
-                potential_func(traffic_model, cost_function, assignment, x_assignment_vector, d_vector,m2*d): r = m1
-        if potential_func(traffic_model, cost_function, assignment, x_assignment_vector, d_vector, m1*d) > \
-                potential_func(traffic_model, cost_function, assignment, x_assignment_vector, d_vector,m2*d): l = m2
-        if potential_func(traffic_model, cost_function, assignment, x_assignment_vector, d_vector,m1*d) == \
-                potential_func(traffic_model, cost_function, assignment, x_assignment_vector, d_vector,m2*d): return m1*d
+        potential_1 = potential_func(traffic_model, cost_function, assignment, x_assignment_vector, d_vector,m1*d)
+        potential_2 = potential_func(traffic_model, cost_function, assignment, x_assignment_vector, d_vector,m2*d)
+        if potential_1 < potential_2: r = m1
+        if potential_1 > potential_2: l = m2
+        if potential_1 == potential_2: return m1*d
     return l*d
 
 def potential_func(traffic_model, cost_function, assignment, x_assignment_vector, d, alfa):
