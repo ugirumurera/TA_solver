@@ -6,11 +6,10 @@ from Data_Types.Path_Costs_Class import Path_Costs_class
 class Link_Model_Manager_class(Abstract_Model_Manager_class):
     # Constructor receives a Traffic model and cost functions instances
     def __init__(self, traffic_model, cost_function):
-        self.traffic_model = traffic_model
-        self.cost_function = cost_function
+        Abstract_Model_Manager_class.__init__(self, traffic_model, cost_function)
 
     # This overides the evaluate function in the abstract class. Returns a Path_Cost object of costs on paths
-    def evaluate(self, demand_assignments, initial_state, dt, T):
+    def evaluate(self, demand_assignments, dt, T, initial_state = None):
         # Run_Model returns a State_Trajectory object, which contains state of each link
         link_states = self.traffic_model.Run_Model(demand_assignments, initial_state, dt, T)
 

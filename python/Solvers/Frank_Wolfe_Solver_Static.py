@@ -1,8 +1,9 @@
 import igraph
 import numpy as np
 from All_or_Nothing_Function import all_or_nothing_beats
+from Model_Manager.Link_Model_Manager import Link_Model_Manager_class
 
-def Frank_Wolfe_Solver(traffic_scenario, cost_function,past=10, max_iter=1000, eps=1e-8, \
+def Frank_Wolfe_Solver(model_manager,past=10, max_iter=1000, eps=1e-8, \
     q=50, display=1, stop=1e-2):
     '''
     This is an adaptation of Fukushima's modification of the Frank_Wolfe algorithm
@@ -16,7 +17,8 @@ def Frank_Wolfe_Solver(traffic_scenario, cost_function,past=10, max_iter=1000, e
     :return: Flow on links in Equilibrium state
     '''
     assert past <= q, "'q' must be bigger or equal to 'past'"
-
+    traffic_scenario = model_manager.traffic_model
+    cost_function = model_manager.cost_function
     #Construct igraph object
     graph_object = construct_igraph(traffic_scenario, cost_function)
     #Constructing a dictionary for demand: origin: ([destination],[demand])

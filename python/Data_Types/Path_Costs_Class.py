@@ -2,6 +2,7 @@
 
 import numpy as np
 from copy import deepcopy
+from collections import OrderedDict
 
 class Path_Costs_class():
     # To initialize the Assignment Array, the constructor has to receive a path_list dictionary,, a list of all commodities and
@@ -13,7 +14,7 @@ class Path_Costs_class():
         self.__commodity_list = list()
         self.__num_time_steps = num_time_steps
         self.__dta = dt
-        self.__path_costs = {}
+        self.__path_costs = OrderedDict()
 
     # Receives a Link_Costs_Class and demand_assignment objects and returns a path_costs object containing the travel
     # cost per path, where the path_costs is a [(path_id, commodity_id)] = [cost_1, cost_2,...] dictionary

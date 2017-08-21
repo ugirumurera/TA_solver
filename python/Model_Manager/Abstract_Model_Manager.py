@@ -9,6 +9,10 @@ from abc import ABCMeta, abstractmethod
 class Abstract_Model_Manager_class():
     __metaclass__ = ABCMeta
 
+    def __init__(self, traffic_model, cost_function):
+        self.traffic_model = traffic_model
+        self.cost_function = cost_function
+
     # Takes in demand per path, returns costs per path
     @abstractmethod
     def evaluate(self,demand_assignments, initial_state, dt, T):

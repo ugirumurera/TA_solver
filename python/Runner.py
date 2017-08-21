@@ -60,7 +60,11 @@ scenario  = Static_Model_Class(beats_api, 1, 1)
 if(scenario.beats_api != None):
     # Initialize the BPR cost function
     BPR_cost_function = BPR_Function_class(coefficients)
-    scenario_solver = Solver_class(scenario, BPR_cost_function)
+
+    # Initialize a link_model_manager object that combines the traffic model and cost_function
+    model_manager = Link_Model_Manager_class(scenario, BPR_cost_function)
+
+    scenario_solver = Solver_class(model_manager)
     assignment, flow_sol = scenario_solver.Solver_function()
 
 
