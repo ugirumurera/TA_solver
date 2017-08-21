@@ -8,17 +8,18 @@ import timeit
 #from Decomposition_Solver import Decomposition_Solver
 
 class Solver_class():
-    def __init__(self, traffic_model, Cost_Function):
-        self.traffic_scenario = traffic_model
-        self.Cost_Function = Cost_Function
+    def __init__(self, model_manager):
+        self.model_manager = model_manager
 
     #This is the function that actually solves a problem
     #The Dec parameter indicates whether we are going to use decomposition or not
     def Solver_function(self, Dec = False, number_of_subproblems = 1):
         #if problem can be solved as an optimization problem:
+        assignment_seq = None
+
         #call an optimization algorithm like Frank-Wolfe
         start_time1 = timeit.default_timer()
-        assignment_seq = Path_Based_Frank_Wolfe_Solver(self.traffic_scenario, self.Cost_Function)
+        assignment_seq = Path_Based_Frank_Wolfe_Solver(self.model_manager)
         elapsed1 = timeit.default_timer() - start_time1
         print ("Sequential Path-based took  %s seconds" % elapsed1)
 
@@ -33,7 +34,7 @@ class Solver_class():
         '''
         print "\n"
         start_time1 = timeit.default_timer()
-        frank_sol = Frank_Wolfe_Solver(self.traffic_scenario, self.Cost_Function)
+        frank_sol = Frank_Wolfe_Solver(self.model_manager)
         elapsed1 = timeit.default_timer() - start_time1
         print ("FW link-based took  %s seconds" % elapsed1)
         #Call a algorithm to solve the variational inequality problem - to be developed
