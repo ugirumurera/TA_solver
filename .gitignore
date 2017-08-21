@@ -1,4 +1,5 @@
-*.pyc
 *.exe
 .idea/*
 python/*.jar
+*.pyc
+*.jar
