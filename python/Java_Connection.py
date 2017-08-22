@@ -6,6 +6,7 @@ import platform
 import time
 import sys
 import inspect
+from py4j.java_gateway import JavaGateway, GatewayParameters
 
 
 class Java_Connection():
@@ -25,6 +26,8 @@ class Java_Connection():
             self.openLinux(jar_file_name, self.port_number)
         else:
             raise Exception('Unknown platform')
+
+        self.gateway = JavaGateway(gateway_parameters=GatewayParameters(port=int(self.port_number)))
 
         print(platform.system())
 

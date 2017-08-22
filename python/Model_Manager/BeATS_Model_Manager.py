@@ -7,8 +7,8 @@ from Data_Types.Path_Costs_Class import Path_Costs_class
 class BeATS_Model_Manager_class(Abstract_Model_Manager_class):
 
     # Constructor receives a Traffic model and cost functions instances
-    def __init__(self, configfile, connection, dt):
-        Abstract_Model_Manager_class.__init__(self, configfile, connection)
+    def __init__(self, configfile, gateway, dt):
+        Abstract_Model_Manager_class.__init__(self, configfile, gateway)
         self.dt = dt
 
     # This overrides the evaluate function in the abstract class. Returns a Path_Cost object of costs on paths
@@ -19,7 +19,14 @@ class BeATS_Model_Manager_class(Abstract_Model_Manager_class):
 
         # request path travel time output
         for path_id in demand_assignments.get_path_list():
-            self.beats_api.request_path_travel_time(path_id,60)
+            self.beats_api.request_path_travel_time(path_id, 60)
+
+        # send demand assignment to beats
+        for key, value in demand_assignments.get_all_demands().iteritems():
+            print(key)
+
+            # self.beats_api.set_demand_on_path_in_vph(long path_id, long commodity_id, float start_time, floa dt, double[] values)
+
 
         # run BeATS
         self.beats_api.run(start_time, dt, T)
