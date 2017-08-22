@@ -34,7 +34,7 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, past=10, max_iter=1000, eps=1e-
                 demand = np.asarray(demand)
                 assignment.set_all_demands_on_path_comm(path.getId(),comm_id, demand)
             else:
-                demand = np.zeros((num_steps))
+                demand = np.zeros(num_steps)
                 assignment.set_all_demands_on_path_comm(path.getId(), comm_id, demand)
             count += 1
     elapsed1 = timeit.default_timer() - start_time1

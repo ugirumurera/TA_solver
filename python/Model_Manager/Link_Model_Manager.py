@@ -2,11 +2,27 @@
 
 from Abstract_Model_Manager import Abstract_Model_Manager_class
 from Data_Types.Path_Costs_Class import Path_Costs_class
+from Traffic_Models.Static_Model import Static_Model_Class
+from Cost_Functions.BPR_Function import BPR_Function_class
 
 class Link_Model_Manager_class(Abstract_Model_Manager_class):
     # Constructor receives a Traffic model and cost functions instances
-    def __init__(self, traffic_model, cost_function):
-        Abstract_Model_Manager_class.__init__(self, traffic_model, cost_function)
+    def __init__(self, configfile, port_number , traffic_model_name, cost_function_name, cost_function_parameters):
+        Abstract_Model_Manager_class.__init__(self, configfile, port_number)
+
+        # create the traffic model
+        if traffic_model_name == "static":
+            self.traffic_model = Static_Model_Class(self.beats_api, 1, 1)
+        else:
+            print("Bad traffic_model_name")
+            return
+
+        # create the cost function
+        if cost_function_name == "bpr":
+            self.cost_function = BPR_Function_class(cost_function_parameters)
+        else:
+            print("Bad cost_function_name")
+            return
 
     # This overides the evaluate function in the abstract class. Returns a Path_Cost object of costs on paths
     def evaluate(self, demand_assignments, dt, T, initial_state = None):

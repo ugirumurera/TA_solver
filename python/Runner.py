@@ -6,12 +6,12 @@
 import numpy as np
 from copy import deepcopy
 
-from Cost_Functions.BPR_Function import BPR_Function_class
-from Traffic_Models.Static_Model import Static_Model_Class
+# from Cost_Functions.BPR_Function import BPR_Function_class
+# from Traffic_Models.Static_Model import Static_Model_Class
 from Solvers.Solver_Class import Solver_class
-from Data_Types.Demand_Assignment_Class import Demand_Assignment_class
-from Data_Types.Link_Costs_Class import Link_Costs_class
-from py4j.java_gateway import JavaGateway,GatewayParameters
+# from Data_Types.Demand_Assignment_Class import Demand_Assignment_class
+# from Data_Types.Link_Costs_Class import Link_Costs_class
+# from py4j.java_gateway import JavaGateway,GatewayParameters
 from Model_Manager.Link_Model_Manager import Link_Model_Manager_class
 
 
@@ -43,37 +43,25 @@ except subprocess.CalledProcessError:
 # ======================================================================================
 
 # Contains local path to input configfile, for the three_links.xml network
-configfile = os.path.join(this_folder,os.path.pardir,'configfiles','seven_links.xml')
+configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'seven_links.xml')
 
 #coefficients = {0L:[1,0,0,0,1],1L:[1,0,0,0,1],2L:[1,0,0,0,1]}
 coefficients = {0L:[1,0,0,0,1],1L:[1,0,0,0,1],2L:[5,0,0,0,5], 3L:[2,0,0,0,2], 4L:[2,0,0,0,2], 5L:[1,0,0,0,1], 6L:[5,0,0,0,5]}
 
-port_number = int(port_number)
-gateway = JavaGateway(gateway_parameters=GatewayParameters(port=port_number))
-beats_api = gateway.entry_point.get_BeATS_API()
-beats_api.load(configfile)
-
-# This initializes an instance of static model from configfile
-scenario  = Static_Model_Class(beats_api, 1, 1)
+model_manager = Link_Model_Manager_class(configfile, port_number, "static", "bpr", coefficients)
 
 # If scenario.beast_api is none, it means the configfile provided was not valid for the particular traffic model type
-if(scenario.beats_api != None):
-    # Initialize the BPR cost function
-    BPR_cost_function = BPR_Function_class(coefficients)
-
-    # Initialize a link_model_manager object that combines the traffic model and cost_function
-    model_manager = Link_Model_Manager_class(scenario, BPR_cost_function)
+if model_manager.is_valid():
 
     scenario_solver = Solver_class(model_manager)
     assignment, flow_sol = scenario_solver.Solver_function()
 
-
     # Cost resulting from the path_based Frank-Wolfe
-    link_states = scenario.Run_Model(assignment)
-    cost_path_based = BPR_cost_function.evaluate_BPR_Potential(link_states)
+    link_states = model_manager.traffic_model.Run_Model(assignment)
+    cost_path_based = model_manager.cost_function.evaluate_BPR_Potential(link_states)
 
     # Cost resulting from link-based Frank-Wolfe
-    cost_link_based = BPR_cost_function.evaluate_BPR_Potential_FW(flow_sol)
+    cost_link_based = model_manager.cost_function.evaluate_BPR_Potential_FW(flow_sol)
 
     print "\n"
     link_states.print_all()
