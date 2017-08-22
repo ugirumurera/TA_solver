@@ -68,3 +68,6 @@ if model_manager.is_valid():
     print "\n", flow_sol
     print "path-based cost: ", cost_path_based
     print "link-based cost: ", cost_link_based
+
+# kill jvm
+process.terminate()
