@@ -7,8 +7,8 @@ from Data_Types.Path_Costs_Class import Path_Costs_class
 class BeATS_Model_Manager_class(Abstract_Model_Manager_class):
 
     # Constructor receives a Traffic model and cost functions instances
-    def __init__(self, configfile, port_number, dt):
-        Abstract_Model_Manager_class.__init__(self, configfile, port_number)
+    def __init__(self, configfile, connection, dt):
+        Abstract_Model_Manager_class.__init__(self, configfile, connection)
         self.dt = dt
 
     # This overrides the evaluate function in the abstract class. Returns a Path_Cost object of costs on paths

@@ -10,8 +10,8 @@ from py4j.java_gateway import JavaGateway, GatewayParameters
 class Abstract_Model_Manager_class():
     __metaclass__ = ABCMeta
 
-    def __init__(self, configfile, port_number):
-        port_number = int(port_number)
+    def __init__(self, configfile, connection):
+        port_number = int(connection.port_number)
         gateway = JavaGateway(gateway_parameters=GatewayParameters(port=port_number))
         self.beats_api = gateway.entry_point.get_BeATS_API()
         self.beats_api.load(configfile)

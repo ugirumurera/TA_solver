@@ -13,46 +13,26 @@ from Solvers.Solver_Class import Solver_class
 # from Data_Types.Link_Costs_Class import Link_Costs_class
 # from py4j.java_gateway import JavaGateway,GatewayParameters
 from Model_Manager.Link_Model_Manager import Link_Model_Manager_class
-
+from Java_Connection import Java_Connection
 
 # ==========================================================================================
 # This code is used on any Windows systems to self start the Entry_Point_BeATS java code
 # This code launches a java server that allow to use Beasts java object
 import os
-import signal
-import subprocess
-import time
-import sys
 import inspect
 
-this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-
-jar_file_name = os.path.join(this_folder,'py4jbeats-1.0-SNAPSHOT-jar-with-dependencies.jar')
-port_number = '25335'
-print("Staring up the java gateway to access the Beats object")
-try:
-    process = subprocess.Popen(['java', '-jar', jar_file_name, port_number],
-                               stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-    time.sleep(0.5)
-except subprocess.CalledProcessError:
-    print("caught exception")
-    sys.exit()
-
-
-# End of Windows specific code
-# ======================================================================================
+connection = Java_Connection()
 
 # Contains local path to input configfile, for the three_links.xml network
+this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'seven_links.xml')
-
-#coefficients = {0L:[1,0,0,0,1],1L:[1,0,0,0,1],2L:[1,0,0,0,1]}
 coefficients = {0L:[1,0,0,0,1],1L:[1,0,0,0,1],2L:[5,0,0,0,5], 3L:[2,0,0,0,2], 4L:[2,0,0,0,2], 5L:[1,0,0,0,1], 6L:[5,0,0,0,5]}
-num_steps = 1
-
-model_manager = Link_Model_Manager_class(configfile, port_number, "static", None, "bpr", coefficients)
+model_manager = Link_Model_Manager_class(configfile, connection, "static", None, "bpr", coefficients)
 
 # If scenario.beast_api is none, it means the configfile provided was not valid for the particular traffic model type
 if model_manager.is_valid():
+
+    num_steps = 1
 
     scenario_solver = Solver_class(model_manager)
     assignment, flow_sol = scenario_solver.Solver_function(num_steps)
@@ -70,5 +50,6 @@ if model_manager.is_valid():
     print "path-based cost: ", cost_path_based
     print "link-based cost: ", cost_link_based
 
+
 # kill jvm
-process.terminate()
+connection.close()
