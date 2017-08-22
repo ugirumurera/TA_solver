@@ -7,20 +7,28 @@ from Data_Types.Path_Costs_Class import Path_Costs_class
 class BeATS_Model_Manager_class(Abstract_Model_Manager_class):
 
     # Constructor receives a Traffic model and cost functions instances
-    def __init__(self, traffic_model, cost_function):
-        Abstract_Model_Manager_class.__init__(self, traffic_model, cost_function)
+    def __init__(self, configfile, port_number, dt):
+        Abstract_Model_Manager_class.__init__(self, configfile, port_number)
+        self.dt = dt
 
     # This overrides the evaluate function in the abstract class. Returns a Path_Cost object of costs on paths
     def evaluate(self, demand_assignments, dt, T, initial_state = None):
 
-        # Run_Model returns a State_Trajectory object, which contains state of each link
-        link_states = self.traffic_model.Run_Model(demand_assignments, initial_state, dt, T)
+        start_time = 0
+        n = int(T/dt)
 
-        # evaluate_Cost_Function returns a link_Costs object, which contains the costs per links
-        link_costs = self.cost_function.evaluate_Cost_Function(link_states)
+        # request path travel time output
+        for path_id in demand_assignments.get_path_list():
+            self.beats_api.request_path_travel_time(path_id,60)
 
-        # Getting the paths' costs
+        # run BeATS
+        self.beats_api.run(start_time, dt, T)
+
+        # extract the path costs
         path_costs = Path_Costs_class(demand_assignments.get_num_time_step(), dt)
-        path_costs.get_path_costs(link_costs, demand_assignments)
+
+        comm_id = 1   # HACK. WHY DO WE NEED COMMODITY ID?
+        for path_data in self.beats_api.get_output_data():
+            path_costs.add_all_costs_on_path_comm(path_data.getPathId(), comm_id, path_data.compute_travel_time_for_start_times(start_time,dt,n))
 
         return path_costs

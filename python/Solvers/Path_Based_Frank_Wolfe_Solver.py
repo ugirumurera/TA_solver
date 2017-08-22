@@ -13,10 +13,10 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, num_steps, past=10, max_iter=10
     # Constructing the x_0, the initial demand assignment, where all the demand for an OD is assigned to one path
     # We first create a list of paths from the traffic_scenario
     path_list = dict()
-    od = model_manager.traffic_model.beats_api.get_od_info()
+    od = model_manager.beats_api.get_od_info()
 
     # Initializing the demand assignment
-    commodity_list = list(model_manager.traffic_model.beats_api.get_commodity_ids())
+    commodity_list = list(model_manager.beats_api.get_commodity_ids())
     # num_steps = model_manager.traffic_model.get_num_steps()
     dt = model_manager.traffic_model.get_dt()
     assignment = Demand_Assignment_class(path_list,commodity_list,
