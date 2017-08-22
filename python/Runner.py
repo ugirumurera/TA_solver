@@ -47,14 +47,15 @@ configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'seven_lin
 
 #coefficients = {0L:[1,0,0,0,1],1L:[1,0,0,0,1],2L:[1,0,0,0,1]}
 coefficients = {0L:[1,0,0,0,1],1L:[1,0,0,0,1],2L:[5,0,0,0,5], 3L:[2,0,0,0,2], 4L:[2,0,0,0,2], 5L:[1,0,0,0,1], 6L:[5,0,0,0,5]}
+num_steps = 1
 
-model_manager = Link_Model_Manager_class(configfile, port_number, "static", "bpr", coefficients)
+model_manager = Link_Model_Manager_class(configfile, port_number, "static", None, "bpr", coefficients)
 
 # If scenario.beast_api is none, it means the configfile provided was not valid for the particular traffic model type
 if model_manager.is_valid():
 
     scenario_solver = Solver_class(model_manager)
-    assignment, flow_sol = scenario_solver.Solver_function()
+    assignment, flow_sol = scenario_solver.Solver_function(num_steps)
 
     # Cost resulting from the path_based Frank-Wolfe
     link_states = model_manager.traffic_model.Run_Model(assignment)

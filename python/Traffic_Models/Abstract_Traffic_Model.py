@@ -8,8 +8,12 @@ class Abstract_Traffic_Model_class:
     __metaclass__ = ABCMeta
 
     # The Traffic Class initiates connection to Beats object
-    def __init__(self, beats_api):
+    def __init__(self, beats_api, dt_sec=None):
         self.beats_api = beats_api
+        self.dt_sec = dt_sec
+
+    def get_dt(self):
+        return self.dt_sec
 
     # Validate the scenario loaded from the configuration file.
     # Returns: A boolean. True if the scenario is valid, False otherwise.

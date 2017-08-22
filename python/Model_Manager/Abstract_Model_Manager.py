@@ -16,7 +16,6 @@ class Abstract_Model_Manager_class():
         self.beats_api = gateway.entry_point.get_BeATS_API()
         self.beats_api.load(configfile)
 
-
     def is_valid(self):
         return self.beats_api is not None
 

@@ -13,13 +13,13 @@ class Solver_class():
 
     #This is the function that actually solves a problem
     #The Dec parameter indicates whether we are going to use decomposition or not
-    def Solver_function(self, Dec = False, number_of_subproblems = 1):
+    def Solver_function(self, num_steps, Dec = False, number_of_subproblems = 1):
         #if problem can be solved as an optimization problem:
         assignment_seq = None
 
         #call an optimization algorithm like Frank-Wolfe
         start_time1 = timeit.default_timer()
-        assignment_seq = Path_Based_Frank_Wolfe_Solver(self.model_manager)
+        assignment_seq = Path_Based_Frank_Wolfe_Solver(self.model_manager, num_steps)
         elapsed1 = timeit.default_timer() - start_time1
         print ("Sequential Path-based took  %s seconds" % elapsed1)
 

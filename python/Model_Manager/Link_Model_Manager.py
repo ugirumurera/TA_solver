@@ -7,12 +7,12 @@ from Cost_Functions.BPR_Function import BPR_Function_class
 
 class Link_Model_Manager_class(Abstract_Model_Manager_class):
     # Constructor receives a Traffic model and cost functions instances
-    def __init__(self, configfile, port_number , traffic_model_name, cost_function_name, cost_function_parameters):
+    def __init__(self, configfile, port_number, traffic_model_name, dt, cost_function_name, cost_function_parameters):
         Abstract_Model_Manager_class.__init__(self, configfile, port_number)
 
         # create the traffic model
         if traffic_model_name == "static":
-            self.traffic_model = Static_Model_Class(self.beats_api, 1, 1)
+            self.traffic_model = Static_Model_Class(self.beats_api)
         else:
             print("Bad traffic_model_name")
             return
