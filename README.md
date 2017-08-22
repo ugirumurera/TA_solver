@@ -32,6 +32,8 @@ python -m pip install location_of_wheel
 
 **Step 8.** Send an email to Gabriel Gomes (gomes@path.berkeley.edu) requesting access to the BeATS Dropbox folder. Please include your Dropbox user name. This folder contains a jar file named py4jbeats-1.0-SNAPSHOT-jar-with-dependencies.jar. This file includes the BeATS API and a utility called py4j which establishes a connection between Python and Java. You should have Dropbox sync this folder with your computer so that you always have the latest version of the BeATS API. If this is not possible (e.g. your Dropbox account is full), then ask and we can send you the jar file by email. This is not ideal, since you will not stay up to date with changes to the API. 
 
+Alternatively you sees the BeATS API and grab the required jar files [here](https://gcgomes.bitbucket.io/).
+
 **Step 9.** Copy py4jbeats-1.0-SNAPSHOT-jar-with-dependencies.jar to the ta_solver directory under ta_solver/python
 
 **Step 10.** Run Test to validate installation:
