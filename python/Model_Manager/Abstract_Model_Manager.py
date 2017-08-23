@@ -9,9 +9,12 @@ from abc import ABCMeta, abstractmethod
 class Abstract_Model_Manager_class():
     __metaclass__ = ABCMeta
 
-    def __init__(self, traffic_model, cost_function):
-        self.traffic_model = traffic_model
-        self.cost_function = cost_function
+    def __init__(self, configfile, gateway):
+        self.beats_api = gateway.entry_point.get_BeATS_API()
+        self.beats_api.load(configfile)
+
+    def is_valid(self):
+        return self.beats_api is not None
 
     # Takes in demand per path, returns costs per path
     @abstractmethod

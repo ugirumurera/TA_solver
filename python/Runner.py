@@ -6,77 +6,50 @@
 import numpy as np
 from copy import deepcopy
 
-from Cost_Functions.BPR_Function import BPR_Function_class
-from Traffic_Models.Static_Model import Static_Model_Class
+# from Cost_Functions.BPR_Function import BPR_Function_class
+# from Traffic_Models.Static_Model import Static_Model_Class
 from Solvers.Solver_Class import Solver_class
-from Data_Types.Demand_Assignment_Class import Demand_Assignment_class
-from Data_Types.Link_Costs_Class import Link_Costs_class
-from py4j.java_gateway import JavaGateway,GatewayParameters
+# from Data_Types.Demand_Assignment_Class import Demand_Assignment_class
+# from Data_Types.Link_Costs_Class import Link_Costs_class
+# from py4j.java_gateway import JavaGateway,GatewayParameters
 from Model_Manager.Link_Model_Manager import Link_Model_Manager_class
-
+from Java_Connection import Java_Connection
 
 # ==========================================================================================
 # This code is used on any Windows systems to self start the Entry_Point_BeATS java code
 # This code launches a java server that allow to use Beasts java object
 import os
-import signal
-import subprocess
-import time
-import sys
 import inspect
 
-this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-
-jar_file_name = os.path.join(this_folder,'py4jbeats-1.0-SNAPSHOT-jar-with-dependencies.jar')
-port_number = '25335'
-print("Staring up the java gateway to access the Beats object")
-try:
-    process = subprocess.Popen(['java', '-jar', jar_file_name, port_number],
-                               stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-    time.sleep(0.5)
-except subprocess.CalledProcessError:
-    print("caught exception")
-    sys.exit()
-
-
-# End of Windows specific code
-# ======================================================================================
+connection = Java_Connection()
 
 # Contains local path to input configfile, for the three_links.xml network
-configfile = os.path.join(this_folder,os.path.pardir,'configfiles','seven_links.xml')
-
-#coefficients = {0L:[1,0,0,0,1],1L:[1,0,0,0,1],2L:[1,0,0,0,1]}
+this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'seven_links.xml')
 coefficients = {0L:[1,0,0,0,1],1L:[1,0,0,0,1],2L:[5,0,0,0,5], 3L:[2,0,0,0,2], 4L:[2,0,0,0,2], 5L:[1,0,0,0,1], 6L:[5,0,0,0,5]}
-
-port_number = int(port_number)
-gateway = JavaGateway(gateway_parameters=GatewayParameters(port=port_number))
-beats_api = gateway.entry_point.get_BeATS_API()
-beats_api.load(configfile)
-
-# This initializes an instance of static model from configfile
-scenario  = Static_Model_Class(beats_api, 1, 1)
+model_manager = Link_Model_Manager_class(configfile, connection, "static", None, "bpr", coefficients)
 
 # If scenario.beast_api is none, it means the configfile provided was not valid for the particular traffic model type
-if(scenario.beats_api != None):
-    # Initialize the BPR cost function
-    BPR_cost_function = BPR_Function_class(coefficients)
+if model_manager.is_valid():
 
-    # Initialize a link_model_manager object that combines the traffic model and cost_function
-    model_manager = Link_Model_Manager_class(scenario, BPR_cost_function)
+    num_steps = 1
 
     scenario_solver = Solver_class(model_manager)
-    assignment, flow_sol = scenario_solver.Solver_function()
-
+    assignment, flow_sol = scenario_solver.Solver_function(num_steps)
 
     # Cost resulting from the path_based Frank-Wolfe
-    link_states = scenario.Run_Model(assignment)
-    cost_path_based = BPR_cost_function.evaluate_BPR_Potential(link_states)
+    link_states = model_manager.traffic_model.Run_Model(assignment)
+    cost_path_based = model_manager.cost_function.evaluate_BPR_Potential(link_states)
 
     # Cost resulting from link-based Frank-Wolfe
-    cost_link_based = BPR_cost_function.evaluate_BPR_Potential_FW(flow_sol)
+    cost_link_based = model_manager.cost_function.evaluate_BPR_Potential_FW(flow_sol)
 
     print "\n"
     link_states.print_all()
     print "\n", flow_sol
     print "path-based cost: ", cost_path_based
     print "link-based cost: ", cost_link_based
+
+
+# kill jvm
+connection.close()

@@ -45,7 +45,9 @@ class Demand_Assignment_class():
 
     # Returns demand assigned to a particular path, commodity, and time, where time is in seconds
     def get_demand_at_path_comm_time(self, path_id, comm_id, time):
-        time_step = int(time / self.__dt)  # Calculating first the corresponding time_step in the demand profile
+
+        time_step = self.get_time_step(time)
+
         if path_id not in self.__path_list or comm_id not in self.__commodity_list:
             print("path id or commodity id not in Demand_Assignment object")
             return
@@ -75,7 +77,9 @@ class Demand_Assignment_class():
 
     #Returns all demands assigned to a particular path and time_step as [commodity_id]: [demand] dictionary
     def get_all_demands_on_path_time_step(self, path_id, time):
-        time_step = int(time / self.__dt) # Calculating first the corresponding time_step in the demand profile
+
+        time_step = self.get_time_step(time)
+
         if path_id not in self.__path_list :
             print("Commodity id not in Demand_Assignment object")
             return
@@ -106,7 +110,8 @@ class Demand_Assignment_class():
     #Was here
     # Returns all demands assigned for a particular commodity and time_step as [path_id]: [demand] dictionary
     def get_all_demands_on_comm_time_step(self, comm_id, time):
-        time_step = int(time / self.__dt)  # Calculating first the corresponding time_step in the demand profile
+
+        time_step = self.get_time_step(time)
 
         if comm_id not in self.__commodity_list:
             print("Commodity id not in Demand_Assignment object")
@@ -124,7 +129,8 @@ class Demand_Assignment_class():
 
     # Returns all demands assigned for a particular time_step as a [(path_id,comm_id)]:[demand] dictionary
     def get_all_demands_for_time_step(self, time):
-        time_step = int(time / self.__dt)  # Calculating first the corresponding time_step in the demand profile
+
+        time_step = self.get_time_step(time)
 
         if time_step < 0 or time_step > (self.__num_time_steps - 1):
             print("Error: time period has to be between 0 and ", self.__num_time_steps - 1)
@@ -172,7 +178,8 @@ class Demand_Assignment_class():
 
     # set demand for a particular path, commodity, and time_step or adds the entry if did not exist in the dictionary
     def set_demand_at_path_comm_time(self, path_id, comm_id, time, demand):
-        time_step = int(time / self.__dt)  # Calculating first the corresponding time_step in the demand profile
+
+        time_step = self.get_time_step(time)
 
         if(demand < 0):
             print("Error: Negative value for demand")
@@ -190,7 +197,9 @@ class Demand_Assignment_class():
     # Adds a demand for a particular path, commodity, and time_step or adds the entry if did not exist in the dictionary
     # route is a list of links that makes up the path with path_id
     def add_demand_at_path_comm_time(self, path_id, route, comm_id, time, demand):
-        time_step = int(time / self.__dt)  # Calculating first the corresponding time_step in the demand profile
+
+        time_step = self.get_time_step(time)
+
         if (demand < 0):
             print("Error: Negative value for demand")
             return
@@ -285,7 +294,8 @@ class Demand_Assignment_class():
 
     #Set all demands assigned for a particular path and time_step with a [comm_id_1]:[demand_at_time_step] dictionary
     def set_all_demands_on_path_time_step(self, path_id, time, demands):
-        time_step = int(time / self.__dt)  # Calculating first the corresponding time_step in the demand profile
+
+        time_step = self.get_time_step(time)
 
         if (any(not isinstance(key, (int, long))  for key in demands.keys()) or
                 any( not isinstance(value, (int, long)) for value in demands.values())):
@@ -313,7 +323,8 @@ class Demand_Assignment_class():
 
     # Set all demands assigned for a particular path and time_step with a [comm_id_1]:[demand_at_time_step] dictionary
     def add_all_demands_on_path_time_step(self, path_id, route, time, demands):
-        time_step = int(time / self.__dt)  # Calculating first the corresponding time_step in the demand profile
+
+        time_step = self.get_time_step(time)
 
         if (any(not isinstance(key, (int, long)) for key in demands.keys()) or
                 any(not isinstance(value, (int, long)) for value in demands.values())):
@@ -363,7 +374,8 @@ class Demand_Assignment_class():
 
     # Set all demands assigned for a particular path and time_step with a [path_id_1]:[demand_at_time_step] dictionary
     def set_all_demands_on_comm_time_step(self, comm_id, time, demands):
-        time_step = int(time / self.__dt)  # Calculating first the corresponding time_step in the demand profile
+
+        time_step = self.get_time_step(time)
 
         if (any(not isinstance(key, (int, long))  for key in demands.keys()) or
                 any(not isinstance(value, (int, long)) for value in demands.values())):
@@ -394,7 +406,8 @@ class Demand_Assignment_class():
     # Returns all demands assigned for a particular time_step as with a [(path_id,commodity_id)]:[demand_time_step]
     # dictionary
     def set_all_demands_for_time_step(self, time, demands):
-        time_step = int(time / self.__dt)  # Calculating first the corresponding time_step in the demand profile
+
+        time_step = self.get_time_step(time)
 
         if (any(len(key) != 2 for key in demands.keys()) or
                 any(not isinstance(value, (int, long)) for value in demands.values())):
@@ -444,6 +457,11 @@ class Demand_Assignment_class():
             a += self.__num_time_steps
             b += self.__num_time_steps
 
+    def get_time_step(self,time):
+        if self.__dt is not None:
+            return int(time / self.__dt)  # Calculating first the corresponding time_step in the demand profile
+        else:
+            return 0
 
     def print_all(self):
         for key in self.__assignment.keys():
