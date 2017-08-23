@@ -7,17 +7,17 @@ from copy import copy
 import numpy as np
 import timeit
 
-def Path_Based_Frank_Wolfe_Solver(model_manager, past=10, max_iter=1000, eps=1e-8, \
+def Path_Based_Frank_Wolfe_Solver(model_manager, num_steps, past=10, max_iter=1000, eps=1e-8, \
     q=50, display=1, stop=1e-2):
     # In this case, x_k is a demand assignment object that maps demand to paths
     # Constructing the x_0, the initial demand assignment, where all the demand for an OD is assigned to one path
     # We first create a list of paths from the traffic_scenario
     path_list = dict()
-    od = model_manager.traffic_model.beats_api.get_od_info()
+    od = model_manager.beats_api.get_od_info()
 
     # Initializing the demand assignment
-    commodity_list = list(model_manager.traffic_model.beats_api.get_commodity_ids())
-    num_steps = model_manager.traffic_model.get_num_steps()
+    commodity_list = list(model_manager.beats_api.get_commodity_ids())
+    # num_steps = model_manager.traffic_model.get_num_steps()
     dt = model_manager.traffic_model.get_dt()
     assignment = Demand_Assignment_class(path_list,commodity_list,
                                          num_steps, dt)
@@ -34,7 +34,7 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, past=10, max_iter=1000, eps=1e-
                 demand = np.asarray(demand)
                 assignment.set_all_demands_on_path_comm(path.getId(),comm_id, demand)
             else:
-                demand = np.zeros((num_steps))
+                demand = np.zeros(num_steps)
                 assignment.set_all_demands_on_path_comm(path.getId(), comm_id, demand)
             count += 1
     elapsed1 = timeit.default_timer() - start_time1
