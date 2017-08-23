@@ -241,6 +241,7 @@ def line_search(model_manager, x_assignment, x_vector, y_assignment, y_vector, d
 
 
 def g_function(model_manager, assignment, dt, T, d_vector):
+    #y_vector = assignment.vector_assignment()
     path_costs = model_manager.evaluate(assignment, dt, T)
     F_value = path_costs.vector_path_costs()
     return np.dot(F_value, d_vector)
@@ -251,11 +252,28 @@ def line_search_original(model_manager, assignment, x_assignment_vector, d_vecto
     d = 1./(2**res-1)
     l, r = 0, 2**res-1
 
+    #y_vector = x_assignment_vector + d_vector
+
     # Initializing the demand assignment
     commodity_list = assignment.get_commodity_list()
     num_steps = assignment.get_num_time_step()
     dt = assignment.get_dt()
     path_list = assignment.get_path_list()
+
+    '''
+    #Print out g for all values of alfa, want to see how the value for g value returned compares to the others
+    print "\n"
+    for i in range(2**res-1):
+        m = i* d
+        m_vector = x_assignment_vector + m * d_vector
+        m_assignment = Demand_Assignment_class(path_list, commodity_list, num_steps, dt)
+        m_assignment.set_all_demands(assignment.get_all_demands())
+        m_assignment.set_demand_with_vector(m_vector)
+        #g_m = g_function(model_manager, m_assignment, 1, 1, d_vector)
+        g_m = potential_func(model_manager.traffic_model, model_manager.cost_function, assignment, x_assignment_vector, d_vector,i*d)
+        print g_m
+    '''
+
     # Below we initialize the all_or_nothing assignment
     #First check on edges
     if potential_func(model_manager.traffic_model, model_manager.cost_function, assignment, x_assignment_vector, d_vector, l * d) <= \
@@ -299,6 +317,7 @@ def potential_func(traffic_model, cost_function, assignment, x_assignment_vector
 
     link_states = traffic_model.Run_Model(mod_assignment)
     #link_states.print_all()
+
     potential_cost = cost_function.evaluate_BPR_Potential(link_states)
 
     return potential_cost
