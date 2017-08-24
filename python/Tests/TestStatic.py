@@ -4,7 +4,7 @@ import numpy as np
 
 from Solvers.Frank_Wolfe_Solver_Static import Frank_Wolfe_Solver
 from Solvers.Path_Based_Frank_Wolfe_Solver import Path_Based_Frank_Wolfe_Solver
-from Solvers.Decomposition_Solver import Decomposition_Solver
+#from Solvers.Decomposition_Solver import Decomposition_Solver
 import timeit
 from Model_Manager.Link_Model_Manager import Link_Model_Manager_class
 from Java_Connection import Java_Connection
@@ -50,8 +50,6 @@ class TestStatic(unittest.TestCase):
         demands[(1L, 1L)] = demand_value
         demands[(2L, 1L)] = demand_value1
         cls.demand_assignments.set_all_demands(demands)
-        # print("\nDemand Assignment on path is as follows (Demand_Assignment class):")
-        # demand_assignments.print_all()
 
     def check_manager(self):
         self.assertTrue(TestStatic.model_manager.is_valid())
@@ -65,14 +63,27 @@ class TestStatic(unittest.TestCase):
         print("\nCalculating the cost per link (Link Cost class)")
         print("We initialize the BPR function with the following coefficients: ")
         cost_function = TestStatic.model_manager.cost_function
-        print(cost_function.__Coefficients)
+        print(cost_function.get_coefficients())
+
+    def test_link_based_fw(self):
+        frank_sol = Frank_Wolfe_Solver(self.model_manager)
+
 
     def test_path_based_fw(self):
         num_steps = 1
-        start_time1 = timeit.default_timer()
+        eps = 1e-2
+        frank_sol = Frank_Wolfe_Solver(self.model_manager)
         assignment_seq = Path_Based_Frank_Wolfe_Solver(self.model_manager, num_steps)
-        elapsed1 = timeit.default_timer() - start_time1
+        # Cost resulting from the path_based Frank-Wolfe
+        link_states = self.model_manager.traffic_model.Run_Model(assignment_seq)
+        cost_path_based = self.model_manager.cost_function.evaluate_BPR_Potential(link_states)
 
+        # Cost resulting from link-based Frank-Wolfe
+        cost_link_based = self.model_manager.cost_function.evaluate_BPR_Potential_FW(frank_sol)
+
+        self.assertTrue(np.abs(cost_link_based-cost_path_based) < eps)
+
+    '''
     def test_decomposition_solver(self):
         number_of_subproblems = 1
         start_time1 = timeit.default_timer()
@@ -80,8 +91,6 @@ class TestStatic(unittest.TestCase):
         print "Decomposition finished with error ", error
         elapsed1 = timeit.default_timer() - start_time1
         print ("Decomposition Path-based took  %s seconds" % elapsed1)
+    '''
 
-    def test_link_based_fw(self):
-        start_time1 = timeit.default_timer()
-        frank_sol = Frank_Wolfe_Solver(self.model_manager)
-        elapsed1 = timeit.default_timer() - start_time1
+

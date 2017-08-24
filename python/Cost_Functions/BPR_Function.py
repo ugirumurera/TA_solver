@@ -4,6 +4,7 @@
 
 from Abstract_Cost_Function import Abstract_Cost_Function
 from Data_Types.Link_Costs_Class import Link_Costs_class
+import collections
 import numpy as np
 
 class BPR_Function_class(Abstract_Cost_Function):
@@ -29,7 +30,8 @@ class BPR_Function_class(Abstract_Cost_Function):
     def evaluate_Cost_Function(self, link_states):
         # Getting the flows from link_states object as list
         flows = list()
-        for state in link_states.get_all_states().values():
+        link_flows = collections.OrderedDict(sorted(link_states.get_all_states().items()))
+        for state in link_flows.values():
             flows.append(state[0].get_flow())
 
         flows = np.array(flows)

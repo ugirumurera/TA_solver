@@ -86,10 +86,10 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, num_steps, past=10, max_iter=10
 
         # step 5 of Fukushima
         start_time1 = timeit.default_timer()
-        #s = line_search(model_manager, assignment, x_assignment_vector, y_assignment, y_assignment_vector, d, 1e-2)
-        s = line_search_original(model_manager, assignment, x_assignment_vector, d)
+        s = line_search(model_manager, assignment, x_assignment_vector, y_assignment, y_assignment_vector, d, 1e-4)
+        #s = line_search_original(model_manager, assignment, x_assignment_vector, d)
         elapsed1 = timeit.default_timer() - start_time1
-        print ("Line_Search took  %s seconds" % elapsed1)
+        #print ("Line_Search took  %s seconds" % elapsed1)
 
         if s < eps:
             if display >= 1: print 'stop with step_size: {}'.format(s)

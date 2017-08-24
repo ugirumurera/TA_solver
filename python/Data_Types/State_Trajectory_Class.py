@@ -5,6 +5,7 @@
 
 from Traffic_States.Abstract_Traffic_State import Abstract_Traffic_State_class
 from copy import deepcopy
+import collections
 
 class State_Trajectory_class():
     # The constructor receives a list of link ids (link_list), a list of commodities (commodity_list), the number
@@ -36,6 +37,7 @@ class State_Trajectory_class():
 
     # Return all the states
     def get_all_states(self):
+        self.__state_trajectory = collections.OrderedDict(sorted(self.__state_trajectory.items()))
         return self.__state_trajectory
 
     # Returns the state of a particular link, commodity, and time_step
@@ -144,6 +146,7 @@ class State_Trajectory_class():
             return
 
         self._state_trajectory = deepcopy(states)
+        self.__state_trajectory = collections.OrderedDict(sorted(self.__state_trajectory.items()))
 
     # set state for a particular link, commodity, and time_step or adds the entry if did not exist in the dictionary
     def set_state_on_link_comm_time(self, link_id, comm_id, time_step, state):
