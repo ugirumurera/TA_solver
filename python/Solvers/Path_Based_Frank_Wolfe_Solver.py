@@ -37,7 +37,7 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, num_steps, past=10, max_iter=10
                 demand = np.zeros(num_steps)
                 assignment.set_all_demands_on_path_comm(path.getId(), comm_id, demand)
             count += 1
-    elapsed1 = timeit.default_timer() - start_time1
+    #elapsed1 = timeit.default_timer() - start_time1
     #print ("Demand Initialization took  %s seconds" % elapsed1)
 
     past_assignment = np.zeros((len(path_list.keys()), past), dtype="float64")
@@ -88,7 +88,7 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, num_steps, past=10, max_iter=10
         start_time1 = timeit.default_timer()
         s = line_search(model_manager, assignment, x_assignment_vector, y_assignment, y_assignment_vector, d, 1e-4)
         #s = line_search_original(model_manager, assignment, x_assignment_vector, d)
-        elapsed1 = timeit.default_timer() - start_time1
+        #elapsed1 = timeit.default_timer() - start_time1
         #print ("Line_Search took  %s seconds" % elapsed1)
 
         if s < eps:
@@ -252,6 +252,7 @@ def line_search_original(model_manager, assignment, x_assignment_vector, d_vecto
     d = 1./(2**res-1)
     l, r = 0, 2**res-1
 
+    '''
     #y_vector = x_assignment_vector + d_vector
 
     # Initializing the demand assignment
@@ -260,7 +261,7 @@ def line_search_original(model_manager, assignment, x_assignment_vector, d_vecto
     dt = assignment.get_dt()
     path_list = assignment.get_path_list()
 
-    '''
+
     #Print out g for all values of alfa, want to see how the value for g value returned compares to the others
     print "\n"
     for i in range(2**res-1):
@@ -293,12 +294,6 @@ def line_search_original(model_manager, assignment, x_assignment_vector, d_vecto
         if potential_1 > potential_2: l = copy(m2)
         if potential_1 == potential_2:
             return m1*d
-    m = l*d
-    m_vector = x_assignment_vector + m * d_vector
-    m_assignment = Demand_Assignment_class(path_list, commodity_list, num_steps, dt)
-    m_assignment.set_all_demands(assignment.get_all_demands())
-    m_assignment.set_demand_with_vector(m_vector)
-    g_m = g_function(model_manager, m_assignment, 1, 1, d_vector)
     return l*d
 
 def potential_func(traffic_model, cost_function, assignment, x_assignment_vector, d, alfa):

@@ -31,7 +31,7 @@ class Path_Costs_class():
 
                 self.__path_costs[key] = self.__path_costs[key] + link_costs.get_all_costs()[(link_id,key[1])]
 
-          return self
+        return self
 
     # Returns costs of a particular link, commodity, and time_step
     def get_cost_at_path_comm_time(self, path_id, comm_id, time_step):
