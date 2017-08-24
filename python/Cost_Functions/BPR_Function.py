@@ -1,5 +1,5 @@
-#Subclass of the Cost_Function class
-#The cost is calculated based on the BPR function: a0 + a1*f + a2*f^2 + a3*f^3 + a4*f^4
+# Subclass of the Cost_Function class
+# The cost is calculated based on the BPR function: a0 + a1*f + a2*f^2 + a3*f^3 + a4*f^4
 # In this way, this cost function always expects static traffic models
 
 from Abstract_Cost_Function import Abstract_Cost_Function
@@ -18,7 +18,7 @@ class BPR_Function_class(Abstract_Cost_Function):
     def set_coefficient(self, coefficients):
         self.__Coefficients = coefficients
 
-    # Overides the evaluate_Cost_Function in the base class
+    # Overrides the evaluate_Cost_Function in the base class
     # Expects Traffic states to only have flow values. This is the cost function specific to Frank_Wolfe
     def evaluate_Cost_Function_FW(self, flows):
         flows = np.array(flows)
@@ -27,6 +27,7 @@ class BPR_Function_class(Abstract_Cost_Function):
         return link_costs
 
     def evaluate_Cost_Function(self, link_states):
+
         # Getting the flows from link_states object as list
         flows = list()
         for state in link_states.get_all_states().values():
@@ -46,14 +47,40 @@ class BPR_Function_class(Abstract_Cost_Function):
 
         return link_costs
 
-    # Overides the evaluate_Gradient in the base class
+    def evaluate_Cost_Function_v2(self, link_states):
+
+        num_steps = link_states.get_num_time_step()
+        comm_list = link_states.get_comm_list()
+
+        if num_steps != 1:
+            raise "num_steps!=1"
+
+        if len(comm_list) != 1:
+            raise "This works only for single commodity"
+
+        link_list = link_states.get_links_list()
+        link_costs = Link_Costs_class(link_list, comm_list, num_steps)
+        comm_id = comm_list[0]
+
+        coeff = self.get_coefficients()
+
+        for link_id in link_list:
+            x = link_states.get_all_states_on_link_comm(link_id, comm_id)
+            flow = x[0].get_flow()
+            c = coeff.get(link_id)
+            link_cost = c[0] + flow*(c[1] + flow*(c[2] + flow*(c[3] + c[4]*flow)))
+            link_costs.set_all_costs_on_link_comm(link_id, comm_id,[link_cost])
+
+        return link_costs
+
+    # Overrides the evaluate_Gradient in the base class
     def evaluate_Gradient(self, flows):
         flows = np.array(flows)
         new_coefficients = np.array(self.__Coefficients.values())* [0, 1., 2., 3., 4.]
         x = np.power(flows.reshape((flows.shape[0], 1)), np.array([0, 1, 2, 3]))
         return np.einsum('ij,ij->i', x, new_coefficients[:,1:4])
 
-    # Overides the is_positive_definite in the base class
+    # Overrides the is_positive_definite in the base class
     def is_positive_definite(self):
         return True
 
