@@ -52,7 +52,7 @@ class Java_Connection():
             sys.exit()
 
         # Here we wait for 0.5 sec to allow the java server to start
-        time.sleep(1)
+        time.sleep(0.5)
 
     def close(self):
         if platform.system() == "Windows":

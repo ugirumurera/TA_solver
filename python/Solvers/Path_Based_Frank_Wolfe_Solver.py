@@ -38,7 +38,7 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, num_steps, past=10, max_iter=10
                 assignment.set_all_demands_on_path_comm(path.getId(), comm_id, demand)
             count += 1
     elapsed1 = timeit.default_timer() - start_time1
-    print ("Demand Initialization took  %s seconds" % elapsed1)
+    #print ("Demand Initialization took  %s seconds" % elapsed1)
 
     past_assignment = np.zeros((len(path_list.keys()), past), dtype="float64")
 
@@ -47,7 +47,7 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, num_steps, past=10, max_iter=10
         start_time1 = timeit.default_timer()
         y_assignment, current_path_costs = all_or_nothing(model_manager, assignment, od)
         elapsed1 = timeit.default_timer() - start_time1
-        print ("All_or_nothing took  %s seconds" % elapsed1)
+        #print ("All_or_nothing took  %s seconds" % elapsed1)
         # Calculating the error
         current_cost_vector = current_path_costs.vector_path_costs()
         x_assignment_vector = assignment.vector_assignment()
