@@ -48,6 +48,7 @@ class TestStatic(unittest.TestCase):
         demand_value1[0] = 2
         demands[(1L, 1L)] = demand_value
         demands[(2L, 1L)] = demand_value1
+        demands[(3L, 1L)] = demand_value
         cls.demand_assignments.set_all_demands(demands)
 
     def check_manager(self):
@@ -56,13 +57,13 @@ class TestStatic(unittest.TestCase):
     def test_model_run(self):
         traffic_model = TestStatic.model_manager.traffic_model
         link_states = traffic_model.Run_Model(TestStatic.demand_assignments)
-        link_states.print_all()
+        self.assertTrue(self.check_assignments(link_states))
 
     def test_link_cost(self):
-        print("\nCalculating the cost per link (Link Cost class)")
-        print("We initialize the BPR function with the following coefficients: ")
-        cost_function = TestStatic.model_manager.cost_function
-        print(cost_function.get_coefficients())
+        traffic_model = TestStatic.model_manager.traffic_model
+        link_states = traffic_model.Run_Model(TestStatic.demand_assignments)
+        link_costs = TestStatic.model_manager.cost_function.evaluate_Cost_Function(link_states)
+        self.assertTrue(self.check_link_costs(link_costs))
 
     def test_link_based_fw(self):
         frank_sol = Frank_Wolfe_Solver(self.model_manager)
@@ -91,5 +92,23 @@ class TestStatic(unittest.TestCase):
         elapsed1 = timeit.default_timer() - start_time1
         print ("Decomposition Path-based took  %s seconds" % elapsed1)
     '''
+    def check_assignments(self, link_states):
+        links_flows = {(0L,1L): [6], (1L,1L): [4], (2L,1L): [2], (3L,1L): [2],
+                       (4L,1L): [2], (5L,1L): [2], (6L,1L): [4]}
+        states = link_states.get_all_states()
+        for key in states.keys():
+            if states[key][0].get_flow() != links_flows[key][0]:
+                return False
 
+        return True
 
+    def check_link_costs(self, link_costs):
+        cost_links = {(0L,1L): [1297], (1L,1L): [257], (2L,1L): [85], (3L,1L): [34],
+                       (4L,1L): [34], (5L,1L): [17], (6L,1L): [1285]}
+
+        states = link_costs.get_all_costs()
+        for key in states.keys():
+            if states[key][0] != cost_links[key][0]:
+                return False
+
+        return True
