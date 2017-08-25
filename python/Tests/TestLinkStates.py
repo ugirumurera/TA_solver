@@ -23,55 +23,54 @@ class TestLinkStates(unittest.TestCase):
                             4L: [2, 0, 0, 0, 2], 5L: [1, 0, 0, 0, 1], 6L: [5, 0, 0, 0, 5]}
         cls.model_manager = Link_Model_Manager_class(configfile, cls.connection, "static", None, "bpr", bpr_coefficients)
 
-        # create a demand assignment
-        time_period = 1  # Only have one time period for static model
-        # paths_list = TestDemandAssignment.model_manager.beats_api.get_path_ids()
-        commodity_list = cls.model_manager.beats_api.get_commodity_ids()
+        api = cls.model_manager.beats_api
 
-        # rout_list is a dictionary of [path_id]:[link_1, ...]
+        time_period = 1  # Only have one time period for static model
+        paths_list = list(api.get_path_ids())
+        commodity_list = list(api.get_commodity_ids())
         route_list = {}
-        route_list[1L] = [0L, 1L]
-        route_list[2L] = [0L, 2L]
+
+        for path_id in paths_list:
+            route_list[path_id] = api.get_subnetwork_with_id(path_id).get_link_ids()
 
         # Test used to validate the Demand_Assignment_Class
         # Creating the demand assignment for initialization
-        demand_assignments = Demand_Assignment_class(route_list, commodity_list, time_period)
+        cls.demand_assignments = Demand_Assignment_class(route_list, commodity_list, time_period, dt = time_period)
         demands = {}
         demand_value = np.zeros(time_period)
         demand_value1 = np.zeros(time_period)
-        demand_value[0] = 20
-        demand_value1[0] = 20
+        demand_value[0] = 2
+        demand_value1[0] = 2
         demands[(1L, 1L)] = demand_value
         demands[(2L, 1L)] = demand_value1
-        demand_assignments.set_all_demands(demands)
+        demands[(3L, 1L)] = demand_value
+        cls.demand_assignments.set_all_demands(demands)
 
         # create link states
-        cls.link_states = cls.model_manager.traffic_model.Run_Model(demand_assignments)
-
+        cls.link_states = cls.model_manager.traffic_model.Run_Model(cls.demand_assignments)
 
     def test_get_state_on_link_comm_time(self):
-        TestLinkStates.link_states.get_state_on_link_comm_time(0L, 1, 0).print_state()
+        self.assertTrue(TestLinkStates.link_states.get_state_on_link_comm_time(0L, 1, 0)!= False)
 
     def test_get_all_states_on_link(self):
-        result = TestLinkStates.link_states.get_all_states_on_link(2)
+        self.assertTrue(TestLinkStates.link_states.get_all_states_on_link(10) == False)
 
     def test_get_all_states_on_link_comm(self):
-        result = TestLinkStates.link_states.get_all_states_on_link_comm(0, 1)
+        self.assertTrue(TestLinkStates.link_states.get_all_states_on_link_comm(0, 1) != False)
 
     def test_get_all_states_on_link_time_step(self):
-        result = TestLinkStates.link_states.get_all_states_on_link_time_step(2, 0)
+        self.assertTrue(TestLinkStates.link_states.get_all_states_on_link_time_step(2, 0) != False)
 
     def test_get_all_states_for_commodity(self):
-        result = TestLinkStates.link_states.get_all_states_for_commodity(1)
+        self.assertTrue(TestLinkStates.link_states.get_all_states_for_commodity(1) != False)
 
     def test_get_all_states_on_comm_time_step(self):
-        result = TestLinkStates.link_states.get_all_states_on_comm_time_step(1, 0)
+        self.assertTrue(TestLinkStates.link_states.get_all_states_on_comm_time_step(1, 0) != False)
+
 
     def test_get_all_states_for_time_step(self):
-        result = TestLinkStates.link_states.get_all_states_for_time_step(0)
+        self.assertTrue(TestLinkStates.link_states.get_all_states_for_time_step(0) != False)
 
-    def test_set_all_states(self):
-        TestLinkStates.link_states.set_all_states(TestLinkStates.link_states.get_all_states())
 
     def test_rest(self):
 
@@ -82,17 +81,23 @@ class TestLinkStates(unittest.TestCase):
         comm_list = {1L: state_list}
 
         TestLinkStates.link_states.set_all_states_on_link(1, comm_list)
+        self.assertTrue(TestLinkStates.link_states.get_state_on_link_comm_time(1, 1, 0).get_flow() == 576)
 
+        state.set_flow(674)
         TestLinkStates.link_states.set_all_states_on_link_comm(1, 1, state_list)
+        self.assertTrue(TestLinkStates.link_states.get_state_on_link_comm_time(1, 1, 0).get_flow() == 674)
 
         comm_list1 = {1L: state}
-        TestLinkStates.link_states.set_all_states_on_link_time_step(1, 0, comm_list1)
+        TestLinkStates.link_states.set_all_states_on_link_time_step(3, 0, comm_list1)
+        self.assertTrue(TestLinkStates.link_states.get_state_on_link_comm_time(3, 1, 0).get_flow() == 674)
 
+        state.set_flow(100)
         TestLinkStates.link_states.set_all_states_for_commodity(1, comm_list)
+        self.assertTrue(TestLinkStates.link_states.get_state_on_link_comm_time(1, 1, 0).get_flow() == 100)
 
+        state.set_flow(200)
         TestLinkStates.link_states.set_all_states_on_comm_time_step(1, 0, comm_list1)
+        self.assertTrue(TestLinkStates.link_states.get_state_on_link_comm_time(1, 1, 0).get_flow() == 200)
 
         comm_list1 = {(2L, 2L): state}
-        TestLinkStates.link_states.set_all_demands_for_time_step(0, comm_list1)
-
-        TestLinkStates.link_states.print_all()
+        self.assertTrue(TestLinkStates.link_states.set_all_demands_for_time_step(0, comm_list1) == False)

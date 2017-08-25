@@ -33,11 +33,11 @@ class Link_Costs_class():
     def get_cost_at_link_comm_time(self, link_id, comm_id, time_step):
         if link_id not in self.__links_list or comm_id not in self.__commodity_list:
             print("Link id or commodity id not in list_costs object")
-            return
+            return False
 
         if time_step < 0 or time_step > (self.__num_time_steps-1):
             print "Error: time period has to be between 0 and ", self.__num_time_steps-1
-            return
+            return False
 
         return self.__link_costs[(link_id, comm_id)][time_step]
 
@@ -46,7 +46,7 @@ class Link_Costs_class():
     def get_all_costs_on_link(self, link_id):
         if link_id not in self.__links_list :
             print("Link id not in list_costs object")
-            return
+            return False
         comm_dict = {}
         for key in self.__link_costs.keys():
             if key[0] == link_id:
@@ -57,7 +57,7 @@ class Link_Costs_class():
     def get_all_costs_on_link_comm(self, link_id, comm_id):
         if link_id not in self.__links_list or comm_id not in self.__commodity_list:
             print("Link id or commodity id not in list_costs object")
-            return
+            return False
 
         return self.__link_costs[(link_id,comm_id)]
 
@@ -66,10 +66,10 @@ class Link_Costs_class():
     def get_all_costs_on_link_time_step(self, link_id, time_step):
         if link_id not in self.__links_list :
             print("Link id not in list_costs object")
-            return
+            return False
         if time_step < 0 or time_step > (self.__num_time_steps - 1):
             print("Error: time period has to be between 0 and ", self.__num_time_steps - 1)
-            return
+            return False
         comm_time_dict = {}
         for key in self.__link_costs.keys():
             if key[0] == link_id:
@@ -81,7 +81,7 @@ class Link_Costs_class():
     def get_all_costs_for_commodity(self, comm_id):
         if comm_id not in self.__commodity_list:
             print("Commodity id not in list_costs object")
-            return
+            return False
 
         link_dict = {}
         for key in self.__link_costs.keys():
@@ -94,10 +94,10 @@ class Link_Costs_class():
     def get_all_costs_on_comm_time_step(self, comm_id, time_step):
         if comm_id not in self.__commodity_list:
             print("Commodity id not in list_costs object")
-            return
+            return False
         if time_step < 0 or time_step > (self.__num_time_steps - 1):
             print("Error: time period has to be between 0 and ", self.__num_time_steps - 1)
-            return
+            return False
 
         link_time_dict = {}
         for key in self.__link_costs.keys():
@@ -109,7 +109,7 @@ class Link_Costs_class():
     def get_all_costs_for_time_step(self, time_step):
         if time_step < 0 or time_step > (self.__num_time_steps - 1):
             print "Error: time period has to be between 0 and ", self.__num_time_steps - 1
-            return
+            return False
 
         time_dict = {}
         for key in self.__link_costs.keys():
@@ -121,7 +121,7 @@ class Link_Costs_class():
         if (any(len(key) != 2 for key in costs.keys()) or
                 any(len(value) != self.__num_time_steps for value in costs.values())):
             print("Error: shape of input costs does not match shape of link_costs object")
-            return
+            return False
 
         if any(key[0] not in self.__links_list or key[1] not in self.__commodity_list
                for key in costs.keys()):
@@ -129,21 +129,21 @@ class Link_Costs_class():
 
         if any(value < 0 for value in costs.values()):
             print("Error: Negative value for cost")
-            return
+            return False
         self.__link_costs = deepcopy(costs)
 
     # set cost for a particular link, commodity, and time_step or adds the entry if did not exist in the dictionary
     def set_cost_at_link_comm_time(self, link_id, comm_id, time_step, cost):
         if link_id not in self.__links_list or comm_id not in self.__commodity_list:
             print("Link id or commodity id not in list_costs object")
-            return
+            return False
         if time_step < 0 or time_step > (self.__num_time_steps - 1):
             print("Error: time period has to be between 0 and ", self.__num_time_steps - 1)
-            return
+            return False
 
         if cost < 0:
             print("Error: Negative value for cost")
-            return
+            return False
         if((link_id,comm_id) in self.__link_costs.keys()):
             self.__link_costs[(link_id, comm_id)][time_step] = cost
         else:
@@ -155,15 +155,15 @@ class Link_Costs_class():
         if (any(not isinstance(key, ( int, long ))  for key in costs.keys()) or
                 any(len(value) != self.__num_time_steps for value in costs.values())):
             print("Error: shape of input costs does not match shape of link_costs object")
-            return
+            return False
 
         if link_id not in self.__links_list or any(comm_id not in self.__commodity_list for comm_id in costs.keys()):
             print("Link id not in list_costs object")
-            return
+            return False
 
         if any(value[i] < 0 for value in costs.values() for i in range(self.__num_time_steps)):
             print("Error: Negative value for cost")
-            return
+            return False
 
         for comm_id in costs.keys():
             if ((link_id, comm_id) in self.__link_costs.keys()):
@@ -176,15 +176,15 @@ class Link_Costs_class():
     def set_all_costs_on_link_comm(self, link_id, comm_id, costs):
         if link_id not in self.__links_list or comm_id not in self.__commodity_list:
             print("Link id or commodity id not in list_costs object")
-            return
+            return False
 
         if (len(costs) != self.__num_time_steps):
             print("Error: shape of input costs does not match shape of link_costs object")
-            return
+            return False
 
         if (any(cost < 0 for cost in costs for i in range(self.__num_time_steps))):
             print("Error: Negative value for cost")
-            return
+            return False
 
         self.__link_costs[(link_id, comm_id)] = costs
 
@@ -194,18 +194,18 @@ class Link_Costs_class():
         if ( any(not isinstance(key, (int, long))  for key in costs.keys()) or
                 any(not isinstance(value, (int, long)) for value in costs.values())):
             print("Error: shape of input costs does not match shape of link_costs object")
-            return
+            return False
 
         if link_id not in self.__links_list or any(comm_id not in self.__commodity_list for comm_id in costs.keys()):
             print("Link id not in list_costs object")
-            return
+            return False
         if time_step < 0 or time_step > (self.__num_time_steps - 1):
             print"Error: time period has to be between 0 and ", self.__num_time_steps - 1
-            return
+            return False
 
         if any(cost < 0 for cost in costs.values()):
             print("Error: Negative value for cost")
-            return
+            return False
 
         for comm_id in costs.keys():
             if ((link_id, comm_id) in self.__link_costs.keys()):
@@ -220,15 +220,15 @@ class Link_Costs_class():
         if (any(not isinstance(key, ( int, long ))  for key in costs.keys()) or
                 any(len(value) != self.__num_time_steps for value in costs.values())):
             print("Error: shape of input costs does not match shape of link_costs object")
-            return
+            return False
 
         if comm_id not in self.__commodity_list or any(link_id not in self.__links_list for link_id in costs.keys()):
             print("Commodity id not in list_costs object")
-            return
+            return False
 
         if any(value[i] < 0 for value in costs.values() for i in range(self.__num_time_steps)):
             print("Error: Negative value for cost")
-            return
+            return False
 
         for link_id in costs.keys():
             if ((link_id, comm_id) in self.__link_costs.keys()):
@@ -242,18 +242,18 @@ class Link_Costs_class():
         if (any(not isinstance(key, (int, long))  for key in costs.keys()) or
                 any(not isinstance(value, (int, long)) for value in costs.values())):
             print("Error: shape of input costs does not match shape of link_costs object")
-            return
+            return False
 
         if any(link_id not in self.__links_list for link_id in costs.keys()) or comm_id not in self.__commodity_list:
             print("Commodity id not in list_costs object")
-            return
+            return False
         if time_step < 0 or time_step > (self.__num_time_steps - 1):
             print("Error: time period has to be between 0 and ", self.__num_time_steps - 1)
-            return
+            return False
 
         if any(cost < 0 for cost in costs.values()):
             print("Error: Negative value for cost")
-            return
+            return False
 
         for link_id in costs.keys():
             if ((link_id, comm_id) in self.__link_costs.keys()):
@@ -268,20 +268,20 @@ class Link_Costs_class():
         if (any(len(key) != 2 for key in costs.keys()) or
                 any(not isinstance(value, (int, long)) for value in costs.values())):
             print("Error: shape of input cost does not match shape of link_costs object")
-            return
+            return False
 
         if any(key[0] not in self.__links_list or key[1] not in self.__commodity_list
                for key in costs.keys()):
             print("Link id or commodity id not in original network")
-            return
+            return False
 
         if time_step < 0 or time_step > (self.__num_time_steps - 1):
             print("Error: time period has to be between 0 and ", self.__num_time_steps - 1)
-            return
+            return False
 
         if any(cost < 0 for cost in costs.values()):
             print("Error: Negative value for cost")
-            return
+            return False
 
         for key in costs.keys():
             if key in self.__link_costs.keys():

@@ -16,6 +16,9 @@ class Path_Costs_class():
         self.__dta = dt
         self.__path_costs = OrderedDict()
 
+    def get_all_path_cots(self):
+        return self.__path_costs
+
     # Receives a Link_Costs_Class and demand_assignment objects and returns a path_costs object containing the travel
     # cost per path, where the path_costs is a [(path_id, commodity_id)] = [cost_1, cost_2,...] dictionary
     def get_path_costs(self, link_costs, demand_assignment):

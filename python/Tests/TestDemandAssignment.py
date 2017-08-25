@@ -37,7 +37,7 @@ class TestDemandAssignment(unittest.TestCase):
 
         # Test used to validate the Demand_Assignment_Class
         # Creating the demand assignment for initialization
-        self.demand_assignment = Demand_Assignment_class(route_list, commodity_list, time_period)
+        self.demand_assignment = Demand_Assignment_class(route_list, commodity_list, time_period,dt=time_period)
         demands = {}
         self.demand_value = np.zeros(time_period)
         self.demand_value1 = np.zeros(time_period)
@@ -49,45 +49,43 @@ class TestDemandAssignment(unittest.TestCase):
 
     def test_set_all_demands_on_path(self):
         self.demand_assignment.set_all_demands_on_path(1L, {1L: self.demand_value1})
-        print("\n")
-        self.demand_assignment.print_all()
+        self.assertTrue(self.demand_assignment.get_all_demands_on_path(1L)== {1L: self.demand_value1})
 
-    def add_all_demands_on_path(self):
-        self.demand_assignment.add_all_demands_on_path(4L, [0L, 1L, 2L], {1L: self.demand_value1})
-        print("\n")
-        self.demand_assignment.print_all()
+    def test_all_demands_on_path(self):
+        path = [0L, 1L, 2L]
+        self.demand_assignment.add_all_demands_on_path(4L, path , {1L: self.demand_value1})
+        x = self.demand_assignment.get_path_list()[4L]
+        self.assertTrue(self.demand_assignment.get_all_demands_on_path(4L)[1L][0] == self.demand_value1[0] and
+                        all(self.demand_assignment.get_path_list()[4L][i] == path[i] for i in range(len(path))))
 
-    def set_all_demands_on_path_comm(self):
-        self.demand_assignment.set_all_demands_on_path_comm(4L, 1L, self.demand_value)
-        print("\n")
-        self.demand_assignment.print_all()
+
+    def test_all_demands_on_path_comm(self):
+        self.assertTrue(self.demand_assignment.set_all_demands_on_path_comm(4L, 1L, self.demand_value) == False)
+
 
     def test_add_all_demands_on_path_comm(self):
-        self.demand_assignment.add_all_demands_on_path_comm(14L, [0L, 1L, 2L], 1L, self.demand_value1)
-        print("\n")
-        self.demand_assignment.print_all()
-
-    def test_set_all_demands_on_path_time_step(self):
-        self.demand_assignment.set_all_demands_on_path_time_step(4L, 0, {1L: 57})
-        print("\n")
-        self.demand_assignment.print_all()
+        path = [0L, 1L, 2L]
+        self.demand_assignment.add_all_demands_on_path_comm(14L, path, 1L, self.demand_value1)
+        self.assertTrue(self.demand_assignment.get_all_demands_on_path_comm(14,1L)[0] == self.demand_value1[0] and
+                        all(self.demand_assignment.get_path_list()[14L][i] == path[i] for i in range(len(path))))
 
     def test_add_all_demands_on_path_time_step(self):
-        self.demand_assignment.add_all_demands_on_path_time_step(45L, [0L, 1L, 2L], 0, {1L: 90})
-        print("\n")
-        self.demand_assignment.print_all()
+        path = [0L, 1L, 2L]
+        self.demand_assignment.add_all_demands_on_path_time_step(45L, path, 0, {1L: 90})
+        self.assertTrue(self.demand_assignment.get_all_demands_on_path_time_step(45L, 0)[1L] == 90 and
+                        all(self.demand_assignment.get_path_list()[45L][i] == path[i] for i in range(len(path))))
 
     def test_set_all_demands_for_commodity(self):
-        self.demand_assignment.set_all_demands_for_commodity(1L, {43L: self.demand_value})
-        print("\n")
-        self.demand_assignment.print_all()
+        self.assertTrue(self.demand_assignment.set_all_demands_for_commodity(1L, {43L: self.demand_value}) == False)
 
     def test_set_all_demands_on_comm_time_step(self):
-        self.demand_assignment.set_all_demands_on_comm_time_step(1L, 1, {45L: 273})
-        print("\n")
-        self.demand_assignment.print_all()
+        path = [0L, 1L, 2L]
+        self.demand_assignment.add_all_demands_on_path_time_step(45L, path, 0, {1L: 90})
+        self.demand_assignment.set_all_demands_on_comm_time_step(1L, 0, {45L: 273})
+        self.assertTrue(self.demand_assignment.get_all_demands_on_comm_time_step(1L,0)[45L] == 273)
 
     def test_set_all_demands_for_time_step(self):
-        self.demand_assignment.set_all_demands_for_time_step(1, {(45L, 1L): 467})
-        print("\n")
-        self.demand_assignment.print_all()
+        path = [0L, 1L, 2L]
+        self.demand_assignment.add_all_demands_on_path_time_step(45L, path, 0, {1L: 90})
+        self.demand_assignment.set_all_demands_for_time_step(0, {(45L, 1L): 467})
+        self.assertTrue(self.demand_assignment.get_all_demands_for_time_step(0)[(45L, 1L)] == 467)

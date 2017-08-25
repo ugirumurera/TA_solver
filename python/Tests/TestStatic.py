@@ -5,7 +5,6 @@ import numpy as np
 from Solvers.Frank_Wolfe_Solver_Static import Frank_Wolfe_Solver
 from Solvers.Path_Based_Frank_Wolfe_Solver import Path_Based_Frank_Wolfe_Solver
 #from Solvers.Decomposition_Solver import Decomposition_Solver
-import timeit
 from Model_Manager.Link_Model_Manager import Link_Model_Manager_class
 from Java_Connection import Java_Connection
 from Data_Types.Demand_Assignment_Class import Demand_Assignment_class

@@ -3,7 +3,7 @@
 # dimensional array of demands per (path,commodity) pair.
 
 import numpy as np
-from copy import deepcopy
+from copy import deepcopy, copy
 from collections import OrderedDict
 
 class Demand_Assignment_class():
@@ -50,10 +50,10 @@ class Demand_Assignment_class():
 
         if path_id not in self.__path_list or comm_id not in self.__commodity_list:
             print("path id or commodity id not in Demand_Assignment object")
-            return
+            return False
         if time_step < 0 or time_step > (self.__num_time_steps-1):
             print("Error: time period has to be between 0 and ", self.__num_time_steps-1)
-            return
+            return False
         return self.__assignment[(path_id, comm_id)][time_step]
 
     # Returns all demands assigned to a particular path with path_id as a [comm_id]: [demand_1, demand_2,...]
@@ -61,7 +61,7 @@ class Demand_Assignment_class():
     def get_all_demands_on_path(self, path_id):
         if path_id not in self.__path_list :
             print("path id not in Demand_Assignment object")
-            return
+            return False
         path_dict = {}
         for key in self.__assignment.keys():
             if key[0] == path_id:
@@ -72,7 +72,7 @@ class Demand_Assignment_class():
     def get_all_demands_on_path_comm(self, path_id, comm_id):
         if path_id not in self.__path_list or comm_id not in self.__commodity_list:
             print("path id or commodity id not in Demand_Assignment object")
-            return
+            return False
         return self.__assignment[(path_id,comm_id)]
 
     #Returns all demands assigned to a particular path and time_step as [commodity_id]: [demand] dictionary
@@ -82,10 +82,10 @@ class Demand_Assignment_class():
 
         if path_id not in self.__path_list :
             print("Commodity id not in Demand_Assignment object")
-            return
+            return False
         if time_step < 0 or time_step > (self.__num_time_steps - 1):
             print("Error: time period has to be between 0 and ", self.__num_time_steps - 1)
-            return
+            return False
 
         path_time_dict = {}
         for key in self.__assignment.keys():
@@ -99,7 +99,7 @@ class Demand_Assignment_class():
     def get_all_demands_for_commodity(self, comm_id):
         if comm_id not in self.__commodity_list:
             print("Commodity id not in Demand_Assignment object")
-            return
+            return False
 
         comm_dict = {}
         for key in self.__assignment.keys():
@@ -115,11 +115,11 @@ class Demand_Assignment_class():
 
         if comm_id not in self.__commodity_list:
             print("Commodity id not in Demand_Assignment object")
-            return
+            return False
 
         if time_step < 0 or time_step > (self.__num_time_steps - 1):
             print("Error: time period has to be between 0 and ", self.__num_time_steps - 1)
-            return
+            return False
 
         comm_time_dict = {}
         for key in self.__assignment.keys():
@@ -134,7 +134,7 @@ class Demand_Assignment_class():
 
         if time_step < 0 or time_step > (self.__num_time_steps - 1):
             print("Error: time period has to be between 0 and ", self.__num_time_steps - 1)
-            return
+            return False
 
         time_dict = {}
         for key in self.__assignment.keys():
@@ -146,15 +146,15 @@ class Demand_Assignment_class():
         if (any(len(key) != 2 for key in demands.keys()) or
                 any(len(value) != self.__num_time_steps for value in demands.values())):
             print("Error: shape of input demand does not match shape Demand_Assignment object")
-            return
+            return False
 
         if any(value[i] < 0 for value in demands.values() for i in range(self.__num_time_steps)):
             print("Error: Negative value for demand")
-            return
+            return False
 
         if any(key[0] not in self.__path_list.keys() or key[1] not in self.__commodity_list for key in demands.keys()):
             print("path id or commodity id not in input demand info")
-            return
+            return False
 
         self.__assignment = deepcopy(demands)
 
@@ -163,15 +163,15 @@ class Demand_Assignment_class():
         if (any(len(key) != 2 for key in demands.keys()) or
                 any(len(value) != self.__num_time_steps for value in demands.values())):
             print("Error: shape of input demand does not match shape demand assignment object")
-            return
+            return False
 
         if any(value[i] < 0 for value in demands.values() for i in range(self.__num_time_steps)):
             print("Error: Negative value for demand")
-            return
+            return False
 
         if any(key[0] not in route_list or key[1] not in self.__commodity_list for key in demands.keys()):
             print("path id or commodity id not in input demand info")
-            return
+            return False
 
         self.__assignment.update(demands)
         self.__path_list.update(route_list)
@@ -183,16 +183,16 @@ class Demand_Assignment_class():
 
         if(demand < 0):
             print("Error: Negative value for demand")
-            return
+            return False
         if(path_id, comm_id) not in self.__assignment.keys():
             print("Error: (path_id, comm_id) key not in Demand_Assignment object")
-            return
+            return False
 
         if time_step < 0 or time_step > (self.__num_time_steps - 1):
             print "Error: time period has to be between 0 and ", self.__num_time_steps - 1
-            return
+            return False
 
-        self.__assignment[path_id, comm_id][time_step] = demand
+        self.__assignment[path_id, comm_id][time_step] = deepcopy(demand)
 
     # Adds a demand for a particular path, commodity, and time_step or adds the entry if did not exist in the dictionary
     # route is a list of links that makes up the path with path_id
@@ -202,15 +202,15 @@ class Demand_Assignment_class():
 
         if (demand < 0):
             print("Error: Negative value for demand")
-            return
+            return False
 
         if comm_id not in self.__commodity_list:
             print("Error: commodity id not in Demand Assignment object")
-            return
+            return False
 
         if time_step < 0 or time_step > (self.__num_time_steps - 1):
             print("Error: time period has to be between 0 and ", self.__num_time_steps - 1)
-            return
+            return False
 
         if ((path_id, comm_id) in self.__assignment.keys()):
             self.__assignment[(path_id, comm_id)][time_step] = demand
@@ -225,15 +225,15 @@ class Demand_Assignment_class():
         if (any(not isinstance(key, ( int, long ))  for key in demands.keys()) or
                 any(len(value) != self.__num_time_steps for value in demands.values())):
             print("Error: shape of input demand does not match shape of Demand_Assignment")
-            return
+            return False
 
         if any(value[i] < 0 for value in demands.values() for i in range(self.__num_time_steps)):
             print("Error: Negative value for demand")
-            return
+            return False
 
         if path_id not in self.__path_list or any(comm_id not in self.__commodity_list for comm_id in demands.keys()):
             print("Error: path id or commodity id not in Demand_Assignment object")
-            return
+            return False
 
         for comm_id in demands.keys():
             self.__assignment[(path_id, comm_id)] =demands[comm_id]
@@ -243,15 +243,15 @@ class Demand_Assignment_class():
         if (any(not isinstance(key, (int, long)) for key in demands.keys()) or
                 any(len(value) != self.__num_time_steps for value in demands.values())):
             print("Error: shape of input demand does not match shape of Demand_Assignment")
-            return
+            return False
 
         if any(comm_id not in self.__commodity_list for comm_id in demands.keys()):
             print("Error: commodity id not in Demand_Assignment object")
-            return
+            return False
 
         if any(value[i] < 0 for value in demands.values() for i in range(self.__num_time_steps)):
             print("Error: Negative value for demand")
-            return
+            return False
 
         for comm_id in demands.keys():
             self.__assignment[path_id, comm_id] = demands[comm_id]
@@ -262,15 +262,15 @@ class Demand_Assignment_class():
     def set_all_demands_on_path_comm(self, path_id, comm_id, demands):
         if (len(demands) != self.__num_time_steps):
             print("Error: shape of input demand array does not match Demand_Assignment object")
-            return
+            return False
 
         if (path_id not in self.__path_list.keys() or comm_id not in self.__commodity_list):
             print("Error: path id or commodity id not in Demand Assignment object")
-            return
+            return False
 
         if (any(demand < 0 for demand in demands)):
             print("Error: Negative value for demand")
-            return
+            return False
 
         self.__assignment[(path_id, comm_id)] = deepcopy(demands)
 
@@ -278,15 +278,15 @@ class Demand_Assignment_class():
     def add_all_demands_on_path_comm(self, path_id, route, comm_id, demands):
         if len(demands) != self.__num_time_steps:
             print("Error: shape of input demand does not match shape of Demand_Assignment object")
-            return
+            return False
 
         if  comm_id not in self.__commodity_list:
             print("Error: commodity id not in Demand Assignment object")
-            return
+            return False
 
         if any(demand < 0 for demand in demands):
             print("Error: Negative value for demand")
-            return
+            return False
 
         self.__assignment[(path_id, comm_id)] = demands
         route_list = {path_id: route}
@@ -300,19 +300,19 @@ class Demand_Assignment_class():
         if (any(not isinstance(key, (int, long))  for key in demands.keys()) or
                 any( not isinstance(value, (int, long)) for value in demands.values())):
             print("Error: shape of input demand does not match shape of Demand_Assignment object")
-            return
+            return False
 
         if any(key not in self.__commodity_list for key in demands.keys() or path_id not in self.__path_list.keys()):
             print("Error: path id or commodity id not in Demand_Assignment object")
-            return
+            return False
 
         if time_step < 0 or time_step > (self.__num_time_steps - 1):
             print "Error: time period has to be between 0 and ", self.__num_time_steps - 1
-            return
+            return False
 
         if any(demand < 0 for demand in demands.values()):
             print("Error: Negative value for demand")
-            return
+            return False
 
         for comm_id in demands.keys():
             if ((path_id, comm_id) in self.__assignment.keys()):
@@ -329,19 +329,19 @@ class Demand_Assignment_class():
         if (any(not isinstance(key, (int, long)) for key in demands.keys()) or
                 any(not isinstance(value, (int, long)) for value in demands.values())):
             print("Error: shape of input demand does not match shape of Demand_Assignment object")
-            return
+            return False
 
         if any(key not in self.__commodity_list for key in demands.keys()):
             print("Error: commodity id not in Demand_Assignment object")
-            return
+            return False
 
         if time_step < 0 or time_step > (self.__num_time_steps - 1):
             print("Error: time period has to be between 0 and ", self.__num_time_steps - 1)
-            return
+            return False
 
         if any(demand < 0 for demand in demands.values()):
             print("Error: Negative value for demand")
-            return
+            return False
 
         for comm_id in demands.keys():
             if ((path_id, comm_id) in self.__assignment.keys()):
@@ -358,16 +358,16 @@ class Demand_Assignment_class():
         if (any( not isinstance(key, ( int, long ))  for key in demands.keys()) or
                 any(len(value) != self.__num_time_steps for value in demands.values())):
             print("Error: shape of input demand array does not shape of Demand_Assignment object")
-            return
+            return False
 
         if comm_id not in self.__commodity_list or \
                 any(path_id not in self.__path_list.keys() for path_id in demands.keys()):
             print("Error: path id or commodity id not in Demand_Assignment object")
-            return
+            return False
 
         if any(value[i] < 0 for value in demands.values() for i in range(self.__num_time_steps)):
             print("Error: Negative value for demand")
-            return
+            return False
 
         for path_id in demands.keys():
             self.__assignment[(path_id, comm_id)] =demands[path_id]
@@ -380,20 +380,20 @@ class Demand_Assignment_class():
         if (any(not isinstance(key, (int, long))  for key in demands.keys()) or
                 any(not isinstance(value, (int, long)) for value in demands.values())):
             print("Error: shape of input demand does not match shape of Demand_Assignment object")
-            return
+            return False
 
         if comm_id not in self.__commodity_list or \
                 any(path_id not in self.__path_list.keys() for path_id in demands.keys()):
             print("Error: path id or commodity id not in Demand_Assignment object")
-            return
+            return False
 
         if time_step < 0 or time_step > (self.__num_time_steps - 1):
             print("Error: time period has to be between 0 and ", self.__num_time_steps - 1)
-            return
+            return False
 
         if any(demand < 0 for demand in demands.values()):
             print("Error: Negative value for demand")
-            return
+            return False
 
         for path_id in demands.keys():
             if ((path_id, comm_id) in self.__assignment.keys()):
@@ -412,15 +412,15 @@ class Demand_Assignment_class():
         if (any(len(key) != 2 for key in demands.keys()) or
                 any(not isinstance(value, (int, long)) for value in demands.values())):
             print("Error: shape of input demand does not match Demand_Assignment object")
-            return
+            return False
 
         if time_step < 0 or time_step > (self.__num_time_steps - 1):
             print "Error: time period has to be between 0 and ", self.__num_time_steps - 1
-            return
+            return False
 
         if any(demand < 0 for demand in demands.values()):
             print("Error: Negative value for demand")
-            return
+            return False
 
         if any(key not in self.__assignment.keys() for key in demands.keys()):
             print('Error: path id or commodity id not in Demand_Assignment object')
@@ -438,7 +438,7 @@ class Demand_Assignment_class():
         if any(len(key) != 2 or key[0] not in self.__path_list.keys()
                or key[1] not in self.__commodity_list for key in keys):
             print "Demand assignment keys not right format or contain unknown path id or commodity id"
-            return
+            return False
         else:
             for key in keys:
                 self.__assignment[key] = np.zeros(self.__num_time_steps)
