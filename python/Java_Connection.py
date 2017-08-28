@@ -52,13 +52,13 @@ class Java_Connection():
             sys.exit()
 
         # Here we wait for 0.5 sec to allow the java server to start
-        time.sleep(0.5)
+        time.sleep(1)
 
     def close(self):
         if platform.system() == "Windows":
             self.process.terminate()
         elif platform.system() == "Linux":
-            os.kill(self.pid, signal.CTRL_C_EVENT)
+            os.kill(0, signal.SIGTERM)
         else:
             raise Exception('Unknown platform')
 

@@ -3,13 +3,12 @@
 
 import numpy as np
 
-from Cost_Functions.BPR_Function import BPR_Function_class
-from Traffic_Models.Static_Model import Static_Model_Class
-from Solvers.Solver_Class import Solver_class
+from Solvers.Frank_Wolfe_Solver_Static import Frank_Wolfe_Solver
+from Solvers.Path_Based_Frank_Wolfe_Solver import Path_Based_Frank_Wolfe_Solver
+#from Solvers.Decomposition_Solver import Decomposition_Solver
+from Model_Manager.Link_Model_Manager import Link_Model_Manager_class
+from Java_Connection import Java_Connection
 from Data_Types.Demand_Assignment_Class import Demand_Assignment_class
-from Data_Types.Link_Costs_Class import Link_Costs_class
-from py4j.java_gateway import JavaGateway,GatewayParameters
-from Traffic_States.Static_Traffic_State import Static_Traffic_State_class
 
 #==========================================================================================
 # This code is used on any Windows systems to self start the Entry_Point_BeATS java code
@@ -21,114 +20,49 @@ import signal
 import time
 import inspect
 
+# make Java connection
+connection = Java_Connection()
 
+# create a static/bpr model manager
 this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'seven_links.xml')
+bpr_coefficients = {0L: [1, 0, 0, 0, 1], 1L: [1, 0, 0, 0, 1], 2L: [5, 0, 0, 0, 5], 3L: [2, 0, 0, 0, 2],
+                    4L: [2, 0, 0, 0, 2], 5L: [1, 0, 0, 0, 1], 6L: [5, 0, 0, 0, 5]}
+model_manager = Link_Model_Manager_class(configfile, connection, "static", None, "bpr", bpr_coefficients)
 
-jar_file_name = os.path.join(this_folder,'py4jbeats-1.0-SNAPSHOT-jar-with-dependencies.jar')
-port_number = '25335'
+# create a demand assignment
+api = model_manager.beats_api
 
-pid = os.fork()
+time_period = 1  # Only have one time period for static model
+paths_list = list(api.get_path_ids())
+commodity_list = list(api.get_commodity_ids())
+route_list = {}
 
-os_pid1 = os.getpid()
+for path_id in paths_list:
+    route_list[path_id] = api.get_subnetwork_with_id(path_id).get_link_ids()
 
-if pid == 0:
-    os_pid = os.getpid()
-    print(os_pid)
-    print "child: Spawning Java"
-    retcode = call(['java', '-jar', jar_file_name, port_number])
-    print "Exiting"
-    sys.exit()
+# Creating the demand assignment for initialization
+demand_assignments = Demand_Assignment_class(route_list, commodity_list, time_period, dt=time_period)
+demands = {}
+demand_value = np.zeros(time_period)
+demand_value1 = np.zeros(time_period)
+demand_value[0] = 2
+demand_value1[0] = 2
+demands[(1L, 1L)] = demand_value
+demands[(2L, 1L)] = demand_value1
+demands[(3L, 1L)] = demand_value
+demand_assignments.set_all_demands(demands)
 
-#Here we wait for 0.5 sec to allow the java server to start
-time.sleep(1)
+num_steps = 1
+frank_sol = Frank_Wolfe_Solver(model_manager)
+assignment_seq = Path_Based_Frank_Wolfe_Solver(model_manager, num_steps)
+# Cost resulting from the path_based Frank-Wolfe
+link_states = model_manager.traffic_model.Run_Model(assignment_seq)
+cost_path_based = model_manager.cost_function.evaluate_BPR_Potential(link_states)
 
-#End of Linux specific code
-#======================================================================================
+# Cost resulting from link-based Frank-Wolfe
+cost_link_based = model_manager.cost_function.evaluate_BPR_Potential_FW(frank_sol)
 
-# Contains local path to input configfile, for the three_links.xml network
-configfile = os.path.join(this_folder,os.path.pardir,'configfiles','three_links.xml')
+print "Path-based Frank_Wolfe ", cost_path_based
+print "Link_based Frank_Wolfe ", cost_link_based
 
-coefficients = {0L:[1,0,0,0,1],1L:[1,0,0,0,1],2L:[2,0,0,0,2]}
-
-port_number = int(port_number)
-gateway = JavaGateway(gateway_parameters=GatewayParameters(port=port_number))
-beats_api = gateway.entry_point.get_BeATS_API()
-beats_api.load(configfile)
-
-# This initializes an instance of static model from configfile
-scenario  = Static_Model_Class(beats_api, 1, 1)
-
-# If scenario.beast_api is none, it means the configfile provided was not valid for the particular traffic model type
-if(scenario.beats_api != None):
-    print("\nSuccessfully initialized a static model")
-
-    time_period = 1  # Only have one time period for static model
-    paths_list = list(scenario.beats_api.get_path_ids())
-    link_list = list(scenario.beats_api.get_link_ids())
-    commodity_list = list(scenario.beats_api.get_commodity_ids())
-
-    # rout_list is a dictionary of [path_id]:[link_1, ...]
-    route_list = {}
-
-    for path_id in paths_list:
-        route_list[path_id] = scenario.beats_api.get_subnetwork_with_id(path_id).get_link_ids()
-
-    # Creating the demand assignment for initialization
-    demand_assignments = Demand_Assignment_class(route_list,commodity_list,time_period, dt = time_period)
-    demands = {}
-    demand_value = np.zeros((time_period))
-    demand_value1 = np.zeros((time_period))
-    demand_value[0] = 20
-    demand_value1[0] = 20
-    demands[(1L,1L)] = demand_value
-    demands[(2L,1L)] = demand_value1
-    demand_assignments.set_all_demands(demands)
-    print("\nDemand Assignment on path is as follows (Demand_Assignment class):")
-    demand_assignments.print_all()
-
-
-
-    # Test the Run_Model function
-    print ("\nDemand Distributed from paths onto links as flows (State_Trajectory class)")
-    link_states = scenario.Run_Model(demand_assignments)
-    link_states.print_all()
-
-    # Testing the Link Cost class
-    print("\nCalculating the cost per link (Link Cost class)")
-    print("We initialize the BPR function with the following coefficients: ")
-    print(coefficients)
-    num_links = scenario.beats_api.get_num_links()
-    # In order to use the BPR function, we first need to get the flows the state trajectory object as a list
-
-    flows = list()
-    for state in link_states.get_all_states().values():
-        flows.append(state[0].get_flow())
-
-    # Initialize the BPR cost function
-    BPR_cost_function = BPR_Function_class(coefficients)
-    link_costs = Link_Costs_class(link_list, commodity_list, time_period)
-
-    # Setting the link costs using the results returned by evaluating the BPR function given flows
-    print("\nThe costs per link are as follows (Link_Costs class):")
-    l_costs = BPR_cost_function.evaluate_Cost_Function(flows)
-    l_cost_dict = {}
-    l_cost_dict[(0L, 1L)] = [l_costs[0]]
-    l_cost_dict[(1L, 1L)] = [l_costs[1]]
-    l_cost_dict[(2L, 1L)] = [l_costs[2]]
-
-    link_costs.set_all_costs(l_cost_dict)
-    link_costs.print_all()
-
-
-    print("\nRunning Frank-Wolfe on the three links network")
-    scenario_solver = Solver_class(scenario, BPR_cost_function)
-    print(scenario_solver.Solver_function())
-
-    print("\nInstallation Successful!!")
-
-# Want to stop the java server
-#===========================================================================================
-# This is used on linux systems to kill the started java process
-print("Terminating the java process")
-os.kill(0, signal.SIGTERM)
-#============================================================================================
