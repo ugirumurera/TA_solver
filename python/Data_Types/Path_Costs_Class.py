@@ -48,6 +48,12 @@ class Path_Costs_class():
 
         return self.__path_costs[(path_id, comm_id)][time_step]
 
+    def set_costs_path_commodity(self, path_id, comm_id, cost_list):
+        x = []
+        for cost in cost_list:
+            x.append(cost)
+        self.__path_costs[(path_id, comm_id)] = x
+
     # This vector returns the path cost as a vector
     def vector_path_costs(self):
         return np.concatenate(self.__path_costs.values())

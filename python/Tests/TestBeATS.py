@@ -32,7 +32,7 @@ class TestBeATS(unittest.TestCase):
 
         api = TestBeATS.model_manager.beats_api
 
-        T = 3600
+        T = 3600.0
         dt = 2.0
 
         start_time = 0.0
@@ -46,8 +46,7 @@ class TestBeATS(unittest.TestCase):
         route_list[1L] = [0L, 1L]
         route_list[2L] = [0L, 2L]
 
-        # Test used to validate the Demand_Assignment_Class
-        # Creating the demand assignment for initialization
+        # Test used to validate the Demand_Assignment_Class# Creating the demand assignment for initialization
         demand_assignment = Demand_Assignment_class(route_list, commodity_list, n, dt)
         demands = {}
         demand_value = np.zeros(n)
@@ -60,10 +59,10 @@ class TestBeATS(unittest.TestCase):
 
         # request path travel time output
         for path_id in demand_assignment.get_path_list():
-            api.request_path_travel_time(path_id, 60)
+            api.request_path_travel_time(path_id, 60.0)
 
         # clear demands in beats
-        api.clear_demands
+        api.clear_all_demands()
 
         # send demand assignment to beats
         for key, values in demand_assignment.get_all_demands().iteritems():
@@ -79,4 +78,5 @@ class TestBeATS(unittest.TestCase):
         path_costs = Path_Costs_class(n, dt)
         comm_id = 1
         for path_data in api.get_output_data():
-            path_costs.add_all_costs_on_path_comm(path_data.getPathId(), comm_id, path_data.compute_travel_time_for_start_times(start_time,dt,n))
+            cost_list = path_data.compute_travel_time_for_start_times(start_time, dt, n)
+            path_costs.set_costs_path_commodity(path_data.getPathId(), comm_id, cost_list)
