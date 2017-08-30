@@ -13,7 +13,7 @@ class Path_Costs_class():
         self.__path_list = {}
         self.__commodity_list = list()
         self.__num_time_steps = num_time_steps
-        self.__dta = dt
+        self.__dt = dt
         self.__path_costs = OrderedDict()
 
     def get_all_path_cots(self):
@@ -24,16 +24,42 @@ class Path_Costs_class():
     def get_path_costs(self, link_costs, demand_assignment):
         self.__path_list = demand_assignment.get_path_list()
         self.__commodity_list = demand_assignment.get_commodity_list()
+        l_costs = link_costs.get_all_costs()
+
         for key in demand_assignment.get_all_demands().keys():
             # Get the route (list of link_ids) associated with the current path_id in key[0]
             route = demand_assignment.get_path_list()[key[0]]
+            for i in range(self.__num_time_steps):
+                for link_id in route:
+                    if key not in self.__path_costs.keys():
+                        self.__path_costs[key] = np.zeros(self.__num_time_steps)
 
-            for link_id in route:
-                if key not in self.__path_costs.keys():
-                    self.__path_costs[key] = np.zeros(self.__num_time_steps)
+                    self.__path_costs[key][i] = self.__path_costs[key][i] + l_costs[(link_id,key[1])][i]
 
-                self.__path_costs[key] = self.__path_costs[key] + link_costs.get_all_costs()[(link_id,key[1])]
+        return self
 
+    #This is the function for smart summation applicable to dynamic models
+    def dynamic_path_costs(self, link_costs, demand_assignment):
+        self.__path_list = demand_assignment.get_path_list()
+        self.__commodity_list = demand_assignment.get_commodity_list()
+        l_costs = link_costs.get_all_costs()
+
+        for key in demand_assignment.get_all_demands().keys():
+            # Get the route (list of link_ids) associated with the current path_id in key[0]
+            route = demand_assignment.get_path_list()[key[0]]
+            for i in range(self.__num_time_steps):
+                time_step = i
+                for link_id in route:
+                    if key not in self.__path_costs.keys():
+                        self.__path_costs[key] = np.zeros(self.__num_time_steps)
+
+                    travel_time = l_costs[(link_id,key[1])][time_step]
+                    self.__path_costs[key][i] = self.__path_costs[key][i] + travel_time
+
+                    if travel_time < self.__num_time_steps-1:
+                        time_step += travel_time
+                    else:
+                        break
         return self
 
     # Returns costs of a particular link, commodity, and time_step
