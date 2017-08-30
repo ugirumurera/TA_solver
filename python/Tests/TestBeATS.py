@@ -2,7 +2,6 @@
 import unittest
 import os
 import inspect
-import numpy as np
 from Model_Manager.BeATS_Model_Manager import BeATS_Model_Manager_class
 from Java_Connection import Java_Connection
 from Data_Types.Demand_Assignment_Class import Demand_Assignment_class
@@ -32,51 +31,47 @@ class TestBeATS(unittest.TestCase):
 
         api = TestBeATS.model_manager.beats_api
 
-        T = 3600.0
-        dt = 2.0
-
+        comm_id = 1
+        time_horizon = 3600.0
         start_time = 0.0
-        n = int(T/dt)
+        path_cost_dt = 60.0
+        path_cost_n = int(time_horizon/path_cost_dt)
+        demand_dt = 1800.0
+        demand_n = int(time_horizon/demand_dt)
 
         # create a demand assignment
         commodity_list = api.get_commodity_ids()
 
         # rout_list is a dictionary of [path_id]:[link_1, ...]
-        route_list = {}
-        route_list[1L] = [0L, 1L]
-        route_list[2L] = [0L, 2L]
+        route_list = {1L: [0L, 1L],
+                      2L: [0L, 2L]}
 
         # Test used to validate the Demand_Assignment_Class# Creating the demand assignment for initialization
-        demand_assignment = Demand_Assignment_class(route_list, commodity_list, n, dt)
-        demands = {}
-        demand_value = np.zeros(n)
-        demand_value1 = np.zeros(n)
-        demand_value[0] = 20
-        demand_value1[0] = 20
-        demands[(1L, 1L)] = demand_value
-        demands[(2L, 1L)] = demand_value1
-        demand_assignment.set_all_demands(demands)
+        demand_assignment = Demand_Assignment_class(route_list, commodity_list, demand_n, demand_dt)
+        demand_assignment.set_all_demands({(1L, 1L): [20, 0],
+                                           (2L, 1L): [20, 0]})
 
         # request path travel time output
         for path_id in demand_assignment.get_path_list():
-            api.request_path_travel_time(path_id, 60.0)
+            api.request_path_travel_time(path_id, path_cost_dt)
 
         # clear demands in beats
         api.clear_all_demands()
 
         # send demand assignment to beats
-        for key, values in demand_assignment.get_all_demands().iteritems():
+        for path_comm, demand_list in demand_assignment.get_all_demands().iteritems():
+            path_id = path_comm[0]
+            comm_id = path_comm[1]
             array = TestBeATS.conn.gateway.jvm.java.util.ArrayList()
-            for v in values:
-                array.add(v)
-            api.set_demand_on_path_in_vph(key[0], key[1], start_time, dt, array)
+            for v in demand_list:
+                array.add(float(v))
+            api.set_demand_on_path_in_vph(path_id, comm_id, start_time, demand_dt, array)
 
         # run BeATS
-        api.run(start_time, dt, T)
+        api.run(start_time, time_horizon)
 
         # extract the path costs
-        path_costs = Path_Costs_class(n, dt)
-        comm_id = 1
+        path_costs = Path_Costs_class(path_cost_n, path_cost_dt)
         for path_data in api.get_output_data():
-            cost_list = path_data.compute_travel_time_for_start_times(start_time, dt, n)
+            cost_list = path_data.compute_travel_time_for_start_times(start_time, path_cost_dt, demand_n)
             path_costs.set_costs_path_commodity(path_data.getPathId(), comm_id, cost_list)
