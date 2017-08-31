@@ -10,7 +10,8 @@ class Abstract_Model_Manager_class():
     __metaclass__ = ABCMeta
 
     def __init__(self, configfile, gateway):
-        self.beats_api = gateway.gateway.entry_point.get_BeATS_API()
+        self.gateway = gateway
+        self.beats_api = gateway.entry_point.get_BeATS_API()
         self.beats_api.load(configfile)
 
     def is_valid(self):
