@@ -32,17 +32,22 @@ class Static_Model_Class(Abstract_Traffic_Model_class):
     # Returns an array of link states where each entry indicates the flow per link, per commodity and per time step
     def Run_Model(self, demand_assignments, initial_state = None, dt = None, T = None):
         # Initialize the State_Trajectory object
+        num_steps = T/dt
         link_states = State_Trajectory_class( list(self.beats_api.get_link_ids()),
-                                                 list(self.beats_api.get_commodity_ids()), 1, 1)
+                                                 list(self.beats_api.get_commodity_ids()), num_steps, dt)
         for key in demand_assignments.get_all_demands().keys():
             route = demand_assignments.get_path_list()[key[0]]
             for link_id in route:
-                if (link_id,key[1]) not in link_states.get_all_states().keys():
-                    state = Static_Traffic_State_class()
-                    link_states.set_state_on_link_comm_time(link_id, key[1], 0, state)
+                for i in range(num_steps):
+                    if ((link_id,key[1]) not in link_states.get_all_states().keys()) or \
+                        not (isinstance(link_states.get_state_on_link_comm_time(link_id, key[1], i), Static_Traffic_State_class)):
+                        state = Static_Traffic_State_class()
+                        link_states.set_state_on_link_comm_time(link_id, key[1], i, state)
 
-                demand_value = demand_assignments.get_demand_at_path_comm_time(key[0], key[1], 0)
-                link_states.get_state_on_link_comm_time(link_id, key[1], 0).add_flow(demand_value)
+                    demand_value = demand_assignments.get_demand_at_path_comm_time(key[0], key[1], i)
+                    link_states.get_state_on_link_comm_time(link_id, key[1], i).add_flow(demand_value)
+
+        #link_states.print_all()
 
         return link_states
 
