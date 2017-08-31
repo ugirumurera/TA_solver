@@ -165,7 +165,7 @@ class State_Trajectory_class():
         if((link_id,comm_id) in self.__state_trajectory.keys()):
             self.__state_trajectory[(link_id, comm_id)][time_step] = state
         else:
-            self.__state_trajectory[(link_id,comm_id)] = [Abstract_Traffic_State_class for k in range(self.__num_time_steps)]
+            self.__state_trajectory[(link_id,comm_id)] = [type(state) for k in range(self.__num_time_steps)]
             self.__state_trajectory[(link_id, comm_id)][time_step] = state
 
 

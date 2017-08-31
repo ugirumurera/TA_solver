@@ -2,13 +2,14 @@
 
 from Abstract_Traffic_Model import Abstract_Traffic_Model_class
 from Data_Types.State_Trajectory_Class import State_Trajectory_class
+from Traffic_States.Abstract_Traffic_State import Abstract_Traffic_State_class
 from Traffic_States.Static_Traffic_State import Static_Traffic_State_class
 
 
 class Static_Model_Class(Abstract_Traffic_Model_class):
     #Configfile is needed to initialize the model's scenario via beats_api
-    def __init__(self, beats_api):
-        Abstract_Traffic_Model_class.__init__(self, beats_api, None)
+    def __init__(self, beats_api, dt_sec):
+        Abstract_Traffic_Model_class.__init__(self, beats_api, dt_sec)
         self.model_type = 's'     #Indicates that this is a static model
 
         if not self.Validate_Configfile():

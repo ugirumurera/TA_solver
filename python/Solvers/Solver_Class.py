@@ -16,6 +16,7 @@ class Solver_class():
     def Solver_function(self, num_steps, Dec = False, number_of_subproblems = 1):
         #if problem can be solved as an optimization problem:
         assignment_seq = None
+        frank_sol = None
 
         #call an optimization algorithm like Frank-Wolfe
         start_time1 = timeit.default_timer()
@@ -31,6 +32,7 @@ class Solver_class():
             print "Decomposition finished with error ", error
             elapsed1 = timeit.default_timer() - start_time1
             print ("Decomposition Path-based took  %s seconds" % elapsed1)
+
         '''
         print "\n"
         start_time1 = timeit.default_timer()
@@ -38,4 +40,5 @@ class Solver_class():
         elapsed1 = timeit.default_timer() - start_time1
         print ("FW link-based took  %s seconds" % elapsed1)
         #Call a algorithm to solve the variational inequality problem - to be developed
+        
         return assignment_seq, frank_sol

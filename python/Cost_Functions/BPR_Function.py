@@ -52,12 +52,13 @@ class BPR_Function_class(Abstract_Cost_Function):
     def evaluate_Cost_Function(self, link_states):
         num_steps = link_states.get_num_time_step()
         comm_list = link_states.get_comm_list()
-
+        '''
         if num_steps != 1:
             raise "num_steps!=1"
 
         if len(comm_list) != 1:
             raise "This works only for single commodity"
+        '''
 
         link_list = link_states.get_links_list()
         link_costs = Link_Costs_class(link_list, comm_list, num_steps)
@@ -67,10 +68,13 @@ class BPR_Function_class(Abstract_Cost_Function):
 
         for link_id in link_list:
             x = link_states.get_all_states_on_link_comm(link_id, comm_id)
-            flow = x[0].get_flow()
-            c = coeff.get(link_id)
-            link_cost = c[0] + flow*(c[1] + flow*(c[2] + flow*(c[3] + c[4]*flow)))
-            link_costs.set_all_costs_on_link_comm(link_id, comm_id,[link_cost])
+            for i in range(num_steps):
+                flow = x[i].get_flow()
+                c = coeff.get(link_id)
+                link_cost = c[0] + flow*(c[1] + flow*(c[2] + flow*(c[3] + c[4]*flow)))
+                link_costs.set_cost_at_link_comm_time(link_id, comm_id,i, link_cost)
+
+        #link_costs.print_all()
 
         return link_costs
 
@@ -90,25 +94,28 @@ class BPR_Function_class(Abstract_Cost_Function):
         num_steps = link_states.get_num_time_step()
         comm_list = link_states.get_comm_list()
 
+        '''
         if num_steps != 1:
             raise "num_steps!=1"
 
         if len(comm_list) != 1:
             raise "This works only for single commodity"
+        '''
 
         link_list = link_states.get_links_list()
         comm_id = comm_list[0]
 
         coeff = self.get_coefficients()
         cost_list = np.zeros(len(link_list))
-        i = 0
+        j = 0
         for link_id in link_list:
             x = link_states.get_all_states_on_link_comm(link_id, comm_id)
-            flow = x[0].get_flow()
-            c = coeff.get(link_id)
-            cost = c[0]*flow+ 1/2*c[1]*(flow**2) + 1/3*c[2]*(flow**3) + 1/4*c[3]*flow**4 +1/5*c[4]*flow**5
-            cost_list[i] = copy(cost)
-            i += 1
+            for i in range(num_steps):
+                flow = x[0].get_flow()
+                c = coeff.get(link_id)
+                cost = c[0]*flow+ 1/2*c[1]*(flow**2) + 1/3*c[2]*(flow**3) + 1/4*c[3]*flow**4 +1/5*c[4]*flow**5
+                cost_list[j] = copy(cost)
+                j += 1
         return np.sum(cost_list)
 
     def evaluate_BPR_Potential_FW(self, flows):

@@ -26,29 +26,31 @@ connection = Java_Connection()
 # Contains local path to input configfile, for the three_links.xml network
 this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'seven_links.xml')
-coefficients = {0L:[1,0,0,0,1],1L:[1,0,0,0,1],2L:[5,0,0,0,5], 3L:[2,0,0,0,2], 4L:[2,0,0,0,2], 5L:[1,0,0,0,1], 6L:[5,0,0,0,5]}
-model_manager = Link_Model_Manager_class(configfile, connection, "static", None, "bpr", coefficients)
+coefficients = {0L:[1,0,0,0,1],1L:[1,0,0,0,1],2L:[2,0,0,0,2], 3L:[1,0,0,0,1], 4L:[2,0,0,0,2], 5L:[1,0,0,0,1], 6L:[1,0,0,0,1]}
+T = 1800  # Time horizon of interest
+dt = 1800  # Duration of one time_step
+
+model_manager = Link_Model_Manager_class(configfile, connection, "static", dt, "bpr", coefficients)
 
 # If scenario.beast_api is none, it means the configfile provided was not valid for the particular traffic model type
 if model_manager.is_valid():
-
-    num_steps = 1
+    num_steps = T/dt
 
     scenario_solver = Solver_class(model_manager)
     assignment, flow_sol = scenario_solver.Solver_function(num_steps)
 
     # Cost resulting from the path_based Frank-Wolfe
-    link_states = model_manager.traffic_model.Run_Model(assignment)
+    link_states = model_manager.traffic_model.Run_Model(assignment, None, dt, T)
     cost_path_based = model_manager.cost_function.evaluate_BPR_Potential(link_states)
 
     # Cost resulting from link-based Frank-Wolfe
-    cost_link_based = model_manager.cost_function.evaluate_BPR_Potential_FW(flow_sol)
+    #cost_link_based = model_manager.cost_function.evaluate_BPR_Potential_FW(flow_sol)
 
     print "\n"
     link_states.print_all()
     print "\n", flow_sol
     print "path-based cost: ", cost_path_based
-    print "link-based cost: ", cost_link_based
+    #print "link-based cost: ", cost_link_based
 
 
 # kill jvm

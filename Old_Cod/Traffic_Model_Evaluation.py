@@ -4,10 +4,10 @@
 # When running on windows machine, first launch the java code Entry_Point_BeATS.java that is under 'beats-tools/java/py4jbeats/src/main/java'
 # And comment out the portion marked for linux system
 
-from Cost_Functions.BPR_Function import BPR_Function_class
-from Traffic_Models.Static_Model import Static_Model_Class
-from Solvers.Solver_Class import Solver_class
-from Data_Types.Demand_Assignment_Class import Demand_Assignment_class
+from python.Cost_Functions.BPR_Function import BPR_Function_class
+from python.Traffic_Models.Static_Model import Static_Model_Class
+from python.Solvers.Solver_Class import Solver_class
+from python.Data_Types.Demand_Assignment_Class import Demand_Assignment_class
 
 '''
 #==========================================================================================

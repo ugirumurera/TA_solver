@@ -30,9 +30,23 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, num_steps, past=10, max_iter=10
         for path in o.get_subnetworks():
             path_list[path.getId()] = path.get_link_ids()
             if count == 0:
-                demand = [item*3600 for item in o.get_total_demand_vps().getValues()]
+                demand = [item * 3600 for item in o.get_total_demand_vps().getValues()]
                 demand = np.asarray(demand)
-                assignment.set_all_demands_on_path_comm(path.getId(),comm_id, demand)
+                demand_size = len(demand)
+
+                # Before assigning the demand, we want to make sure it can be properly distributed given the number of
+                # Time step in our problem
+                if demand_size > num_steps or num_steps % len(demand) != 0:
+                    print "Demand specified in xml cannot not be properly divided among time steps"
+                    return
+
+                #Creates an array of demands from the xml demand profile to be assignmed into the demand assignment
+                ass_demand = np.zeros(num_steps)
+                for i in range(num_steps):
+                    index = int(i / (num_steps/demand_size))
+                    ass_demand[i] = demand[index]
+
+                assignment.set_all_demands_on_path_comm(path.getId(),comm_id, ass_demand)
             else:
                 demand = np.zeros(num_steps)
                 assignment.set_all_demands_on_path_comm(path.getId(), comm_id, demand)
@@ -45,7 +59,7 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, num_steps, past=10, max_iter=10
     for i in range(max_iter):
         # All_or_nothing assignment
         start_time1 = timeit.default_timer()
-        y_assignment, current_path_costs = all_or_nothing(model_manager, assignment, od)
+        y_assignment, current_path_costs = all_or_nothing(model_manager, assignment, od, None, dt, dt*num_steps)
         elapsed1 = timeit.default_timer() - start_time1
         #print ("All_or_nothing took  %s seconds" % elapsed1)
         # Calculating the error
@@ -199,8 +213,8 @@ def all_or_nothing(model_manager, assignment, od, initial_state = None, dt = Non
 
 def line_search(model_manager, x_assignment, x_vector, y_assignment, y_vector, d_vector, eps):
     # alfa = 0 corresponds to when assignment is equal to original assignment x_assignment
-    dt = 1
-    T = 1
+    dt = x_assignment.get_dt()
+    T = dt * x_assignment.get_num_time_step()
 
     g0 = g_function(model_manager, x_assignment, dt, T, d_vector)
 

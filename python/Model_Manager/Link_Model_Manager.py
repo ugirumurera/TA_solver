@@ -12,7 +12,7 @@ class Link_Model_Manager_class(Abstract_Model_Manager_class):
 
         # create the traffic model
         if traffic_model_name == "static":
-            self.traffic_model = Static_Model_Class(self.beats_api)
+            self.traffic_model = Static_Model_Class(self.beats_api, dt)
         else:
             print("Bad traffic_model_name")
             return
