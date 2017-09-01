@@ -17,7 +17,6 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, num_steps, past=10, max_iter=10
 
     # Initializing the demand assignment
     commodity_list = list(model_manager.beats_api.get_commodity_ids())
-    # num_steps = model_manager.traffic_model.get_num_steps()
     dt = model_manager.traffic_model.get_dt()
     assignment = Demand_Assignment_class(path_list,commodity_list,
                                          num_steps, dt)
@@ -27,24 +26,25 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, num_steps, past=10, max_iter=10
     for o in od:
         count = 0
         comm_id = o.get_commodity_id()
+
+        demand_api = [item * 3600 for item in o.get_total_demand_vps().getValues()]
+        demand_api = np.asarray(demand_api)
+        demand_size = len(demand_api)
+
+        # Before assigning the demand, we want to make sure it can be properly distributed given the number of
+        # Time step in our problem
+        if demand_size > num_steps or num_steps % len(demand_api) != 0:
+            print "Demand specified in xml cannot not be properly divided among time steps"
+            return
+
         for path in o.get_subnetworks():
             path_list[path.getId()] = path.get_link_ids()
             if count == 0:
-                demand = [item * 3600 for item in o.get_total_demand_vps().getValues()]
-                demand = np.asarray(demand)
-                demand_size = len(demand)
-
-                # Before assigning the demand, we want to make sure it can be properly distributed given the number of
-                # Time step in our problem
-                if demand_size > num_steps or num_steps % len(demand) != 0:
-                    print "Demand specified in xml cannot not be properly divided among time steps"
-                    return
-
                 #Creates an array of demands from the xml demand profile to be assignmed into the demand assignment
                 ass_demand = np.zeros(num_steps)
                 for i in range(num_steps):
                     index = int(i / (num_steps/demand_size))
-                    ass_demand[i] = demand[index]
+                    ass_demand[i] = demand_api[index]
 
                 assignment.set_all_demands_on_path_comm(path.getId(),comm_id, ass_demand)
             else:
@@ -54,7 +54,7 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, num_steps, past=10, max_iter=10
     #elapsed1 = timeit.default_timer() - start_time1
     #print ("Demand Initialization took  %s seconds" % elapsed1)
 
-    past_assignment = np.zeros((len(path_list.keys()), past), dtype="float64")
+    past_assignment = np.zeros((len(path_list.keys())*num_steps, past), dtype="float64")
 
     for i in range(max_iter):
         # All_or_nothing assignment
@@ -63,9 +63,9 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, num_steps, past=10, max_iter=10
         elapsed1 = timeit.default_timer() - start_time1
         #print ("All_or_nothing took  %s seconds" % elapsed1)
         # Calculating the error
-        current_cost_vector = current_path_costs.vector_path_costs()
-        x_assignment_vector = assignment.vector_assignment()
-        y_assignment_vector = y_assignment.vector_assignment()
+        current_cost_vector = np.asarray(current_path_costs.vector_path_costs())
+        x_assignment_vector = np.asarray(assignment.vector_assignment())
+        y_assignment_vector = np.asarray(y_assignment.vector_assignment())
 
         error = np.abs(np.dot(current_cost_vector, y_assignment_vector - x_assignment_vector))
         print "iteration: ", i, ", error: ", error
@@ -172,7 +172,7 @@ def Path_Based_Frank_Wolfe_Solver_Dec(traffic_model, cost_function, assignment, 
 
 # This function determines the all_or_nothing demand assignment by putting all OD demand on the shortest path per OD
 def all_or_nothing(model_manager, assignment, od, initial_state = None, dt = None, T = None):
-    path_costs = model_manager.evaluate( assignment, dt, T, initial_state)
+    path_costs = model_manager.evaluate(assignment, dt, T)
     #path_costs.print_all()
     # Initializing the demand assignment
     commodity_list = assignment.get_commodity_list()
@@ -190,7 +190,12 @@ def all_or_nothing(model_manager, assignment, od, initial_state = None, dt = Non
         min_path_id = -1
         min_cost = 0
         comm_id = o.get_commodity_id()
-        for i in range(y_assignment.get_num_time_step()):
+
+        demand_api = [item * 3600 for item in o.get_total_demand_vps().getValues()]
+        demand_api = np.asarray(demand_api)
+        demand_size = len(demand_api)
+
+        for i in range(num_steps):
             paths_demand = dict()
             for path in o.get_subnetworks():
                 if min_path_id == -1:
@@ -204,9 +209,10 @@ def all_or_nothing(model_manager, assignment, od, initial_state = None, dt = Non
 
             # Putting all the demand on the minimum cost path
             # First set to zero all demands on all path for commodity comm_id and time_step i
-            y_assignment.set_all_demands_on_comm_time_step(comm_id, i, paths_demand)
-            demand = o.get_total_demand_vps().get_value(i)*3600
-            y_assignment.set_demand_at_path_comm_time(min_path_id, comm_id, i, demand)
+            y_assignment.set_all_demands_on_comm_time_step(comm_id, i*dt, paths_demand)
+            index = int(i / (num_steps / demand_size))
+            demand = o.get_total_demand_vps().get_value(index)*3600
+            y_assignment.set_demand_at_path_comm_time(min_path_id, comm_id, i*dt, demand)
 
     #y_assignment.print_all()
     return y_assignment,path_costs

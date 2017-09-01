@@ -25,7 +25,7 @@ class Link_Model_Manager_class(Abstract_Model_Manager_class):
             return
 
     # This overides the evaluate function in the abstract class. Returns a Path_Cost object of costs on paths
-    def evaluate(self, demand_assignments, dt, T, initial_state = None):
+    def evaluate(self, demand_assignments, dt = None, T = None, initial_state = None):
         # Run_Model returns a State_Trajectory object, which contains state of each link
         link_states = self.traffic_model.Run_Model(demand_assignments, initial_state, dt, T)
 

@@ -104,19 +104,19 @@ class BPR_Function_class(Abstract_Cost_Function):
 
         link_list = link_states.get_links_list()
         comm_id = comm_list[0]
-
-        coeff = self.get_coefficients()
-        cost_list = np.zeros(len(link_list))
         j = 0
-        for link_id in link_list:
-            x = link_states.get_all_states_on_link_comm(link_id, comm_id)
-            for i in range(num_steps):
-                flow = x[0].get_flow()
+        coeff = self.get_coefficients()
+        cost_list = np.zeros(num_steps)
+        for i in range(num_steps):
+            x = link_states.get_all_states_on_comm_time_step( comm_id, i)
+            cost = 0
+            for link_id in link_list:
+                flow = x[link_id].get_flow()
                 c = coeff.get(link_id)
-                cost = c[0]*flow+ 1/2*c[1]*(flow**2) + 1/3*c[2]*(flow**3) + 1/4*c[3]*flow**4 +1/5*c[4]*flow**5
-                cost_list[j] = copy(cost)
-                j += 1
-        return np.sum(cost_list)
+                cost += c[0]*flow+ 1/2*c[1]*(flow**2) + 1/3*c[2]*(flow**3) + 1/4*c[3]*flow**4 +1/5*c[4]*flow**5
+            cost_list[j] = copy(cost)
+            j += 1
+        return cost_list
 
     def evaluate_BPR_Potential_FW(self, flows):
         flows = np.array(flows)

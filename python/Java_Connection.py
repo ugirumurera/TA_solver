@@ -36,7 +36,7 @@ class Java_Connection():
             self.process = subprocess.Popen(['java', '-jar', jar_file_name, port_number],
                                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             self.pid = self.process.pid
-            time.sleep(0.5)
+            time.sleep(1)
         except subprocess.CalledProcessError:
             print("caught exception")
             sys.exit()

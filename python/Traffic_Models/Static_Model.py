@@ -11,12 +11,14 @@ class Static_Model_Class(Abstract_Traffic_Model_class):
     def __init__(self, beats_api, dt_sec):
         Abstract_Traffic_Model_class.__init__(self, beats_api, dt_sec)
         self.model_type = 's'     #Indicates that this is a static model
+        self.dt = dt_sec
 
         if not self.Validate_Configfile():
             self.beats_api = None
             return
 
     def Validate_Configfile(self):
+        '''
         # If the configfile indicates varying demand, return with an error
         # We first want to check the configfile to make sure it is in correct format
         demand_array = self.beats_api.get_demands()
@@ -26,6 +28,7 @@ class Static_Model_Class(Abstract_Traffic_Model_class):
             if demand_array[i].getProfile().num_values() > 1:
                 return False
             i = i + 1
+        '''
         return True
 
     # Overides the Run_Model function in the abstract class
@@ -44,7 +47,7 @@ class Static_Model_Class(Abstract_Traffic_Model_class):
                         state = Static_Traffic_State_class()
                         link_states.set_state_on_link_comm_time(link_id, key[1], i, state)
 
-                    demand_value = demand_assignments.get_demand_at_path_comm_time(key[0], key[1], i)
+                    demand_value = demand_assignments.get_demand_at_path_comm_time(key[0], key[1], i*dt)
                     link_states.get_state_on_link_comm_time(link_id, key[1], i).add_flow(demand_value)
 
         #link_states.print_all()

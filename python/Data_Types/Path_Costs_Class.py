@@ -82,7 +82,9 @@ class Path_Costs_class():
 
     # This vector returns the path cost as a vector
     def vector_path_costs(self):
-        return np.concatenate(self.__path_costs.values())
+        a = self.__path_costs.values()
+        return [item for sublist in a for item in sublist]
+        #return np.concatenate(self.__path_costs.values())
 
     def print_all(self):
         for key in self.__path_costs.keys():

@@ -8,7 +8,7 @@ class Abstract_Traffic_Model_class:
     __metaclass__ = ABCMeta
 
     # The Traffic Class initiates connection to Beats object
-    def __init__(self, beats_api, dt_sec=None):
+    def __init__(self, beats_api, dt_sec = None):
         self.beats_api = beats_api
         self.dt_sec = dt_sec
 

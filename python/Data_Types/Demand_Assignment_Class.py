@@ -192,7 +192,7 @@ class Demand_Assignment_class():
             print "Error: time period has to be between 0 and ", self.__num_time_steps - 1
             return False
 
-        self.__assignment[path_id, comm_id][time_step] = deepcopy(demand)
+        self.__assignment[path_id, comm_id][time_step] = copy(demand)
 
     # Adds a demand for a particular path, commodity, and time_step or adds the entry if did not exist in the dictionary
     # route is a list of links that makes up the path with path_id
@@ -445,7 +445,8 @@ class Demand_Assignment_class():
 
     # Creates a vector out of the demand_assignment values
     def vector_assignment(self):
-        return np.concatenate(self.__assignment.values())
+        return [item for sublist in self.__assignment.values() for item in sublist]
+        #return np.concatenate(self.__assignment.values())
 
     def set_demand_with_vector(self, demand_vector):
         a, b = 0, self.__num_time_steps -1
@@ -453,7 +454,8 @@ class Demand_Assignment_class():
             if a == b:
                 self.__assignment[key][0] = deepcopy(demand_vector[a])
             else:
-                self.__assignment[key][0, self.__num_time_steps-1] = deepcopy(demand_vector[a:b])
+                row = demand_vector[a:(b+1)]
+                self.__assignment[key] = copy(row)
             a += self.__num_time_steps
             b += self.__num_time_steps
 

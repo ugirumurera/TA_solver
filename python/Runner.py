@@ -14,6 +14,7 @@ from Solvers.Solver_Class import Solver_class
 # from py4j.java_gateway import JavaGateway,GatewayParameters
 from Model_Manager.Link_Model_Manager import Link_Model_Manager_class
 from Java_Connection import Java_Connection
+from copy import copy
 
 # ==========================================================================================
 # This code is used on any Windows systems to self start the Entry_Point_BeATS java code
@@ -27,10 +28,24 @@ connection = Java_Connection()
 this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'seven_links.xml')
 coefficients = {0L:[1,0,0,0,1],1L:[1,0,0,0,1],2L:[2,0,0,0,2], 3L:[1,0,0,0,1], 4L:[2,0,0,0,2], 5L:[1,0,0,0,1], 6L:[1,0,0,0,1]}
-T = 1800  # Time horizon of interest
-dt = 1800  # Duration of one time_step
 
-model_manager = Link_Model_Manager_class(configfile, connection, "static", dt, "bpr", coefficients)
+T = 3600  # Time horizon of interest
+dt = 1200  # Duration of one time_step
+
+model_manager = Link_Model_Manager_class(configfile, connection.gateway, "static", dt, "bpr", coefficients)
+
+#Estimating bpr coefficients with beats
+num_links = 7
+avg_travel_time = np.zeros(num_links)
+
+for i in range(num_links):
+    fft = 1000/model_manager.beats_api.get_link_with_id(long(i)).get_ffspeed_mps()
+    avg_travel_time[i] = model_manager.beats_api.get_link_with_id(long(i)).getFull_length()\
+                      /model_manager.beats_api.get_link_with_id(long(i)).get_ffspeed_mps()
+    coefficients[i][0] = copy(fft)
+    coefficients[i][4] = copy(fft*0.15)
+
+print avg_travel_time
 
 # If scenario.beast_api is none, it means the configfile provided was not valid for the particular traffic model type
 if model_manager.is_valid():
@@ -44,13 +59,13 @@ if model_manager.is_valid():
     cost_path_based = model_manager.cost_function.evaluate_BPR_Potential(link_states)
 
     # Cost resulting from link-based Frank-Wolfe
-    #cost_link_based = model_manager.cost_function.evaluate_BPR_Potential_FW(flow_sol)
+    cost_link_based = model_manager.cost_function.evaluate_BPR_Potential_FW(flow_sol)
 
     print "\n"
     link_states.print_all()
     print "\n", flow_sol
     print "path-based cost: ", cost_path_based
-    #print "link-based cost: ", cost_link_based
+    print "link-based cost: ", cost_link_based
 
 
 # kill jvm
