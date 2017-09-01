@@ -12,10 +12,9 @@ class BeATS_Model_Manager_class(Abstract_Model_Manager_class):
         self.dt = dt
 
     # This overrides the evaluate function in the abstract class. Returns a Path_Cost object of costs on paths
-    def evaluate(self, demand_assignment, dt, T, initial_state = None):
+    def evaluate(self, demand_assignment, sim_dt, time_horizon, initial_state=None):
 
         comm_id = 1
-        time_horizon = 3600.0
         start_time = 0.0
         path_cost_dt = 60.0
         path_cost_n = demand_assignment.get_num_time_step()  # int(time_horizon/path_cost_dt)
@@ -41,7 +40,7 @@ class BeATS_Model_Manager_class(Abstract_Model_Manager_class):
             api.set_demand_on_path_in_vph(path_id, comm_id, start_time, demand_dt, java_array)
 
         # run BeATS
-        api.run(start_time, time_horizon)
+        api.run(float(start_time), float(time_horizon))
 
         # extract the path costs
         path_costs = Path_Costs_class(path_cost_n, path_cost_dt)
