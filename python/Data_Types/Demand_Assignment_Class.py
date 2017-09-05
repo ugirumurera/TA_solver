@@ -445,19 +445,23 @@ class Demand_Assignment_class():
 
     # Creates a vector out of the demand_assignment values
     def vector_assignment(self):
-        return [item for sublist in self.__assignment.values() for item in sublist]
+        a = OrderedDict(sorted(self.__assignment.items()))
+        return [item for sublist in a.values() for item in sublist]
         #return np.concatenate(self.__assignment.values())
 
     def set_demand_with_vector(self, demand_vector):
         a, b = 0, self.__num_time_steps -1
-        for key in self.__assignment.keys():
+        assdemand = OrderedDict(sorted(self.__assignment.items()))
+        for key in assdemand.keys():
             if a == b:
-                self.__assignment[key][0] = deepcopy(demand_vector[a])
+                assdemand[0] = deepcopy(demand_vector[a])
             else:
                 row = demand_vector[a:(b+1)]
                 self.__assignment[key] = copy(row)
             a += self.__num_time_steps
             b += self.__num_time_steps
+
+        self.__assignment = deepcopy(assdemand)
 
     def get_time_step(self,time):
         if self.__dt is not None:

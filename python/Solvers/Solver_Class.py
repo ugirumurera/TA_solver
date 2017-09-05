@@ -13,14 +13,14 @@ class Solver_class():
 
     #This is the function that actually solves a problem
     #The Dec parameter indicates whether we are going to use decomposition or not
-    def Solver_function(self, num_steps, Dec = False, number_of_subproblems = 1):
+    def Solver_function(self, num_steps, dt, Dec = False, number_of_subproblems = 1):
         #if problem can be solved as an optimization problem:
         assignment_seq = None
         frank_sol = None
 
         #call an optimization algorithm like Frank-Wolfe
         start_time1 = timeit.default_timer()
-        assignment_seq = Path_Based_Frank_Wolfe_Solver(self.model_manager, num_steps)
+        assignment_seq = Path_Based_Frank_Wolfe_Solver(self.model_manager, num_steps, dt)
         elapsed1 = timeit.default_timer() - start_time1
         print ("Sequential Path-based took  %s seconds" % elapsed1)
 
@@ -33,12 +33,13 @@ class Solver_class():
             elapsed1 = timeit.default_timer() - start_time1
             print ("Decomposition Path-based took  %s seconds" % elapsed1)
 
-        '''
+
         print "\n"
         start_time1 = timeit.default_timer()
         frank_sol = Frank_Wolfe_Solver(self.model_manager)
         elapsed1 = timeit.default_timer() - start_time1
         print ("FW link-based took  %s seconds" % elapsed1)
         #Call a algorithm to solve the variational inequality problem - to be developed
+        '''
         
         return assignment_seq, frank_sol

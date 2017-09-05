@@ -1,7 +1,7 @@
 # This class stores costs per path, by summing up the cost per link of a particular path
 
 import numpy as np
-from copy import deepcopy
+from copy import copy, deepcopy
 from collections import OrderedDict
 
 class Path_Costs_class():
@@ -18,6 +18,12 @@ class Path_Costs_class():
 
     def get_all_path_cots(self):
         return self.__path_costs
+
+    def set_path_list(self, path_list):
+        self.__path_list = path_list
+
+    def set_comm_list(self, comm_list):
+        self.__commodity_list = comm_list
 
     # Receives a Link_Costs_Class and demand_assignment objects and returns a path_costs object containing the travel
     # cost per path, where the path_costs is a [(path_id, commodity_id)] = [cost_1, cost_2,...] dictionary
@@ -78,12 +84,13 @@ class Path_Costs_class():
         x = []
         for cost in cost_list:
             x.append(cost)
-        self.__path_costs[(path_id, comm_id)] = x
+        self.__path_costs[(path_id, comm_id)] = copy(x)
 
     # This vector returns the path cost as a vector
     def vector_path_costs(self):
-        a = self.__path_costs.values()
-        return [item for sublist in a for item in sublist]
+        #a = self.__path_costs.values()
+        a = OrderedDict(sorted(self.__path_costs.items()))
+        return [item for sublist in a.values() for item in sublist]
         #return np.concatenate(self.__path_costs.values())
 
     def print_all(self):

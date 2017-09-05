@@ -30,7 +30,7 @@ configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'seven_lin
 coefficients = {0L:[1,0,0,0,1],1L:[1,0,0,0,1],2L:[2,0,0,0,2], 3L:[1,0,0,0,1], 4L:[2,0,0,0,2], 5L:[1,0,0,0,1], 6L:[1,0,0,0,1]}
 
 T = 3600  # Time horizon of interest
-dt = 1200  # Duration of one time_step
+dt = 1800  # Duration of one time_step
 
 model_manager = Link_Model_Manager_class(configfile, connection.gateway, "static", dt, "bpr", coefficients)
 
@@ -39,33 +39,41 @@ num_links = 7
 avg_travel_time = np.zeros(num_links)
 
 for i in range(num_links):
-    fft = 1000/model_manager.beats_api.get_link_with_id(long(i)).get_ffspeed_mps()
+    #fft = 1000/model_manager.beats_api.get_link_with_id(long(i)).get_ffspeed_mps()
+    fft= model_manager.beats_api.get_link_with_id(long(i)).getFull_length() \
+                         / model_manager.beats_api.get_link_with_id(long(i)).get_ffspeed_mps()
     avg_travel_time[i] = model_manager.beats_api.get_link_with_id(long(i)).getFull_length()\
                       /model_manager.beats_api.get_link_with_id(long(i)).get_ffspeed_mps()
     coefficients[i][0] = copy(fft)
     coefficients[i][4] = copy(fft*0.15)
 
-print avg_travel_time
+#print avg_travel_time
 
 # If scenario.beast_api is none, it means the configfile provided was not valid for the particular traffic model type
 if model_manager.is_valid():
     num_steps = T/dt
 
     scenario_solver = Solver_class(model_manager)
-    assignment, flow_sol = scenario_solver.Solver_function(num_steps)
+    assignment, flow_sol = scenario_solver.Solver_function(num_steps, dt)
+
+    assignment.print_all()
+
+    path_costs = model_manager.evaluate(assignment, dt, T)
+
+    path_costs.print_all()
 
     # Cost resulting from the path_based Frank-Wolfe
     link_states = model_manager.traffic_model.Run_Model(assignment, None, dt, T)
     cost_path_based = model_manager.cost_function.evaluate_BPR_Potential(link_states)
 
     # Cost resulting from link-based Frank-Wolfe
-    cost_link_based = model_manager.cost_function.evaluate_BPR_Potential_FW(flow_sol)
+    #cost_link_based = model_manager.cost_function.evaluate_BPR_Potential_FW(flow_sol)
 
     print "\n"
     link_states.print_all()
     print "\n", flow_sol
     print "path-based cost: ", cost_path_based
-    print "link-based cost: ", cost_link_based
+    #print "link-based cost: ", cost_link_based
 
 
 # kill jvm

@@ -13,12 +13,16 @@ class BeATS_Model_Manager_class(Abstract_Model_Manager_class):
 
     # This overrides the evaluate function in the abstract class. Returns a Path_Cost object of costs on paths
     def evaluate(self, demand_assignment, sim_dt, time_horizon, initial_state=None):
+        #print "\n"
+
+        #demand_assignment.print_all()
 
         comm_id = 1
         start_time = 0.0
-        path_cost_dt = 60.0
+        #path_cost_dt = 60.0
+        path_cost_dt = float(sim_dt)
         path_cost_n = demand_assignment.get_num_time_step()  # int(time_horizon/path_cost_dt)
-        demand_dt = 1800.0
+        demand_dt = float(sim_dt)
         demand_n = int(time_horizon/demand_dt)
 
         api = self.beats_api
@@ -43,9 +47,15 @@ class BeATS_Model_Manager_class(Abstract_Model_Manager_class):
         api.run(float(start_time), float(time_horizon))
 
         # extract the path costs
-        path_costs = Path_Costs_class(path_cost_n, path_cost_dt)
+        path_costs = Path_Costs_class(path_cost_n, demand_dt)
+        path_costs.set_path_list(demand_assignment.get_path_list())
+        path_costs.set_comm_list(demand_assignment.get_commodity_list())
+        count = 0
+        cost_dict = {}
         for path_data in api.get_output_data():
             cost_list = path_data.compute_travel_time_for_start_times(start_time, path_cost_dt, demand_n)
             path_costs.set_costs_path_commodity(path_data.getPathId(), comm_id, cost_list)
+            cost_dict[path_data.getPathId()] = list(cost_list)
+            count += 1
 
         return path_costs
