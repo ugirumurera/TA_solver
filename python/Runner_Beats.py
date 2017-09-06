@@ -13,7 +13,7 @@ conn = Java_Connection()
 
 this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 #configfile = os.path.join(this_folder, os.path.pardir, os.path.pardir, 'configfiles', 'seven_links.xml')
-configfile = os.path.join(this_folder, os.path.pardir, os.path.pardir, 'configfiles', 'three_links.xml')
+configfile = os.path.join(this_folder, os.path.pardir, os.path.pardir, 'configfiles', 'seven_links.xml')
 Beats_dt = 2
 model_manager = BeATS_Model_Manager_class(configfile, conn.gateway, Beats_dt)
 
@@ -37,3 +37,6 @@ if(model_manager.is_valid()):
 
     plt.figure(2)
     path_costs.plot_costs()
+
+# kill jvm
+conn.close()
