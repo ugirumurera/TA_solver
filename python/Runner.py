@@ -15,10 +15,7 @@ from Solvers.Solver_Class import Solver_class
 from Model_Manager.Link_Model_Manager import Link_Model_Manager_class
 from Java_Connection import Java_Connection
 from copy import copy
-
-# ==========================================================================================
-# This code is used on any Windows systems to self start the Entry_Point_BeATS java code
-# This code launches a java server that allow to use Beasts java object
+import matplotlib.pyplot as plt
 import os
 import inspect
 
@@ -56,12 +53,18 @@ if model_manager.is_valid():
     scenario_solver = Solver_class(model_manager)
     assignment, flow_sol = scenario_solver.Solver_function(num_steps, dt)
 
-    assignment.print_all()
+    plt.figure(1)
+    assignment.plot_demand()
 
     path_costs = model_manager.evaluate(assignment, dt, T)
 
     path_costs.print_all()
 
+    assignment.print_all()
+    plt.figure(2)
+    path_costs.plot_costs()
+
+    plt.show()
     # Cost resulting from the path_based Frank-Wolfe
     link_states = model_manager.traffic_model.Run_Model(assignment, None, dt, T)
     cost_path_based = model_manager.cost_function.evaluate_BPR_Potential(link_states)

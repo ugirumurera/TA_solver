@@ -1,8 +1,8 @@
 # This is the model manager for link-based models
-
+from __future__ import division
 from Abstract_Model_Manager import Abstract_Model_Manager_class
 from Data_Types.Path_Costs_Class import Path_Costs_class
-
+import numpy as np
 
 class BeATS_Model_Manager_class(Abstract_Model_Manager_class):
 
@@ -52,10 +52,25 @@ class BeATS_Model_Manager_class(Abstract_Model_Manager_class):
         path_costs.set_comm_list(demand_assignment.get_commodity_list())
         count = 0
         cost_dict = {}
+        #print "the size of the output is ", (len(api.get_output_data()))
         for path_data in api.get_output_data():
+            path_id = path_data.getPathId()
             cost_list = path_data.compute_travel_time_for_start_times(start_time, path_cost_dt, demand_n)
             path_costs.set_costs_path_commodity(path_data.getPathId(), comm_id, cost_list)
-            cost_dict[path_data.getPathId()] = list(cost_list)
+            #print "path id ", path_data.getPathId(), " cost ", cost_list
+            '''
+            if path_id not in cost_dict.keys():
+                cost_dict[path_data.getPathId()] = np.zeros(3)
+            cost_dict[path_id][0] += cost_list[0]
+            cost_dict[path_id][1] += cost_list[1]
+            cost_dict[path_id][2] += 1
+            '''
             count += 1
-
+        '''
+        for key in cost_dict.keys():
+            cost_dict[key][0] = cost_dict[key][0]/cost_dict[key][2]
+            cost_dict[key][1] = cost_dict[key][1] / cost_dict[key][2]
+            print "avg costs: ", cost_dict[key][0:2]
+        '''
+        
         return path_costs

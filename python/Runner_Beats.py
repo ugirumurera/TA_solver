@@ -7,6 +7,7 @@ from Data_Types.Demand_Assignment_Class import Demand_Assignment_class
 from Data_Types.Path_Costs_Class import Path_Costs_class
 import numpy as np
 import time
+import matplotlib.pyplot as plt
 
 conn = Java_Connection()
 
@@ -30,3 +31,9 @@ if(model_manager.is_valid()):
 
     print "\n"
     path_costs.print_all()
+
+    plt.figure(1)
+    assignment.plot_demand()
+
+    plt.figure(2)
+    path_costs.plot_costs()

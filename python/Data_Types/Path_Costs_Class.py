@@ -3,6 +3,7 @@
 import numpy as np
 from copy import copy, deepcopy
 from collections import OrderedDict
+import matplotlib.pyplot as plt
 
 class Path_Costs_class():
     # To initialize the Assignment Array, the constructor has to receive a path_list dictionary,, a list of all commodities and
@@ -97,3 +98,22 @@ class Path_Costs_class():
         for key in self.__path_costs.keys():
             for k in range(self.__num_time_steps):
                 print "path ", key[0], " commodity ", key[1], " time step ", k, " cost ", self.__path_costs[key][k]
+
+    def plot_costs(self):
+        sub_index = len(self.__path_costs.keys())*100+10+1
+
+        plt.title('Path Costs')
+
+        # Sort assignment keys to ensure ordering in plots
+        sorted_demand = OrderedDict(sorted(self.__path_costs.items()))
+        Horizon = (self.__num_time_steps +1)*self.__dt
+        y_axis = np.arange(0., Horizon, self.__dt)
+
+        for key in sorted_demand.keys():
+            plt.subplot(sub_index)
+            x_axis = [self.__path_costs[key][0]]+ list(self.__path_costs[key])
+            plt.step(y_axis, x_axis)
+            plt.ylabel("path "+ str(key[0]))
+            sub_index += 1
+
+        plt.show()

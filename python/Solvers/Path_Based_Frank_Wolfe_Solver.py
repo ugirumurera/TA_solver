@@ -195,6 +195,7 @@ def all_or_nothing(model_manager, assignment, od, initial_state = None, dt = Non
         demand_size = len(demand_api)
 
         for i in range(num_steps):
+            min_path_id = -1
             paths_demand = dict()
             for path in o.get_subnetworks():
                 if min_path_id == -1:

@@ -5,6 +5,7 @@
 import numpy as np
 from copy import deepcopy, copy
 from collections import OrderedDict
+import matplotlib.pyplot as plt
 
 class Demand_Assignment_class():
 
@@ -451,17 +452,17 @@ class Demand_Assignment_class():
 
     def set_demand_with_vector(self, demand_vector):
         a, b = 0, self.__num_time_steps -1
-        assdemand = OrderedDict(sorted(self.__assignment.items()))
-        for key in assdemand.keys():
+        # Sort the assignment to ensure same vector every time this function is called
+        sorted_demand = OrderedDict(sorted(self.__assignment.items()))
+
+        for key in sorted_demand.keys():
             if a == b:
-                assdemand[0] = deepcopy(demand_vector[a])
+                self.__assignment[0] = deepcopy(demand_vector[a])
             else:
                 row = demand_vector[a:(b+1)]
                 self.__assignment[key] = copy(row)
             a += self.__num_time_steps
             b += self.__num_time_steps
-
-        self.__assignment = deepcopy(assdemand)
 
     def get_time_step(self,time):
         if self.__dt is not None:
@@ -473,3 +474,20 @@ class Demand_Assignment_class():
         for key in self.__assignment.keys():
             for k in range(self.__num_time_steps):
                 print "path ", key[0], " commodity ", key[1], " time step ", k, " demand ", self.__assignment[key][k]
+
+    def plot_demand(self):
+        sub_index = len(self.__assignment.keys())*100+10+1
+        # Sort assignment keys to ensure ordering in plots
+        sorted_demand = OrderedDict(sorted(self.__assignment.items()))
+        Horizon = (self.__num_time_steps +1)*self.__dt
+        y_axis = np.arange(0., Horizon, self.__dt)
+
+        for key in sorted_demand.keys():
+            plt.subplot(sub_index)
+            x_axis = [self.__assignment[key][0]]+ list(self.__assignment[key])
+            plt.step(y_axis, x_axis)
+            ylabel = "path "+ str(key[0]) + " (vh)"
+            plt.ylabel(ylabel)
+            sub_index += 1
+
+        plt.show()
