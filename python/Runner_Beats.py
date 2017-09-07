@@ -14,16 +14,16 @@ conn = Java_Connection()
 this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 #configfile = os.path.join(this_folder, os.path.pardir, os.path.pardir, 'configfiles', 'seven_links.xml')
 configfile = os.path.join(this_folder, os.path.pardir, os.path.pardir, 'configfiles', 'seven_links.xml')
-Beats_dt = 2
-model_manager = BeATS_Model_Manager_class(configfile, conn.gateway, Beats_dt)
+sim_dt = 2
+model_manager = BeATS_Model_Manager_class(configfile, conn.gateway, sim_dt)
 
 T = 3600  # Time horizon of interest
-dt = 1800  # Duration of one time_step
+sampling_dt = 1800  # Duration of one time_step
 if(model_manager.is_valid()):
-    num_steps = T/dt
+    num_steps = T/sampling_dt
 
     scenario_solver = Solver_class(model_manager)
-    assignment, flow_sol = scenario_solver.Solver_function(num_steps, dt)
+    assignment, flow_sol = scenario_solver.Solver_function(num_steps, sampling_dt)
 
     assignment.print_all()
 
