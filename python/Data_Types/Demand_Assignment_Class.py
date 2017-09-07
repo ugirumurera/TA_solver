@@ -471,7 +471,8 @@ class Demand_Assignment_class():
             return 0
 
     def print_all(self):
-        for key in self.__assignment.keys():
+        sorted_demand = OrderedDict(sorted(self.__assignment.items()))
+        for key in sorted_demand.keys():
             for k in range(self.__num_time_steps):
                 print "path ", key[0], " commodity ", key[1], " time step ", k, " demand ", self.__assignment[key][k]
 

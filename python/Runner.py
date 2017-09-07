@@ -27,9 +27,11 @@ configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'seven_lin
 coefficients = {0L:[1,0,0,0,1],1L:[1,0,0,0,1],2L:[2,0,0,0,2], 3L:[1,0,0,0,1], 4L:[2,0,0,0,2], 5L:[1,0,0,0,1], 6L:[1,0,0,0,1]}
 
 T = 3600  # Time horizon of interest
-dt = 300  # Duration of one time_step
+dt = 1800  # Duration of one time_step
 
-model_manager = Link_Model_Manager_class(configfile, connection.gateway, "static", dt, "bpr", coefficients)
+sim_dt = copy(dt)
+
+model_manager = Link_Model_Manager_class(configfile, connection.gateway, "static", sim_dt, "bpr", coefficients)
 
 #Estimating bpr coefficients with beats
 num_links = 7
@@ -55,12 +57,13 @@ if model_manager.is_valid():
 
     plt.figure(1)
     assignment.plot_demand()
+    assignment.print_all()
 
     path_costs = model_manager.evaluate(assignment, dt, T)
 
+    print "\n"
     path_costs.print_all()
 
-    assignment.print_all()
     plt.figure(2)
     path_costs.plot_costs()
 
@@ -72,12 +75,12 @@ if model_manager.is_valid():
     # Cost resulting from link-based Frank-Wolfe
     #cost_link_based = model_manager.cost_function.evaluate_BPR_Potential_FW(flow_sol)
 
-    print "\n"
-    link_states.print_all()
+    #print "\n"
+    #link_states.print_all()
     print "\n", flow_sol
     print "path-based cost: ", cost_path_based
     #print "link-based cost: ", cost_link_based
 
 
 # kill jvm
-connection.close()
+#connection.close()

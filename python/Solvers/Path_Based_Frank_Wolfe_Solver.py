@@ -29,12 +29,16 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, num_steps, dt, past=10, max_ite
         demand_api = [item * 3600 for item in o.get_total_demand_vps().getValues()]
         demand_api = np.asarray(demand_api)
         demand_size = len(demand_api)
+        demand_dt = o.get_total_demand_vps().getDt()
 
         # Before assigning the demand, we want to make sure it can be properly distributed given the number of
         # Time step in our problem
-        if demand_size > num_steps or num_steps % len(demand_api) != 0:
+        if (dt > demand_dt or demand_dt % dt > 0) and (demand_size > 1):
             print "Demand specified in xml cannot not be properly divided among time steps"
             return
+        #if demand_size > num_steps or num_steps % len(demand_api) != 0:
+            #print "Demand specified in xml cannot not be properly divided among time steps"
+            #return
 
         for path in o.get_subnetworks():
             path_list[path.getId()] = path.get_link_ids()
@@ -42,7 +46,10 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, num_steps, dt, past=10, max_ite
                 #Creates an array of demands from the xml demand profile to be assignmed into the demand assignment
                 ass_demand = np.zeros(num_steps)
                 for i in range(num_steps):
-                    index = int(i / (num_steps/demand_size))
+                    #index = int(i / (num_steps/demand_size))
+                    index = int(i*dt/demand_dt)
+                    if index > demand_size-1:
+                        index = demand_size-1
                     ass_demand[i] = demand_api[index]
 
                 assignment.set_all_demands_on_path_comm(path.getId(),comm_id, ass_demand)
@@ -186,7 +193,6 @@ def all_or_nothing(model_manager, assignment, od, initial_state = None, dt = Non
 
     # For each OD, we are going to move its demand to the shortest path at current iteration
     for o in od:
-        min_path_id = -1
         min_cost = 0
         comm_id = o.get_commodity_id()
 

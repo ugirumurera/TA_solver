@@ -95,7 +95,8 @@ class Path_Costs_class():
         #return np.concatenate(self.__path_costs.values())
 
     def print_all(self):
-        for key in self.__path_costs.keys():
+        ordered_costs = OrderedDict(sorted(self.__path_costs.items()))
+        for key in ordered_costs.keys():
             for k in range(self.__num_time_steps):
                 print "path ", key[0], " commodity ", key[1], " time step ", k, " cost ", self.__path_costs[key][k]
 
