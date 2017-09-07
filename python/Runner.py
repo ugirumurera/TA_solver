@@ -27,7 +27,7 @@ configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'seven_lin
 coefficients = {0L:[1,0,0,0,1],1L:[1,0,0,0,1],2L:[2,0,0,0,2], 3L:[1,0,0,0,1], 4L:[2,0,0,0,2], 5L:[1,0,0,0,1], 6L:[1,0,0,0,1]}
 
 T = 3600  # Time horizon of interest
-dt = 1800  # Duration of one time_step
+dt = 300  # Duration of one time_step
 
 model_manager = Link_Model_Manager_class(configfile, connection.gateway, "static", dt, "bpr", coefficients)
 
