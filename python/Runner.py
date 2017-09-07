@@ -80,4 +80,4 @@ if model_manager.is_valid():
 
 
 # kill jvm
-connection.close()
+# connection.close()

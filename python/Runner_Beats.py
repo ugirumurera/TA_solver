@@ -39,4 +39,4 @@ if(model_manager.is_valid()):
     path_costs.plot_costs()
 
 # kill jvm
-conn.close()
+# conn.close()
