@@ -27,9 +27,11 @@ configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'seven_lin
 coefficients = {0L:[1,0,0,0,1],1L:[1,0,0,0,1],2L:[2,0,0,0,2], 3L:[1,0,0,0,1], 4L:[2,0,0,0,2], 5L:[1,0,0,0,1], 6L:[1,0,0,0,1]}
 
 T = 3600  # Time horizon of interest
-dt = 300  # Duration of one time_step
+sim_dt = 1800  # Duration of one time_step
 
-model_manager = Link_Model_Manager_class(configfile, connection.gateway, "static", dt, "bpr", coefficients)
+sampling_dt = copy(sim_dt)
+
+model_manager = Link_Model_Manager_class(configfile, connection.gateway, "static", sim_dt, "bpr", coefficients)
 
 #Estimating bpr coefficients with beats
 num_links = 7
@@ -48,36 +50,37 @@ for i in range(num_links):
 
 # If scenario.beast_api is none, it means the configfile provided was not valid for the particular traffic model type
 if model_manager.is_valid():
-    num_steps = T/dt
+    num_steps = T/sampling_dt
 
     scenario_solver = Solver_class(model_manager)
-    assignment, flow_sol = scenario_solver.Solver_function(num_steps, dt)
+    assignment, flow_sol = scenario_solver.Solver_function(num_steps, sampling_dt)
 
     plt.figure(1)
     assignment.plot_demand()
+    assignment.print_all()
 
-    path_costs = model_manager.evaluate(assignment, dt, T)
+    path_costs = model_manager.evaluate(assignment, sampling_dt, T)
 
+    print "\n"
     path_costs.print_all()
 
-    assignment.print_all()
     plt.figure(2)
     path_costs.plot_costs()
 
     plt.show()
     # Cost resulting from the path_based Frank-Wolfe
-    link_states = model_manager.traffic_model.Run_Model(assignment, None, dt, T)
-    cost_path_based = model_manager.cost_function.evaluate_BPR_Potential(link_states)
+    #link_states = model_manager.traffic_model.Run_Model(assignment, None, sampling_dt, T)
+    #cost_path_based = model_manager.cost_function.evaluate_BPR_Potential(link_states)
 
     # Cost resulting from link-based Frank-Wolfe
     #cost_link_based = model_manager.cost_function.evaluate_BPR_Potential_FW(flow_sol)
 
-    print "\n"
-    link_states.print_all()
-    print "\n", flow_sol
-    print "path-based cost: ", cost_path_based
+    #print "\n"
+    #link_states.print_all()
+    #print "\n", flow_sol
+    #print "path-based cost: ", cost_path_based
     #print "link-based cost: ", cost_link_based
 
 
 # kill jvm
-# connection.close()
+connection.close()

@@ -44,7 +44,6 @@ class Java_Connection():
     def openLinux(self, jar_file_name, port_number):
 
         pid = os.fork()
-        # os_pid1 = os.getpid()
 
         if pid == 0:
             self.pid = os.getpid()
@@ -56,7 +55,8 @@ class Java_Connection():
 
     def close(self):
         if platform.system() == "Windows":
-            self.process.terminate()
+            #self.process.terminate()
+            os.kill(self.process.pid, signal.CTRL_C_EVENT)
         elif platform.system() == "Linux":
             os.kill(0, signal.SIGTERM)
         else:

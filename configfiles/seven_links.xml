@@ -39,7 +39,7 @@
 		</roadconnections>
 
 		<roadparams>
-			<roadparam id="1" capacity="1000" speed="60" jam_density="80"/>
+			<roadparam id="1" capacity="500" speed="60" jam_density="80"/>
 		</roadparams>
 
 	</network>
@@ -51,9 +51,9 @@
 	</subnetworks>
 
 	<demands>
-		<demand commodity_id="1" subnetwork="1" start_time="0" dt="1800">50,200</demand>
-		<demand commodity_id="1" subnetwork="2" start_time="0" dt="1800">50,500</demand>
-		<demand commodity_id="1" subnetwork="3" start_time="0" dt="1800">500</demand>
+		<demand commodity_id="1" subnetwork="1" start_time="0" dt="1800">50</demand>
+		<demand commodity_id="1" subnetwork="2" start_time="0" dt="1800">50</demand>
+		<demand commodity_id="1" subnetwork="3" start_time="0" dt="1800">100</demand>
 	</demands>
 
 </scenario>

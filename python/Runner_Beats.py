@@ -12,8 +12,7 @@ import matplotlib.pyplot as plt
 conn = Java_Connection()
 
 this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-#configfile = os.path.join(this_folder, os.path.pardir, os.path.pardir, 'configfiles', 'seven_links.xml')
-configfile = os.path.join(this_folder, os.path.pardir, os.path.pardir, 'configfiles', 'seven_links.xml')
+configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'seven_links.xml')
 sim_dt = 2
 model_manager = BeATS_Model_Manager_class(configfile, conn.gateway, sim_dt)
 
@@ -27,7 +26,7 @@ if(model_manager.is_valid()):
 
     assignment.print_all()
 
-    path_costs = model_manager.evaluate(assignment, dt, T)
+    path_costs = model_manager.evaluate(assignment, sampling_dt, T)
 
     print "\n"
     path_costs.print_all()
@@ -39,4 +38,4 @@ if(model_manager.is_valid()):
     path_costs.plot_costs()
 
 # kill jvm
-# conn.close()
+conn.close()
