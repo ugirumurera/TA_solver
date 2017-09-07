@@ -15,7 +15,7 @@ class Abstract_Model_Manager_class():
         self.beats_api.load(configfile)
 
     def is_valid(self):
-        return self.beats_api is not None
+        return( self.beats_api is not None) and (self.beats_api.has_scenario())
 
     # Takes in demand per path, returns costs per path
     @abstractmethod
