@@ -13,17 +13,18 @@ conn = Java_Connection()
 
 this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'seven_links.xml')
-sim_dt = 2
+sim_dt = 2      # This is the dt used by the traffic model
 model_manager = BeATS_Model_Manager_class(configfile, conn.gateway, sim_dt)
 
 T = 3600  # Time horizon of interest
-sampling_dt = 1800  # Duration of one time_step
+sampling_dt = 1800  # Duration of one time_step for the solver
 if(model_manager.is_valid()):
     num_steps = T/sampling_dt
 
     scenario_solver = Solver_class(model_manager)
     assignment, flow_sol = scenario_solver.Solver_function(num_steps, sampling_dt)
 
+    print "\n"
     assignment.print_all()
 
     path_costs = model_manager.evaluate(assignment, sampling_dt, T)
