@@ -26,4 +26,10 @@ class Static_Traffic_State_class(Abstract_Traffic_State_class):
 
     # Print the flow value
     def print_state(self):
-        print self.flow
+        print "flow ", self.flow
+
+    #Check if the flow is negative
+    def is_negative(self):
+        if self.flow < 0:
+            return True
+        return False

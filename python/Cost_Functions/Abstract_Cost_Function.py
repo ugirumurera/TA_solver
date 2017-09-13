@@ -1,7 +1,7 @@
 #Abstract base class for the Cost Functions
 #All subclasses have to implement all the abstract methods
 
-from abc import ABCMeta, abstractmethod,abstractproperty
+from abc import ABCMeta, abstractmethod
 
 class Abstract_Cost_Function:
     __metaclass__ = ABCMeta
