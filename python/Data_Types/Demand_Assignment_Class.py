@@ -457,7 +457,7 @@ class Demand_Assignment_class():
 
         for key in sorted_demand.keys():
             if a == b:
-                self.__assignment[0] = deepcopy(demand_vector[a])
+                self.__assignment[key][0] = deepcopy(demand_vector[a])
             else:
                 row = demand_vector[a:(b+1)]
                 self.__assignment[key] = copy(row)
@@ -482,13 +482,15 @@ class Demand_Assignment_class():
         sorted_demand = OrderedDict(sorted(self.__assignment.items()))
         Horizon = (self.__num_time_steps +1)*self.__dt
         y_axis = np.arange(0., Horizon, self.__dt)
+        plt.title("Demand Assignment")
 
         for key in sorted_demand.keys():
             plt.subplot(sub_index)
             x_axis = [self.__assignment[key][0]]+ list(self.__assignment[key])
-            plt.step(y_axis, x_axis)
-            ylabel = "path "+ str(key[0]) + " (vh)"
+            plt.step(y_axis, x_axis,linewidth= 5)
+            ylabel = "path "+ str(key[0]) + " Demand (vh)"
             plt.ylabel(ylabel)
+            plt.xlabel("Time (s)")
             sub_index += 1
 
         plt.show()

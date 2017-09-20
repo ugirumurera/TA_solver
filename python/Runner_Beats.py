@@ -17,7 +17,7 @@ sim_dt = 2      # This is the dt used by the traffic model
 model_manager = BeATS_Model_Manager_class(configfile, conn.gateway, sim_dt)
 
 T = 3600  # Time horizon of interest
-sampling_dt = 1800  # Duration of one time_step for the solver
+sampling_dt = 3600  # Duration of one time_step for the solver
 if(model_manager.is_valid()):
     num_steps = T/sampling_dt
 

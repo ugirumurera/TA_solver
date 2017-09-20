@@ -100,6 +100,13 @@ class Path_Costs_class():
             for k in range(self.__num_time_steps):
                 print "path ", key[0], " commodity ", key[1], " time step ", k, " cost ", self.__path_costs[key][k]
 
+    #Prints out the travel costs in seconds
+    def print_all_in_seconds(self):
+        ordered_costs = OrderedDict(sorted(self.__path_costs.items()))
+        for key in ordered_costs.keys():
+            for k in range(self.__num_time_steps):
+                print "path ", key[0], " commodity ", key[1], " time step ", k, " cost ", self.__path_costs[key][k]*3600
+
     def plot_costs(self):
         sub_index = len(self.__path_costs.keys())*100+10+1
 
@@ -109,12 +116,37 @@ class Path_Costs_class():
         sorted_demand = OrderedDict(sorted(self.__path_costs.items()))
         Horizon = (self.__num_time_steps +1)*self.__dt
         y_axis = np.arange(0., Horizon, self.__dt)
+        plt.title("Path Travel Cost")
 
         for key in sorted_demand.keys():
             plt.subplot(sub_index)
             x_axis = [self.__path_costs[key][0]]+ list(self.__path_costs[key])
-            plt.step(y_axis, x_axis)
-            plt.ylabel("path "+ str(key[0]))
+            plt.step(y_axis, x_axis,linewidth= 5)
+            plt.ylabel("path "+ str(key[0]) + " cost (h)")
+            plt.xlabel("Time (s)")
+            sub_index += 1
+
+        plt.show()
+
+
+    def plot_costs_in_seconds(self):
+        sub_index = len(self.__path_costs.keys())*100+10+1
+
+        plt.title('Path Costs')
+
+        # Sort assignment keys to ensure ordering in plots
+        sorted_demand = OrderedDict(sorted(self.__path_costs.items()))
+        Horizon = (self.__num_time_steps +1)*self.__dt
+        x_axis = np.arange(0., Horizon, self.__dt)
+        plt.title("Path Travel Cost")
+
+        for key in sorted_demand.keys():
+            plt.subplot(sub_index)
+            y_axis = [self.__path_costs[key][0]]+ list(self.__path_costs[key])
+            y_axis = [i * 3600 for i in y_axis]
+            plt.step(x_axis, y_axis,linewidth= 5)
+            plt.ylabel("path "+ str(key[0]) + " cost (s)")
+            plt.xlabel("Time (s)")
             sub_index += 1
 
         plt.show()

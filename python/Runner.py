@@ -19,6 +19,8 @@ import matplotlib.pyplot as plt
 import os
 import inspect
 
+plt.rcParams.update({'font.size': 18})
+
 connection = Java_Connection()
 
 # Contains local path to input configfile, for the three_links.xml network
@@ -27,9 +29,9 @@ configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'seven_lin
 coefficients = {0L:[1,0,0,0,1],1L:[1,0,0,0,1],2L:[2,0,0,0,2], 3L:[1,0,0,0,1], 4L:[2,0,0,0,2], 5L:[1,0,0,0,1], 6L:[1,0,0,0,1]}
 
 T = 3600  # Time horizon of interest
-sim_dt = 1800  # Duration of one time_step for the traffic model
+sim_dt = 3600  # Duration of one time_step for the traffic model
 
-sampling_dt = copy(sim_dt)      # Duration of time_step for the solver, in this case it is equal to sim_dt
+sampling_dt = 1800     # Duration of time_step for the solver, in this case it is equal to sim_dt
 
 model_manager = Link_Model_Manager_class(configfile, connection.gateway, "static", sim_dt, "bpr", coefficients)
 
@@ -39,10 +41,10 @@ avg_travel_time = np.zeros(num_links)
 
 for i in range(num_links):
     #fft = 1000/model_manager.beats_api.get_link_with_id(long(i)).get_ffspeed_mps()
-    fft= model_manager.beats_api.get_link_with_id(long(i)).getFull_length() \
-                         / model_manager.beats_api.get_link_with_id(long(i)).get_ffspeed_mps()
-    avg_travel_time[i] = model_manager.beats_api.get_link_with_id(long(i)).getFull_length()\
-                      /model_manager.beats_api.get_link_with_id(long(i)).get_ffspeed_mps()
+    fft= (model_manager.beats_api.get_link_with_id(long(i)).getFull_length() \
+                         / model_manager.beats_api.get_link_with_id(long(i)).get_ffspeed_mps())/3600
+    #avg_travel_time[i] = model_manager.beats_api.get_link_with_id(long(i)).getFull_length()\
+                      #/model_manager.beats_api.get_link_with_id(long(i)).get_ffspeed_mps()
     coefficients[i][0] = copy(fft)
     coefficients[i][4] = copy(fft*0.15)
 
@@ -62,12 +64,12 @@ if model_manager.is_valid():
     path_costs = model_manager.evaluate(assignment, sampling_dt, T)
 
     print "\n"
-    path_costs.print_all()
+    path_costs.print_all_in_seconds()
 
     plt.figure(2)
-    path_costs.plot_costs()
+    path_costs.plot_costs_in_seconds()
 
-    plt.show()
+    #plt.show()
     # Cost resulting from the path_based Frank-Wolfe
     #link_states = model_manager.traffic_model.Run_Model(assignment, None, sampling_dt, T)
     #cost_path_based = model_manager.cost_function.evaluate_BPR_Potential(link_states)
