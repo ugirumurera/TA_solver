@@ -38,6 +38,7 @@ class Static_Model_Class(Abstract_Traffic_Model_class):
         num_steps = T/dt
         link_states = State_Trajectory_class( list(self.beats_api.get_link_ids()),
                                                  list(self.beats_api.get_commodity_ids()), num_steps, dt)
+
         for key in demand_assignments.get_all_demands().keys():
             route = demand_assignments.get_path_list()[key[0]]
             for link_id in route:
@@ -46,9 +47,12 @@ class Static_Model_Class(Abstract_Traffic_Model_class):
                         not (isinstance(link_states.get_state_on_link_comm_time(link_id, key[1], i), Static_Traffic_State_class)):
                         state = Static_Traffic_State_class()
                         link_states.set_state_on_link_comm_time(link_id, key[1], i, state)
+                        capacity = self.beats_api.get_link_with_id(link_id).get_capacity_vps() * 3600
+                        link_states.get_state_on_link_comm_time(link_id, key[1], i).set_capacity(capacity)
 
                     demand_value = demand_assignments.get_demand_at_path_comm_time(key[0], key[1], i*dt)
                     link_states.get_state_on_link_comm_time(link_id, key[1], i).add_flow(demand_value)
+
 
         #link_states.print_all()
 

@@ -69,7 +69,8 @@ class BPR_Function_class(Abstract_Cost_Function):
         for link_id in link_list:
             x = link_states.get_all_states_on_link_comm(link_id, comm_id)
             for i in range(num_steps):
-                flow = x[i].get_flow()
+                # We devide volume by capacity to get the flow
+                flow = x[i].get_flow()/x[i].get_capacity()
                 c = coeff.get(link_id)
                 link_cost = c[0] + flow*(c[1] + flow*(c[2] + flow*(c[3] + c[4]*flow)))
                 link_costs.set_cost_at_link_comm_time(link_id, comm_id,i, link_cost)

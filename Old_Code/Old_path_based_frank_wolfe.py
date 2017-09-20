@@ -42,12 +42,22 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, num_steps, dt, past=10, max_ite
 
         for path in o.get_subnetworks():
             path_list[path.getId()] = path.get_link_ids()
-            demand = np.zeros(num_steps)
-            assignment.set_all_demands_on_path_comm(path.getId(), comm_id, demand)
+            if count == 0:
+                #Creates an array of demands from the xml demand profile to be assignmed into the demand assignment
+                ass_demand = np.zeros(num_steps)
+                for i in range(num_steps):
+                    #index = int(i / (num_steps/demand_size))
+                    index = int(i*dt/demand_dt)
+                    if index > demand_size-1:
+                        index = demand_size-1
+                    ass_demand[i] = demand_api[index]
 
-    assignment, start_cost = all_or_nothing(model_manager, assignment, od, None, dt, dt*num_steps)
-    #elapsed1 = timeit.default_timer() - start_time1
-    #print ("Demand Initialization took  %s seconds" % elapsed1)
+                assignment.set_all_demands_on_path_comm(path.getId(),comm_id, ass_demand)
+                count += 1
+            else:
+                demand = np.zeros(num_steps)
+                assignment.set_all_demands_on_path_comm(path.getId(), comm_id, demand)
+
 
     past_assignment = np.zeros((len(path_list.keys())*num_steps, past), dtype="float64")
 
