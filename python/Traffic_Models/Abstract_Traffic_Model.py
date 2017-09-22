@@ -8,12 +8,9 @@ class Abstract_Traffic_Model_class:
     __metaclass__ = ABCMeta
 
     # The Traffic Class initiates connection to Beats object
-    def __init__(self, beats_api, dt_sec = None):
+    def __init__(self, beats_api):
         self.beats_api = beats_api
-        self.dt_sec = dt_sec
 
-    def get_dt(self):
-        return self.dt_sec
 
     # Validate the scenario loaded from the configuration file.
     # Returns: A boolean. True if the scenario is valid, False otherwise.
@@ -50,7 +47,7 @@ class Abstract_Traffic_Model_class:
 
     '''
     @abstractmethod
-    def Run_Model(self, demand_assignments, initial_state, dt, T):
+    def Run_Model(self, demand_assignments, initial_state, T):
         pass
 
     # Gradient of the model
@@ -60,6 +57,6 @@ class Abstract_Traffic_Model_class:
     # side, the values should be interpreted as variations.
     # Implementation of this function is optional. It enables gradient-based algorithms, however,
     # if no gradient can be provided, then return None.
-    def Model_Gradient(self, demand_assignments, initial_state, dt, T):
+    def Model_Gradient(self, demand_assignments, initial_state, T):
         return None
 

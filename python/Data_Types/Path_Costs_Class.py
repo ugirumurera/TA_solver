@@ -15,7 +15,7 @@ class Path_Costs_class():
         self.__commodity_list = list()
         self.__num_time_steps = num_time_steps
         self.__dt = dt
-        self.__path_costs = OrderedDict()
+        self.__path_costs = {}
 
     def get_all_path_cots(self):
         return self.__path_costs

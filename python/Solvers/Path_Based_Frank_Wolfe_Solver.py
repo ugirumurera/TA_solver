@@ -7,18 +7,19 @@ from copy import copy
 import numpy as np
 import timeit
 
-def Path_Based_Frank_Wolfe_Solver(model_manager, num_steps, dt, past=10, max_iter=1000, eps=1e-8, \
+def Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt, past=10, max_iter=1000, eps=1e-8, \
     q=50, display=1, stop=1e-2):
     # In this case, x_k is a demand assignment object that maps demand to paths
     # Constructing the x_0, the initial demand assignment, where all the demand for an OD is assigned to one path
     # We first create a list of paths from the traffic_scenario
     path_list = dict()
     od = model_manager.beats_api.get_od_info()
+    num_steps = int(T/sampling_dt)
 
     # Initializing the demand assignment
     commodity_list = list(model_manager.beats_api.get_commodity_ids())
     assignment = Demand_Assignment_class(path_list,commodity_list,
-                                         num_steps, dt)
+                                         num_steps, sampling_dt)
 
     start_time1 = timeit.default_timer()
     # Populating the Demand Assignment, based on the paths associated with ODs
@@ -33,7 +34,7 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, num_steps, dt, past=10, max_ite
 
         # Before assigning the demand, we want to make sure it can be properly distributed given the number of
         # Time step in our problem
-        if (dt > demand_dt or demand_dt % dt > 0) and (demand_size > 1):
+        if (sampling_dt > demand_dt or demand_dt % sampling_dt > 0) and (demand_size > 1):
             print "Demand specified in xml cannot not be properly divided among time steps"
             return
         #if demand_size > num_steps or num_steps % len(demand_api) != 0:
@@ -45,7 +46,7 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, num_steps, dt, past=10, max_ite
             demand = np.zeros(num_steps)
             assignment.set_all_demands_on_path_comm(path.getId(), comm_id, demand)
 
-    assignment, start_cost = all_or_nothing(model_manager, assignment, od, None, dt, dt*num_steps)
+    assignment, start_cost = all_or_nothing(model_manager, assignment, od, None, sampling_dt*num_steps)
     #elapsed1 = timeit.default_timer() - start_time1
     #print ("Demand Initialization took  %s seconds" % elapsed1)
 
@@ -54,7 +55,7 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, num_steps, dt, past=10, max_ite
     for i in range(max_iter):
         # All_or_nothing assignment
         start_time1 = timeit.default_timer()
-        y_assignment, current_path_costs = all_or_nothing(model_manager, assignment, od, None, dt, dt*num_steps)
+        y_assignment, current_path_costs = all_or_nothing(model_manager, assignment, od, None, sampling_dt*num_steps)
         elapsed1 = timeit.default_timer() - start_time1
         #print ("All_or_nothing took  %s seconds" % elapsed1)
         # Calculating the error
@@ -95,7 +96,7 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, num_steps, dt, past=10, max_ite
 
         # step 5 of Fukushima
         start_time1 = timeit.default_timer()
-        s = line_search(model_manager, assignment, x_assignment_vector, y_assignment, y_assignment_vector, d, 1e-4)
+        s = line_search(model_manager, assignment, x_assignment_vector, y_assignment, y_assignment_vector, d, 1e-2)
         #s = line_search_original(model_manager, assignment, x_assignment_vector, d)
         #elapsed1 = timeit.default_timer() - start_time1
         #print ("Line_Search took  %s seconds" % elapsed1)
@@ -166,17 +167,17 @@ def Path_Based_Frank_Wolfe_Solver_Dec(traffic_model, cost_function, assignment, 
     return assignment, x_assignment_vector
 
 # This function determines the all_or_nothing demand assignment by putting all OD demand on the shortest path per OD
-def all_or_nothing(model_manager, assignment, od, initial_state = None, dt = None, T = None):
-    path_costs = model_manager.evaluate(assignment, dt, T)
+def all_or_nothing(model_manager, assignment, od, initial_state = None, T = None):
+    sampling_dt = assignment.get_dt()
+    path_costs = model_manager.evaluate(assignment,T, initial_state)
     #path_costs.print_all()
     # Initializing the demand assignment
     commodity_list = assignment.get_commodity_list()
     num_steps = assignment.get_num_time_step()
-    dt = assignment.get_dt()
     path_list = assignment.get_path_list()
     # Below we initialize the all_or_nothing assignment
     y_assignment = Demand_Assignment_class(path_list, commodity_list,
-                                         num_steps, dt)
+                                         num_steps, sampling_dt)
     y_assignment.set_all_demands(assignment.get_all_demands())
 
 
@@ -204,23 +205,23 @@ def all_or_nothing(model_manager, assignment, od, initial_state = None, dt = Non
 
             # Putting all the demand on the minimum cost path
             # First set to zero all demands on all path for commodity comm_id and time_step i
-            y_assignment.set_all_demands_on_comm_time_step(comm_id, i*dt, paths_demand)
+            y_assignment.set_all_demands_on_comm_time_step(comm_id, i*sampling_dt, paths_demand)
             index = int(i / (num_steps / demand_size))
             demand = o.get_total_demand_vps().get_value(index)*3600
-            y_assignment.set_demand_at_path_comm_time(min_path_id, comm_id, i*dt, demand)
+            y_assignment.set_demand_at_path_comm_time(min_path_id, comm_id, i*sampling_dt, demand)
 
     #y_assignment.print_all()
     return y_assignment,path_costs
 
 def line_search(model_manager, x_assignment, x_vector, y_assignment, y_vector, d_vector, eps):
     # alfa = 0 corresponds to when assignment is equal to original assignment x_assignment
-    dt = x_assignment.get_dt()
-    T = dt * x_assignment.get_num_time_step()
+    sampling_dt = x_assignment.get_dt()
+    T = sampling_dt * x_assignment.get_num_time_step()
 
-    g0 = g_function(model_manager, x_assignment, dt, T, d_vector)
+    g0 = g_function(model_manager, x_assignment, T, d_vector)
 
     # alfa = 1 corresponds to when assignment is equal to all_or_nothing assignment y_assignment
-    g1 = g_function(model_manager, y_assignment, dt, T, d_vector)
+    g1 = g_function(model_manager, y_assignment, T, d_vector)
 
     if (g0 > 0 and g1 > 0) or (g0 < 0 and g1 < 0):
         if np.abs(g0) <= np.abs(g1):
@@ -233,16 +234,15 @@ def line_search(model_manager, x_assignment, x_vector, y_assignment, y_vector, d
     # Initializing the demand assignment
     commodity_list = x_assignment.get_commodity_list()
     num_steps = x_assignment.get_num_time_step()
-    dt = x_assignment.get_dt()
     path_list = x_assignment.get_path_list()
 
     while r-l > eps:
         m = (l+r)/2
         m_vector = x_vector + m * d_vector
-        m_assignment = Demand_Assignment_class(path_list, commodity_list, num_steps, dt)
+        m_assignment = Demand_Assignment_class(path_list, commodity_list, num_steps, sampling_dt)
         m_assignment.set_all_demands(x_assignment.get_all_demands())
         m_assignment.set_demand_with_vector(m_vector)
-        g_m = g_function(model_manager, m_assignment, dt, T, d_vector)
+        g_m = g_function(model_manager, m_assignment, T, d_vector)
 
         if (g_m < 0 and np.abs(g_m) > eps and g1 > 0) or (g_m > 0 and np.abs(g_m) > eps and g1 < 0):
             l = copy(m)
@@ -255,9 +255,9 @@ def line_search(model_manager, x_assignment, x_vector, y_assignment, y_vector, d
     return l
 
 
-def g_function(model_manager, assignment, dt, T, d_vector):
+def g_function(model_manager, assignment, T, d_vector):
     #y_vector = assignment.vector_assignment()
-    path_costs = model_manager.evaluate(assignment, dt, T)
+    path_costs = model_manager.evaluate(assignment, T, initial_state=None)
     F_value = path_costs.vector_path_costs()
     return np.dot(F_value, d_vector)
 
