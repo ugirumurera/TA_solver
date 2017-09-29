@@ -18,7 +18,7 @@ class BeATS_Model_Manager_class(Abstract_Model_Manager_class):
 
         comm_id = 1
         start_time = 0.0
-        read_time = demand_assignment.get_dt()/2    #Hack, heuristic, need a state estimator
+        read_time = demand_assignment.get_dt()*(0.0)    #Hack, heuristic, need a state estimator
         #path_cost_dt = 60.0
         path_cost_dt = float(demand_assignment.get_dt())
         path_cost_n = demand_assignment.get_num_time_step()  # int(time_horizon/path_cost_dt)
@@ -61,6 +61,6 @@ class BeATS_Model_Manager_class(Abstract_Model_Manager_class):
             cost_list = path_data.compute_travel_time_for_start_times(read_time, path_cost_dt, demand_n)
             path_costs.set_costs_path_commodity(path_data.getPathId(), comm_id, cost_list)
             #print "path id ", path_data.getPathId(), " cost ", cost_list
-        
+
         
         return path_costs

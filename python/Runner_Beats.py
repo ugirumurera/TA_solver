@@ -8,6 +8,7 @@ from Data_Types.Path_Costs_Class import Path_Costs_class
 import numpy as np
 import time
 import matplotlib.pyplot as plt
+plt.rcParams.update({'font.size': 17})
 
 conn = Java_Connection()
 
@@ -16,7 +17,7 @@ configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'seven_lin
 model_manager = BeATS_Model_Manager_class(configfile, conn.gateway)
 
 T = 3600  # Time horizon of interest
-sampling_dt = 1800  # Duration of one time_step for the solver
+sampling_dt = 600  # Duration of one time_step for the solver
 
 if(model_manager.is_valid()):
     num_steps = T/sampling_dt
