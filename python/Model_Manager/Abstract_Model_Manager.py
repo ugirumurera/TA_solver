@@ -19,5 +19,5 @@ class Abstract_Model_Manager_class():
 
     # Takes in demand per path, returns costs per path
     @abstractmethod
-    def evaluate(self,demand_assignments, initial_state, dt, T):
+    def evaluate(self,demand_assignments, T, initial_state ):
         pass

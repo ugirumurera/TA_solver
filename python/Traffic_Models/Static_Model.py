@@ -8,10 +8,9 @@ from Traffic_States.Static_Traffic_State import Static_Traffic_State_class
 
 class Static_Model_Class(Abstract_Traffic_Model_class):
     #Configfile is needed to initialize the model's scenario via beats_api
-    def __init__(self, beats_api, dt_sec):
-        Abstract_Traffic_Model_class.__init__(self, beats_api, dt_sec)
+    def __init__(self, beats_api):
+        Abstract_Traffic_Model_class.__init__(self, beats_api)
         self.model_type = 's'     #Indicates that this is a static model
-        self.dt = dt_sec
 
         if not self.Validate_Configfile():
             self.beats_api = None
@@ -33,11 +32,12 @@ class Static_Model_Class(Abstract_Traffic_Model_class):
 
     # Overides the Run_Model function in the abstract class
     # Returns an array of link states where each entry indicates the flow per link, per commodity and per time step
-    def Run_Model(self, demand_assignments, initial_state = None, dt = None, T = None):
+    def Run_Model(self, demand_assignments, initial_state = None,T = None):
         # Initialize the State_Trajectory object
-        num_steps = T/dt
+        sampling_dt = demand_assignments.get_dt()
+        num_steps = T/sampling_dt
         link_states = State_Trajectory_class( list(self.beats_api.get_link_ids()),
-                                                 list(self.beats_api.get_commodity_ids()), num_steps, dt)
+                                                 list(self.beats_api.get_commodity_ids()), num_steps, sampling_dt)
 
         for key in demand_assignments.get_all_demands().keys():
             route = demand_assignments.get_path_list()[key[0]]
@@ -50,7 +50,7 @@ class Static_Model_Class(Abstract_Traffic_Model_class):
                         capacity = self.beats_api.get_link_with_id(link_id).get_capacity_vps() * 3600
                         link_states.get_state_on_link_comm_time(link_id, key[1], i).set_capacity(capacity)
 
-                    demand_value = demand_assignments.get_demand_at_path_comm_time(key[0], key[1], i*dt)
+                    demand_value = demand_assignments.get_demand_at_path_comm_time(key[0], key[1], i*sampling_dt)
                     link_states.get_state_on_link_comm_time(link_id, key[1], i).add_flow(demand_value)
 
 

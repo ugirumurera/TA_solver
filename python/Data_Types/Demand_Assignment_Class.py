@@ -17,7 +17,7 @@ class Demand_Assignment_class():
         self.__commodity_list = commodity_list
         self.__num_time_steps = num_time_steps
         self.__dt = dt
-        self.__assignment = OrderedDict()
+        self.__assignment = {}
 
     def get_num_paths(self):
         return len(self.__path_list.keys())
