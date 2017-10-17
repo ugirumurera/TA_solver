@@ -47,6 +47,7 @@ class BeATS_Model_Manager_class(Abstract_Model_Manager_class):
             api.set_demand_on_path_in_vph(path_id, comm_id, start_time, demand_dt, java_array)
 
         # run BeATS
+        api.set_random_seed(1)      #Initialize the random seed
         api.run(float(start_time), float(time_horizon))
 
         # extract the path costs

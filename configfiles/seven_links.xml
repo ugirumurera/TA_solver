@@ -51,9 +51,9 @@
 	</subnetworks>
 
 	<demands>
-		<demand commodity_id="1" subnetwork="1" start_time="0" dt="1200">0,1000,1000</demand>
-		<demand commodity_id="1" subnetwork="2" start_time="0" dt="1200">0,1000,1000</demand>
-		<demand commodity_id="1" subnetwork="3" start_time="0" dt="1200">0,100,100</demand>
+		<demand commodity_id="1" subnetwork="1" start_time="0" dt="1200">500</demand>
+		<demand commodity_id="1" subnetwork="2" start_time="0" dt="1200">500</demand>
+		<demand commodity_id="1" subnetwork="3" start_time="0" dt="1200">100</demand>
 	</demands>
 
 </scenario>

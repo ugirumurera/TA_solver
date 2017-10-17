@@ -17,13 +17,13 @@ configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'seven_lin
 model_manager = BeATS_Model_Manager_class(configfile, conn.gateway)
 
 T = 3600  # Time horizon of interest
-sampling_dt = 600  # Duration of one time_step for the solver
+sampling_dt = 1200  # Duration of one time_step for the solver
 
 if(model_manager.is_valid()):
     num_steps = T/sampling_dt
 
     scenario_solver = Solver_class(model_manager)
-    assignment, flow_sol = scenario_solver.Solver_function(T, sampling_dt)
+    assignment, flow_sol = scenario_solver.Solver_function(T, sampling_dt, "FW")
 
     print "\n"
     assignment.print_all()
@@ -32,6 +32,11 @@ if(model_manager.is_valid()):
 
     print "\n"
     path_costs.print_all()
+
+    #Distance to Nash
+    print "\n"
+    dist_to_Nash = scenario_solver.distance_to_Nash(assignment, path_costs, sampling_dt)
+    print "Distance to Nash is: ", dist_to_Nash
 
     plt.figure(1)
     assignment.plot_demand()

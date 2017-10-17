@@ -24,7 +24,6 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt, past=10, max_it
     start_time1 = timeit.default_timer()
     # Populating the Demand Assignment, based on the paths associated with ODs
     for o in od:
-        count = 0
         comm_id = o.get_commodity_id()
 
         demand_api = [item * 3600 for item in o.get_total_demand_vps().getValues()]
@@ -96,7 +95,7 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt, past=10, max_it
 
         # step 5 of Fukushima
         start_time1 = timeit.default_timer()
-        s = line_search(model_manager, assignment, x_assignment_vector, y_assignment, y_assignment_vector, d, 1e-2)
+        s = line_search(model_manager, assignment, x_assignment_vector, y_assignment, y_assignment_vector, d, 1e-4)
         #s = line_search_original(model_manager, assignment, x_assignment_vector, d)
         #elapsed1 = timeit.default_timer() - start_time1
         #print ("Line_Search took  %s seconds" % elapsed1)
@@ -205,10 +204,10 @@ def all_or_nothing(model_manager, assignment, od, initial_state = None, T = None
 
             # Putting all the demand on the minimum cost path
             # First set to zero all demands on all path for commodity comm_id and time_step i
-            y_assignment.set_all_demands_on_comm_time_step(comm_id, i*sampling_dt, paths_demand)
+            y_assignment.set_all_demands_on_comm_time_step(comm_id, i, paths_demand)
             index = int(i / (num_steps / demand_size))
             demand = o.get_total_demand_vps().get_value(index)*3600
-            y_assignment.set_demand_at_path_comm_time(min_path_id, comm_id, i*sampling_dt, demand)
+            y_assignment.set_demand_at_path_comm_time(min_path_id, comm_id, i, demand)
 
     #y_assignment.print_all()
     return y_assignment,path_costs
@@ -258,7 +257,11 @@ def line_search(model_manager, x_assignment, x_vector, y_assignment, y_vector, d
 def g_function(model_manager, assignment, T, d_vector):
     #y_vector = assignment.vector_assignment()
     path_costs = model_manager.evaluate(assignment, T, initial_state=None)
+    ass_vector = np.asarray(assignment.vector_assignment())
     F_value = path_costs.vector_path_costs()
+    #print "demand is ", ass_vector
+    #print "Cost is ", F_value
+    #print "\n"
     return np.dot(F_value, d_vector)
 
 def line_search_original(model_manager, assignment, x_assignment_vector, d_vector, res=10):
