@@ -10,7 +10,7 @@ import abc
 class MN_Model_Class(Abstract_Traffic_Model_class):
     #Configfile is needed to initialize the model's scenario via beats_api
     def __init__(self, configfile):
-        self.model_type = 's'     #Indicates that this is a static model
+        self.model_type = 'mn'     #Indicates that this is a static model
         Abstract_Traffic_Model_class.__init__(self, configfile)
 
     # def Validate_Configfile(self):
