@@ -23,7 +23,7 @@ if(model_manager.is_valid()):
     num_steps = T/sampling_dt
 
     scenario_solver = Solver_class(model_manager)
-    assignment, flow_sol = scenario_solver.Solver_function(T, sampling_dt, "MPM")
+    assignment, flow_sol = scenario_solver.Solver_function(T, sampling_dt, "FW")
 
     print "\n"
     assignment.print_all()
