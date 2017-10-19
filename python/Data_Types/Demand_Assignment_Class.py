@@ -25,6 +25,9 @@ class Demand_Assignment_class():
     def get_num_commodities(self):
         return len(self.__commodity_list)
 
+    def get_num_entries(self):
+        return len(self.__assignment.keys())
+
     def get_num_time_step(self):
         return self.__num_time_steps
 
