@@ -68,7 +68,7 @@ class MN_Model_Class(Abstract_Traffic_Model_class):
 
 
         # Initialize the State_Trajectory object
-        link_states = State_Trajectory_class(self.beats_api.get_num_links(),
+        # link_states = State_Trajectory_class(self.beats_api.get_num_links(),
 
 
         # # extract the path costs
@@ -102,7 +102,7 @@ class MN_Model_Class(Abstract_Traffic_Model_class):
         #         comm_id = comm_id + 1
         #     path_id = path_id + 1
 
-        return link_states
+        return None
 
     def get_total_demand(self):
         demands = self.beats_api.get_demands()
