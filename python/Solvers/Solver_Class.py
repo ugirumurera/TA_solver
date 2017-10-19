@@ -24,8 +24,10 @@ class Solver_class():
 
         #call an optimization algorithm like Frank-Wolfe
         start_time1 = timeit.default_timer()
-        if(solver_name == "MSA"):
+        if solver_name == "MSA":
             assignment_seq = Method_of_Successive_Averages_Solver(self.model_manager, T, sampling_dt)
+        elif solver_name == "MPM":
+            assignment_seq = Modified_Projection_Method_Solver(self.model_manager, T, sampling_dt)
         else:
             assignment_seq = Path_Based_Frank_Wolfe_Solver(self.model_manager, T, sampling_dt)
 

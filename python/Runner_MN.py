@@ -55,7 +55,7 @@ if model_manager.is_valid():
     num_steps = T/sampling_dt
 
     scenario_solver = Solver_class(model_manager)
-    assignment, flow_sol = scenario_solver.Solver_function(T, sampling_dt)
+    assignment, flow_sol = scenario_solver.Solver_function(T, sampling_dt, "FW")
 
     plt.figure(1)
     assignment.plot_demand()
