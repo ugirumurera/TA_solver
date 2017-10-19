@@ -7,8 +7,7 @@ from Data_Types.Demand_Assignment_Class import Demand_Assignment_class
 from Data_Types.Path_Costs_Class import Path_Costs_class
 import timeit
 
-def Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt, past=10, max_iter=1000, eps=1e-8, \
-    q=50, display=1, stop=1e-3):
+def Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt, max_iter=1000, display=1, stop=1e-3):
 
     # In this case, x_k is a demand assignment object that maps demand to paths
     # Constructing the x_0, the initial demand assignment, where all the demand for an OD is assigned to one path

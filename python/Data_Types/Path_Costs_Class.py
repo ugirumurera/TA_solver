@@ -17,6 +17,7 @@ class Path_Costs_class():
         self.__dt = dt
         self.__path_costs = {}
 
+
     def get_all_path_cots(self):
         return self.__path_costs
 
@@ -128,6 +129,32 @@ class Path_Costs_class():
 
         plt.show()
 
+    def set_cost_with_vector(self, cost_vector):
+        a, b = 0, self.__num_time_steps -1
+        # Sort the assignment to ensure same vector every time this function is called
+        sorted_demand = OrderedDict(sorted(self.__path_costs.items()))
+
+        for key in sorted_demand.keys():
+            if a == b:
+                self.__path_costs[key][0] = deepcopy(cost_vector[a])
+            else:
+                row = cost_vector[a:(b+1)]
+                self.__path_costs[key] = copy(row)
+            a += self.__num_time_steps
+            b += self.__num_time_steps
+
+    # Sets all the demands with an assignment dictionary
+    def set_all_costs(self, costs):
+        if (any(len(key) != 2 for key in costs.keys()) or
+                any(len(value) != self.__num_time_steps for value in costs.values())):
+            print("Error: shape of input demand does not match shape Demand_Assignment object")
+            return False
+
+        if any(key[0] not in self.__path_list.keys() or key[1] not in self.__commodity_list for key in costs.keys()):
+            print("path id or commodity id not in input demand info")
+            return False
+
+        self.__path_costs = deepcopy(costs)
 
     def plot_costs_in_seconds(self):
         sub_index = len(self.__path_costs.keys())*100+10+1
