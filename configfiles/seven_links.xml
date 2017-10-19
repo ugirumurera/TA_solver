@@ -3,7 +3,7 @@
 <scenario>
 
 	<commodities>
-		<commodity id="1" name="bla" pathfull="true" subnetworks="1,2"/>
+		<commodity id="1" name="bla" pathfull="true" subnetworks="1,2,3"/>
 	</commodities>
 
 	<network>
@@ -19,7 +19,7 @@
 		</nodes>
 
 		<links>
-			<link id="0" length="100" start_node_id="0" end_node_id="1" roadparam="1" full_lanes="2"/>
+			<link id="0" length="1000" start_node_id="0" end_node_id="1" roadparam="1" full_lanes="2"/>
 			<link id="1" length="1000" start_node_id="1" end_node_id="2" roadparam="1" full_lanes="1"/>
 			<link id="2" length="2000" start_node_id="1" end_node_id="3" roadparam="1" full_lanes="1"/>
 			<link id="3" length="1000" start_node_id="2" end_node_id="4" roadparam="1" full_lanes="1"/>
@@ -39,7 +39,7 @@
 		</roadconnections>
 
 		<roadparams>
-			<roadparam id="1" capacity="500" speed="60" jam_density="80"/>
+			<roadparam id="1" capacity="1000" speed="60" jam_density="80"/>
 		</roadparams>
 
 	</network>
@@ -51,8 +51,9 @@
 	</subnetworks>
 
 	<demands>
-		<demand commodity_id="1" subnetwork="1" start_time="0" dt="00">1</demand>
-		<demand commodity_id="1" subnetwork="2" start_time="0" dt="00">1</demand>
+		<demand commodity_id="1" subnetwork="1" start_time="0" dt="1200">500</demand>
+		<demand commodity_id="1" subnetwork="2" start_time="0" dt="1200">500</demand>
+		<demand commodity_id="1" subnetwork="3" start_time="0" dt="1200">100</demand>
 	</demands>
 
 </scenario>
