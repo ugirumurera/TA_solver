@@ -25,6 +25,9 @@ class Demand_Assignment_class():
     def get_num_commodities(self):
         return len(self.__commodity_list)
 
+    def get_num_entries(self):
+        return len(self.__assignment.keys())
+
     def get_num_time_step(self):
         return self.__num_time_steps
 
@@ -45,9 +48,9 @@ class Demand_Assignment_class():
         self.__assignment.update(route_list)
 
     # Returns demand assigned to a particular path, commodity, and time, where time is in seconds
-    def get_demand_at_path_comm_time(self, path_id, comm_id, time):
+    def get_demand_at_path_comm_time(self, path_id, comm_id, time_step):
 
-        time_step = self.get_time_step(time)
+        #time_step = self.get_time_step(time)
 
         if path_id not in self.__path_list or comm_id not in self.__commodity_list:
             print("path id or commodity id not in Demand_Assignment object")
@@ -77,9 +80,9 @@ class Demand_Assignment_class():
         return self.__assignment[(path_id,comm_id)]
 
     #Returns all demands assigned to a particular path and time_step as [commodity_id]: [demand] dictionary
-    def get_all_demands_on_path_time_step(self, path_id, time):
+    def get_all_demands_on_path_time_step(self, path_id, time_step):
 
-        time_step = self.get_time_step(time)
+        #time_step = self.get_time_step(time)
 
         if path_id not in self.__path_list :
             print("Commodity id not in Demand_Assignment object")
@@ -110,9 +113,9 @@ class Demand_Assignment_class():
 
     #Was here
     # Returns all demands assigned for a particular commodity and time_step as [path_id]: [demand] dictionary
-    def get_all_demands_on_comm_time_step(self, comm_id, time):
+    def get_all_demands_on_comm_time_step(self, comm_id, time_step):
 
-        time_step = self.get_time_step(time)
+        #time_step = self.get_time_step(time)
 
         if comm_id not in self.__commodity_list:
             print("Commodity id not in Demand_Assignment object")
@@ -129,9 +132,9 @@ class Demand_Assignment_class():
         return comm_time_dict
 
     # Returns all demands assigned for a particular time_step as a [(path_id,comm_id)]:[demand] dictionary
-    def get_all_demands_for_time_step(self, time):
+    def get_all_demands_for_time_step(self, time_step):
 
-        time_step = self.get_time_step(time)
+        #time_step = self.get_time_step(time)
 
         if time_step < 0 or time_step > (self.__num_time_steps - 1):
             print("Error: time period has to be between 0 and ", self.__num_time_steps - 1)
@@ -178,9 +181,9 @@ class Demand_Assignment_class():
         self.__path_list.update(route_list)
 
     # set demand for a particular path, commodity, and time_step or adds the entry if did not exist in the dictionary
-    def set_demand_at_path_comm_time(self, path_id, comm_id, time, demand):
+    def set_demand_at_path_comm_time(self, path_id, comm_id, time_step, demand):
 
-        time_step = self.get_time_step(time)
+        #time_step = self.get_time_step(time)
 
         if(demand < 0):
             print("Error: Negative value for demand")
@@ -197,9 +200,9 @@ class Demand_Assignment_class():
 
     # Adds a demand for a particular path, commodity, and time_step or adds the entry if did not exist in the dictionary
     # route is a list of links that makes up the path with path_id
-    def add_demand_at_path_comm_time(self, path_id, route, comm_id, time, demand):
+    def add_demand_at_path_comm_time(self, path_id, route, comm_id, time_step, demand):
 
-        time_step = self.get_time_step(time)
+        #time_step = self.get_time_step(time)
 
         if (demand < 0):
             print("Error: Negative value for demand")
@@ -294,9 +297,9 @@ class Demand_Assignment_class():
         self.__path_list.update(route_list)
 
     #Set all demands assigned for a particular path and time_step with a [comm_id_1]:[demand_at_time_step] dictionary
-    def set_all_demands_on_path_time_step(self, path_id, time, demands):
+    def set_all_demands_on_path_time_step(self, path_id, time_step, demands):
 
-        time_step = self.get_time_step(time)
+        #time_step = self.get_time_step(time)
 
         if (any(not isinstance(key, (int, long))  for key in demands.keys()) or
                 any( not isinstance(value, (int, long)) for value in demands.values())):
@@ -323,9 +326,9 @@ class Demand_Assignment_class():
                 self.__assignment[(path_id, comm_id)][time_step] =demands[comm_id]
 
     # Set all demands assigned for a particular path and time_step with a [comm_id_1]:[demand_at_time_step] dictionary
-    def add_all_demands_on_path_time_step(self, path_id, route, time, demands):
+    def add_all_demands_on_path_time_step(self, path_id, route, time_step, demands):
 
-        time_step = self.get_time_step(time)
+        #time_step = self.get_time_step(time)
 
         if (any(not isinstance(key, (int, long)) for key in demands.keys()) or
                 any(not isinstance(value, (int, long)) for value in demands.values())):
@@ -374,9 +377,9 @@ class Demand_Assignment_class():
             self.__assignment[(path_id, comm_id)] =demands[path_id]
 
     # Set all demands assigned for a particular path and time_step with a [path_id_1]:[demand_at_time_step] dictionary
-    def set_all_demands_on_comm_time_step(self, comm_id, time, demands):
+    def set_all_demands_on_comm_time_step(self, comm_id, time_step, demands):
 
-        time_step = self.get_time_step(time)
+        #time_step = self.get_time_step(time)
 
         if (any(not isinstance(key, (int, long))  for key in demands.keys()) or
                 any(not isinstance(value, (int, long)) for value in demands.values())):
@@ -406,9 +409,9 @@ class Demand_Assignment_class():
 
     # Returns all demands assigned for a particular time_step as with a [(path_id,commodity_id)]:[demand_time_step]
     # dictionary
-    def set_all_demands_for_time_step(self, time, demands):
+    def set_all_demands_for_time_step(self, time_step, demands):
 
-        time_step = self.get_time_step(time)
+        #time_step = self.get_time_step(time)
 
         if (any(len(key) != 2 for key in demands.keys()) or
                 any(not isinstance(value, (int, long)) for value in demands.values())):

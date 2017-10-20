@@ -3,6 +3,7 @@
 from Abstract_Model_Manager import Abstract_Model_Manager_class
 from Data_Types.Path_Costs_Class import Path_Costs_class
 from Traffic_Models.Static_Model import Static_Model_Class
+from Traffic_Models.MN_Model import MN_Model_Class
 from Cost_Functions.BPR_Function import BPR_Function_class
 
 class Link_Model_Manager_class(Abstract_Model_Manager_class):
@@ -13,6 +14,8 @@ class Link_Model_Manager_class(Abstract_Model_Manager_class):
         # create the traffic model
         if traffic_model_name == "static":
             self.traffic_model = Static_Model_Class(self.beats_api)
+        if traffic_model_name == "mn":
+            self.traffic_model = MN_Model_Class(self.beats_api)
         else:
             print("Bad traffic_model_name")
             return
