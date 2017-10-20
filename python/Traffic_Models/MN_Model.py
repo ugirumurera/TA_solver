@@ -1,7 +1,7 @@
 #Static Traffic Model, assuming the demand is fixed
 
 from Abstract_Traffic_Model import Abstract_Traffic_Model_class
-#from Data_Types.State_Trajectory import State_Trajectory_class
+from Data_Types.State_Trajectory import State_Trajectory_class
 #from Traffic_States.Static_Traffic_State import Static_Traffic_State_class
 from Data_Types.Path_Costs_Class import Path_Costs_class
 import abc
@@ -35,6 +35,7 @@ class MN_Model_Class(Abstract_Traffic_Model_class):
         # demand_assignment.print_all()
 
         start_time = 0.0
+        comm_id = 1L
         read_time = demand_assignment.get_dt() * (0.0)  # Hack, heuristic, need a state estimator
         # path_cost_dt = 60.0
         path_cost_dt = float(demand_assignment.get_dt())
@@ -48,8 +49,9 @@ class MN_Model_Class(Abstract_Traffic_Model_class):
         api.clear_output_requests()
 
         # request link veh output
-        for link_id in demand_assignment.get_link_list():
-            api.request_link_veh(link_id, path_cost_dt)
+        for path_id in demand_assignment.get_path_list():
+            api.request_link_veh(comm_id, path_id, path_cost_dt)
+            print path_id
 
         # clear demands in beats
         api.clear_all_demands()
@@ -69,9 +71,25 @@ class MN_Model_Class(Abstract_Traffic_Model_class):
         api.run(float(start_time), float(time_horizon))
 
 
+        # cyce through beats outputs
+
+
+        for output in api.get_output_data():
+
+            for link_id in output.get_link_ids():
+                print link_id
+                profile = output.get_profile_for_linkid(link_id)
+                print profile.get_value_for_time(0.0)
+                print profile.get_value_for_time(1200.0)
+                # Profile1D
+
+            # cost_list = path_data.compute_travel_time_for_start_times(read_time, path_cost_dt, demand_n)
+            # path_costs.set_costs_path_commodity(path_data.getPathId(), comm_id, cost_list)
+            # print "path id ", path_data.getPathId(), " cost ", cost_list
+
 
         # Initialize the State_Trajectory object
-        # link_states = State_Trajectory_class(self.beats_api.get_num_links(),
+        link_states = State_Trajectory_class(7)    # TEMPORARY
 
 
         # # extract the path costs
