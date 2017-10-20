@@ -18,6 +18,7 @@ class Demand_Assignment_class():
         self.__num_time_steps = num_time_steps
         self.__dt = dt
         self.__assignment = {}
+        self.__list_of_links = set()
 
     def get_num_paths(self):
         return len(self.__path_list.keys())
@@ -472,6 +473,13 @@ class Demand_Assignment_class():
             return int(time / self.__dt)  # Calculating first the corresponding time_step in the demand profile
         else:
             return 0
+
+    def get_list_of_links(self):
+        if len(self.__list_of_links) == 0:
+            for key in self.__path_list.keys():
+                self.__list_of_links.update(self.__path_list[key])
+        return self.__list_of_links
+
 
     def print_all(self):
         sorted_demand = OrderedDict(sorted(self.__assignment.items()))
