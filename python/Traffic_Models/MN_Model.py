@@ -3,7 +3,7 @@
 from Abstract_Traffic_Model import Abstract_Traffic_Model_class
 #from Data_Types.State_Trajectory import State_Trajectory_class
 #from Traffic_States.Static_Traffic_State import Static_Traffic_State_class
-#from Data_Types.Path_Costs_Class import Path_Costs_class
+from Data_Types.Path_Costs_Class import Path_Costs_class
 import abc
 
 
