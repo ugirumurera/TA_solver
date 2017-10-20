@@ -48,7 +48,7 @@ class MN_Model_Class(Abstract_Traffic_Model_class):
         api.clear_output_requests()
 
         # request link veh output
-        for link_id in demand_assignment.get_link_list():
+        for link_id in demand_assignment.get_list_of_links():
             api.request_link_veh(link_id, path_cost_dt)
 
         # clear demands in beats
