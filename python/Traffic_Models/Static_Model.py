@@ -50,7 +50,7 @@ class Static_Model_Class(Abstract_Traffic_Model_class):
                         capacity = self.beats_api.get_link_with_id(link_id).get_capacity_vps() * 3600
                         link_states.get_state_on_link_comm_time(link_id, key[1], i).set_capacity(capacity)
 
-                    demand_value = demand_assignments.get_demand_at_path_comm_time(key[0], key[1], i*sampling_dt)
+                    demand_value = demand_assignments.get_demand_at_path_comm_time(key[0], key[1], i)
                     link_states.get_state_on_link_comm_time(link_id, key[1], i).add_flow(demand_value)
 
 
