@@ -9,7 +9,8 @@ import abc
 
 class MN_Model_Class(Abstract_Traffic_Model_class):
     #Configfile is needed to initialize the model's scenario via beats_api
-    def __init__(self, configfile):
+    def __init__(self, configfile, gateway):
+        self.gateway = gateway
         self.model_type = 'mn'     #Indicates that this is a static model
         Abstract_Traffic_Model_class.__init__(self, configfile)
 
@@ -46,9 +47,9 @@ class MN_Model_Class(Abstract_Traffic_Model_class):
         # Clear the path requests
         api.clear_output_requests()
 
-        # request path travel time output
-        for path_id in demand_assignment.get_path_list():
-            api.request_path_travel_time(path_id, path_cost_dt)
+        # request link veh output
+        for link_id in demand_assignment.get_link_list():
+            api.request_link_veh(link_id, path_cost_dt)
 
         # clear demands in beats
         api.clear_all_demands()
@@ -63,6 +64,8 @@ class MN_Model_Class(Abstract_Traffic_Model_class):
         api.set_demand_on_path_in_vph(path_id, comm_id, start_time, demand_dt, java_array)
         # run BeATS
         api.set_random_seed(1)  # Initialize the random seed
+
+
         api.run(float(start_time), float(time_horizon))
 
 
