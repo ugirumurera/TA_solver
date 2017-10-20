@@ -14,13 +14,9 @@ class Link_Model_Manager_class(Abstract_Model_Manager_class):
         # create the traffic model
         if traffic_model_name == "static":
             self.traffic_model = Static_Model_Class(self.beats_api)
-<<<<<<< HEAD
-        if traffic_model_name == "mn":
-            self.traffic_model = MN_Model_Class(self.beats_api, gateway)
-=======
+
         elif traffic_model_name == "mn":
             self.traffic_model = MN_Model_Class(self.beats_api)
->>>>>>> 1aaee9e474a9c0bb47908e8887284b15e108445e
         else:
             print("Bad traffic_model_name")
             return
