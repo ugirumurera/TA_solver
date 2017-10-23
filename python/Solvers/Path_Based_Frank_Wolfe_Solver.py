@@ -14,7 +14,7 @@ import numpy as np
 import timeit
 
 def Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt, cost_function = None, coefficients = None, past=10, max_iter=1000, eps=1e-8, \
-    q=50, display=1, stop=1e-2):
+    q=50, display=1, stop=1e-3):
     # In this case, x_k is a demand assignment object that maps demand to paths
     # Constructing the x_0, the initial demand assignment, where all the demand for an OD is assigned to one path
     # We first create a list of paths from the traffic_scenario
@@ -294,6 +294,7 @@ def g_function(model_manager, assignment, T, d_vector, cost_function, coefficien
         path_costs.set_cost_with_vector(costs_vector)
 
     F_value = path_costs.vector_path_costs()
+    print F_value
     #print F_value
     return np.dot(F_value, d_vector)
 

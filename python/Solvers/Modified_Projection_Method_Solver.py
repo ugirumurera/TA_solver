@@ -5,12 +5,12 @@ from __future__ import division
 from Data_Types.Demand_Assignment_Class import Demand_Assignment_class
 from Data_Types.Path_Costs_Class import Path_Costs_class
 from Path_Based_Frank_Wolfe_Solver import all_or_nothing, Path_Based_Frank_Wolfe_Solver
-from copy import copy
+from copy import copy, deepcopy
 import numpy as np
 import timeit
 
 
-def Modified_Projection_Method_Solver(model_manager, T, sampling_dt,max_iter=1000, display=1, stop=1e-3):
+def Modified_Projection_Method_Solver(model_manager, T, sampling_dt,max_iter=1000, display=1, stop=2):
 
     # In this case, x_k is a demand assignment object that maps demand to paths
     # Constructing the x_0, the initial demand assignment, where all the demand for an OD is assigned to one path
@@ -54,15 +54,34 @@ def Modified_Projection_Method_Solver(model_manager, T, sampling_dt,max_iter=100
     # row parameter used in the modified projection method
     row = 1
 
-    # get coefficients for cost function
-    coefficients = get_cost_function_coefficients(model_manager,T,row,x_k_assignment,x_k_assignment)
-    x_bar_assignment = Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt, cost_function, coefficients)
+    for i in range(max_iter):
+        # Step 1: Determining X_bar
+        # get coefficients for cost function
+        coefficients = get_cost_function_coefficients(model_manager,T,row,x_k_assignment,x_k_assignment)
+        x_bar_assignment = Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt, cost_function, coefficients)
+        #print (cost_function(x_bar_assignment,coefficients))
 
-    new_coefficients = get_cost_function_coefficients(model_manager,T,row,x_bar_assignment,x_k_assignment)
-    new_x_k_assignment = Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt, cost_function, new_coefficients)
+        # Step 2: Determining x_k=1
+        new_coefficients = get_cost_function_coefficients(model_manager,T,row,x_bar_assignment,x_k_assignment)
+        new_x_k_assignment = Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt, cost_function, new_coefficients)
+        #print (cost_function(new_x_k_assignment, new_coefficients))
+
+        # Step 3
+        # Calculating the error
+        x_k_assignment_vector = np.asarray(x_k_assignment.vector_assignment())
+        new_x_k_assignment_vector = np.asarray(new_x_k_assignment.vector_assignment())
+
+        error = max(np.abs(x_k_assignment_vector- new_x_k_assignment_vector))
+        print "MPM iteration: ", i, ", error: ", error
+        if error < stop:
+            print "Stop with error: ", error
+            return new_x_k_assignment
+
+        # Otherwise, we update x_k_assignment and go back to step 1
+        x_k_assignment.set_demand_with_vector(new_x_k_assignment_vector)
 
 
-# This function calculates the coefficient of thecost function for quadratic programming subproblem of the Modified_Projection_Method
+# This function calculates the coefficient of the cost function for quadratic programming subproblem of the Modified_Projection_Method
 # Function Equation = x* + [row*F(x_interm1) - x_interm2], where x* is the varying assignment, x_interm1 and x_interm2 are intermidiate
 # demand assignments. The shape of the coefficient object will be m by n:
 # m = number of paths in our demand assignment x number of timesteps in problem
@@ -73,7 +92,7 @@ def get_cost_function_coefficients(model_manager, T, row, x_interm1, x_interm2):
 
     # Calculating F(x_interm1)
     path_costs = model_manager.evaluate(x_interm1, T, initial_state = None)
-    cost_vector = 1/3600 * np.asarray(path_costs.vector_path_costs())
+    cost_vector = np.asarray(path_costs.vector_path_costs())
     #Calculating a0
     x_interm2_vector = np.asarray(x_interm2.vector_assignment())
     a0 = row*cost_vector - x_interm2_vector

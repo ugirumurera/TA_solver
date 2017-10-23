@@ -4,9 +4,9 @@
 import numpy as np
 from mpi4py import MPI
 import math
-from Frank_Wolfe_Solver_Static import Frank_Wolfe_Solver_Decomposition
+from python.Solvers.Frank_Wolfe_Solver_Static import Frank_Wolfe_Solver_Decomposition
 from Data_Types.Demand_Assignment_Class import Demand_Assignment_class
-from Path_Based_Frank_Wolfe_Solver import Path_Based_Frank_Wolfe_Solver_Dec
+from python.Solvers.Path_Based_Frank_Wolfe_Solver import Path_Based_Frank_Wolfe_Solver_Dec
 from copy import deepcopy, copy
 
 def Decomposition_Solver_Static(traffic_scenario, cost_function, number_of_subproblems, epsilon = 1e-2):

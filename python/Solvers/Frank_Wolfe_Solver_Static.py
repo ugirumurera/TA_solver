@@ -4,7 +4,7 @@ from All_or_Nothing_Function import all_or_nothing_beats
 from Model_Manager.Link_Model_Manager import Link_Model_Manager_class
 
 def Frank_Wolfe_Solver(model_manager, past=10, max_iter=1000, eps=1e-8, \
-    q=50, display=1, stop=1e-2):
+    q=50, display=1, stop=1e-3):
     '''
     This is an adaptation of Fukushima's modification of the Frank_Wolfe algorithm
     :param traffic_scenario: traffic model object with all info regarding the traffic scenario to be solved
