@@ -3,7 +3,7 @@
 from Abstract_Traffic_State import Abstract_Traffic_State_class
 from copy import copy
 
-class Static_Traffic_State_class(Abstract_Traffic_State_class):
+class MN_Traffic_State_class(Abstract_Traffic_State_class):
     #In the static case, we only need the flow per link
     def __init__(self):
         Abstract_Traffic_State_class.__init__(self)
