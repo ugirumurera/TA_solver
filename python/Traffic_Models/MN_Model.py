@@ -1,8 +1,9 @@
 #Static Traffic Model, assuming the demand is fixed
 
 from Abstract_Traffic_Model import Abstract_Traffic_Model_class
-from Data_Types.State_Trajectory_Class import State_Trajectory_class
+from Data_Types.State_Trajectory import State_Trajectory_class
 from Traffic_States.MN_Traffic_State import MN_Traffic_State_class
+
 
 
 class MN_Model_Class(Abstract_Traffic_Model_class):
@@ -53,12 +54,11 @@ class MN_Model_Class(Abstract_Traffic_Model_class):
         # send demand assignment to beats
         for path_comm, demand_list in demand_assignment.get_all_demands().iteritems():
             path_id = path_comm[0]
-            comm_id = path_comm[1]
-            java_array = self.gateway.jvm.java.util.ArrayList()
-            for d in demand_list:
-                java_array.add(float(d))
-            api.set_demand_on_path_in_vph(path_id, comm_id, start_time, demand_dt, java_array)
-
+        comm_id = path_comm[1]
+        java_array = self.gateway.jvm.java.util.ArrayList()
+        for d in demand_list:
+            java_array.add(float(d))
+        api.set_demand_on_path_in_vph(path_id, comm_id, start_time, demand_dt, java_array)
         # run BeATS
         api.set_random_seed(1)  # Initialize the random seed
 
