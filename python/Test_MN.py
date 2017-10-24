@@ -18,7 +18,7 @@ coefficients = {0L:[1,0,0,0,1],1L:[1,0,0,0,1],2L:[2,0,0,0,2], 3L:[1,0,0,0,1], 4L
 T = 3600  # Time horizon of interest
 sim_dt = None  # Duration of one time_step for the traffic model
 
-sampling_dt = 1800     # Duration of time_step for the solver, in this case it is equal to sim_dt
+sampling_dt = 1200     # Duration of time_step for the solver, in this case it is equal to sim_dt
 
 model_manager = Link_Model_Manager_class(configfile, conn.gateway, "mn", sim_dt, "bpr", coefficients)
 

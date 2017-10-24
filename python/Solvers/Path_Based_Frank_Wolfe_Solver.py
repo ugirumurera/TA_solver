@@ -13,8 +13,8 @@ from copy import copy
 import numpy as np
 import timeit
 
-def Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt, cost_function = None, coefficients = None, past=10, max_iter=1000, eps=1e-8, \
-    q=50, display=1, stop=1e-3):
+def Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt, cost_function = None, coefficients = None, past=10, max_iter=1000, eps=1e-2, \
+    q=50, display=0, stop=1e-3):
     # In this case, x_k is a demand assignment object that maps demand to paths
     # Constructing the x_0, the initial demand assignment, where all the demand for an OD is assigned to one path
     # We first create a list of paths from the traffic_scenario
@@ -70,9 +70,9 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt, cost_function =
         y_assignment_vector = np.asarray(y_assignment.vector_assignment())
 
         error = np.abs(np.dot(current_cost_vector, y_assignment_vector - x_assignment_vector))
-        print "iteration: ", i, ", error: ", error
-        if error < stop:
-            print "Stop with error: ", error
+        if display == 1: print "iteration: ", i, ", error: ", error
+        if error < stop :
+            if display == 1: print "Stop with error: ", error
             return assignment
 
         past_assignment[:,i%past] = y_assignment_vector
@@ -181,10 +181,10 @@ def all_or_nothing(model_manager, assignment, od, initial_state = None, T = None
     num_steps = assignment.get_num_time_step()
     path_list = assignment.get_path_list()
 
-    if cost_function == None:
+    if cost_function is None:
         path_costs = model_manager.evaluate(assignment,T, initial_state)
         #path_costs.print_all()
-    elif coefficients == None:
+    elif coefficients is None:
         print "Coefficients for cost function do not exist"
         return
     else:
@@ -194,8 +194,6 @@ def all_or_nothing(model_manager, assignment, od, initial_state = None, T = None
         path_costs.set_all_costs(assignment.get_all_demands())
         costs_vector = cost_function(assignment, coefficients)
         path_costs.set_cost_with_vector(costs_vector)
-
-
 
     # Below we initialize the all_or_nothing assignment
     y_assignment = Demand_Assignment_class(path_list, commodity_list,
@@ -279,7 +277,7 @@ def line_search(model_manager, x_assignment, x_vector, y_assignment, y_vector, d
 
 def g_function(model_manager, assignment, T, d_vector, cost_function, coefficients):
     #y_vector = assignment.vector_assignment()
-    if cost_function == None:
+    if cost_function is None:
         path_costs = model_manager.evaluate(assignment, T, initial_state=None)
     else:
         sampling_dt = assignment.get_dt()
@@ -294,7 +292,6 @@ def g_function(model_manager, assignment, T, d_vector, cost_function, coefficien
         path_costs.set_cost_with_vector(costs_vector)
 
     F_value = path_costs.vector_path_costs()
-    print F_value
     #print F_value
     return np.dot(F_value, d_vector)
 

@@ -7,6 +7,7 @@ from Frank_Wolfe_Solver_Static import Frank_Wolfe_Solver
 from Path_Based_Frank_Wolfe_Solver import Path_Based_Frank_Wolfe_Solver
 from Method_Successive_Averages_Solver import Method_of_Successive_Averages_Solver
 from Modified_Projection_Method_Solver import Modified_Projection_Method_Solver
+from Extra_Projection_Method_Solver import Extra_Projection_Method_Solver
 import timeit
 import numpy as np
 #from Decomposition_Solver import Decomposition_Solver
@@ -28,6 +29,8 @@ class Solver_class():
             assignment_seq = Method_of_Successive_Averages_Solver(self.model_manager, T, sampling_dt)
         elif solver_name == "MPM":
             assignment_seq = Modified_Projection_Method_Solver(self.model_manager, T, sampling_dt)
+        elif solver_name == "EPM":
+            assignment_seq = Extra_Projection_Method_Solver(self.model_manager, T, sampling_dt)
         else:
             assignment_seq = Path_Based_Frank_Wolfe_Solver(self.model_manager, T, sampling_dt)
 

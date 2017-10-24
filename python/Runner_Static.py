@@ -57,31 +57,21 @@ if model_manager.is_valid():
     scenario_solver = Solver_class(model_manager)
     assignment, flow_sol = scenario_solver.Solver_function(T, sampling_dt, "FW")
 
-    plt.figure(1)
-    assignment.plot_demand()
-    assignment.print_all()
-
     path_costs = model_manager.evaluate(assignment, T, initial_state=None)
 
     print "\n"
     path_costs.print_all_in_seconds()
 
+    #Distance to Nash
+    print "\n"
+    dist_to_Nash = scenario_solver.distance_to_Nash(assignment, path_costs, sampling_dt)
+    print "Distance to Nash is: ", dist_to_Nash
+
+    plt.figure(1)
+    assignment.plot_demand()
+
     plt.figure(2)
-    path_costs.plot_costs_in_seconds()
-
-    #plt.show()
-    # Cost resulting from the path_based Frank-Wolfe
-    #link_states = model_manager.traffic_model.Run_Model(assignment, None, sampling_dt, T)
-    #cost_path_based = model_manager.cost_function.evaluate_BPR_Potential(link_states)
-
-    # Cost resulting from link-based Frank-Wolfe
-    #cost_link_based = model_manager.cost_function.evaluate_BPR_Potential_FW(flow_sol)
-
-    #print "\n"
-    #link_states.print_all()
-    #print "\n", flow_sol
-    #print "path-based cost: ", cost_path_based
-    #print "link-based cost: ", cost_link_based
+    path_costs.plot_costs()
 
 
 # kill jvm

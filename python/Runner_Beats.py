@@ -17,13 +17,13 @@ configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'seven_lin
 model_manager = BeATS_Model_Manager_class(configfile, conn.gateway)
 
 T = 3600  # Time horizon of interest
-sampling_dt = 600  # Duration of one time_step for the solver
+sampling_dt = 1200  # Duration of one time_step for the solver
 
 if(model_manager.is_valid()):
     num_steps = T/sampling_dt
 
     scenario_solver = Solver_class(model_manager)
-    assignment, flow_sol = scenario_solver.Solver_function(T, sampling_dt, "MSA")
+    assignment, flow_sol = scenario_solver.Solver_function(T, sampling_dt, "EPM")
 
     print "\n"
     assignment.print_all()
