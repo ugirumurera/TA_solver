@@ -45,8 +45,14 @@ class MN_Model_Class(Abstract_Traffic_Model_class):
         api.clear_output_requests()
 
         # request link veh output
-        for path_id in demand_assignment.get_path_list():
-            api.request_link_veh(comm_id, path_id, path_cost_dt)
+        link_list = demand_assignment.get_list_of_links()
+        print link_list
+        java_array = self.gateway.jvm.java.util.ArrayList()
+        for d in link_list:
+            java_array.add(float(d))
+        api.request_link_veh(comm_id, java_array, path_cost_dt)
+        # for path_id in demand_assignment.get_path_list():
+        #     api.request_link_veh(comm_id, path_id, path_cost_dt)
 
         # clear demands in beats
         api.clear_all_demands()
@@ -59,12 +65,11 @@ class MN_Model_Class(Abstract_Traffic_Model_class):
             for d in demand_list:
                 java_array.add(float(d))
             api.set_demand_on_path_in_vph(path_id, comm_id, start_time, demand_dt, java_array)
+
         # run BeATS
         api.set_random_seed(1)  # Initialize the random seed
 
-
         api.run(float(start_time), float(time_horizon))
-
 
         # cycle through beats outputs
 
@@ -73,20 +78,21 @@ class MN_Model_Class(Abstract_Traffic_Model_class):
         link_states = State_Trajectory_class( list(self.beats_api.get_link_ids()),
                                                  list(self.beats_api.get_commodity_ids()), num_steps, sampling_dt)
         for output in api.get_output_data():
+            print output.get_link_ids()
             # change later to include dictionary and avoid repeated links
-            for link_id in output.get_link_ids():
-                print link_id
-                profile = output.get_profile_for_linkid(link_id)
-                comm = output.get_commodity_id(link_id)
-                jam_density = self.beats_api.get_link_with_id(link_id).get_max_vehicles()
-                capacity = self.beats_api.get_link_with_id(link_id).get_capacity_vps() * 3600
-                for i in range(num_steps):
-                    time = i * demand_assignment.get_dt()
-                    # Profile1D
-                    # change to mn traffic state class
-                    state = MN_Traffic_State_class()
-                    state.set_parameters(profile.get_value_for_time(time), jam_density, capacity)
-                    link_states.set_state_on_link_comm_time(link_id, comm, i, state)
+            # for link_id in output.get_link_ids():
+            #     print link_id
+            #     profile = output.get_profile_for_linkid(link_id)
+            #     comm = output.get_commodity_id(link_id)
+            #     jam_density = self.beats_api.get_link_with_id(link_id).get_max_vehicles()
+            #     capacity = self.beats_api.get_link_with_id(link_id).get_capacity_vps() * 3600
+            #     for i in range(num_steps):
+            #         time = i * demand_assignment.get_dt()
+            #         # Profile1D
+            #         # change to mn traffic state class
+            #         state = MN_Traffic_State_class()
+            #         state.set_parameters(profile.get_value_for_time(time), jam_density, capacity)
+            #         link_states.set_state_on_link_comm_time(link_id, comm, i, state)
         return link_states
 
     def get_total_demand(self):
