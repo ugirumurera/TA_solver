@@ -83,7 +83,6 @@ class TestMN(unittest.TestCase):
         api = TestMN.model_manager.beats_api
 
         comm_id = 1L
-        sim_dt = 2.0
         time_horizon = 3600.0
         demand_dt = 1200.0
         demand_n = int(time_horizon/demand_dt)
@@ -102,4 +101,4 @@ class TestMN(unittest.TestCase):
                                            (2L, comm_id): [0, 0, 0],
                                            (3L, comm_id): [0, 0, 0]})
 
-        TestMN.model_manager.evaluate(demand_assignment, sim_dt, time_horizon)
+        TestMN.model_manager.evaluate(demand_assignment, time_horizon)
