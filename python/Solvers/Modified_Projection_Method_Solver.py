@@ -108,6 +108,5 @@ def get_cost_function_coefficients(model_manager, T, row, x_interm1, x_interm2):
 # demand assignments
 def cost_function(assignment, coefficients):
     x_vector = np.asarray(assignment.vector_assignment())
-    y_x = np.multiply(coefficients[:,1],x_vector)
     cost_vector = coefficients[:,0] + np.multiply(coefficients[:,1],x_vector)
     return cost_vector
