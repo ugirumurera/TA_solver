@@ -52,6 +52,10 @@ def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,max_iter=100, d
     sigma = 0.9
     epslon = 0.05
 
+    # Keep track of the error seen, so that if there is not change for m iteration, the algorithm stops
+    previous_error = -1
+    count = 0
+
     for i in range(max_iter):
         # Step 1: Determining Z_k
         # get coefficients for cost function
@@ -83,6 +87,13 @@ def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,max_iter=100, d
         if error < stopping:
             print "Stop with error: ", error
             return new_x_k_assignment
+
+        #keeping track of the error values seen
+        if(previous_error == -1):previous_error = error
+        elif(previous_error == error): count += 1
+        else:
+            previous_error = error
+            count = 1
 
         # Otherwise, we update x_k_assignment and go back to step 1
         x_k_assignment.set_demand_with_vector(new_x_k_assignment_vector)

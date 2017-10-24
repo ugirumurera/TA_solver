@@ -31,7 +31,7 @@ class MN_Model_Class(Abstract_Traffic_Model_class):
 
         start_time = 0.0
         comm_id = 1L
-        path_cost_dt = demand_assignment.get_dt()
+        path_cost_dt = float(demand_assignment.get_dt())
         demand_dt = float(demand_assignment.get_dt())
 
         api = self.beats_api
@@ -72,13 +72,16 @@ class MN_Model_Class(Abstract_Traffic_Model_class):
                 profile = output.get_profile_for_linkid(link_id)
                 comm = output.get_commodity_id()
                 max_vehicles = self.beats_api.get_link_with_id(link_id).get_max_vehicles()
-                capacity_vph = self.beats_api.get_link_with_id(link_id).get_capacity_vps() * 3600
+                capacity_vph = self.beats_api.get_link_with_id(link_id).get_capacity_vps()*3600
 
                 for i in range(num_steps):
-                    time = i * demand_assignment.get_dt()
+                    time = float(i * demand_assignment.get_dt())
                     state = MN_Traffic_State_class()
                     state.set_state_parameters(profile.get_value_for_time(time), max_vehicles, capacity_vph)
                     link_states.set_state_on_link_comm_time(link_id, comm, i, state)
+
+        print "\n"
+        link_states.print_all()
 
         return link_states
 

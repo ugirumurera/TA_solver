@@ -80,6 +80,8 @@ if(model_manager.is_valid()):
             assignment.set_all_demands_on_path_comm(path.getId(),comm_id, ass_demand)
 
     path_costs = model_manager.evaluate(assignment,T, initial_state = None)
+    print "\n"
+    path_costs.print_all_in_seconds()
 
 
 
