@@ -11,6 +11,7 @@ class Abstract_Model_Manager_class():
 
     def __init__(self, configfile, gateway):
         self.gateway = gateway
+        self.configfile = configfile
         self.beats_api = gateway.entry_point.get_BeATS_API()
         self.beats_api.load(configfile)
 

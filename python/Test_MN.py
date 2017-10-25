@@ -84,6 +84,5 @@ if(model_manager.is_valid()):
     path_costs.print_all_in_seconds()
 
 
-
 # kill jvm
 conn.close()

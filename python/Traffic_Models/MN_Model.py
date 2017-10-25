@@ -80,7 +80,7 @@ class MN_Model_Class(Abstract_Traffic_Model_class):
                     state.set_state_parameters(profile.get_value_for_time(time), max_vehicles, capacity_vph)
                     link_states.set_state_on_link_comm_time(link_id, comm, i, state)
 
-        print "\n"
+        #print "\n"
         link_states.print_all()
 
         return link_states

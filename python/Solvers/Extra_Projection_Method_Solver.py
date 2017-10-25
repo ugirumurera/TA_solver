@@ -5,6 +5,7 @@ from Path_Based_Frank_Wolfe_Solver import all_or_nothing, Path_Based_Frank_Wolfe
 from copy import copy, deepcopy
 import numpy as np
 import timeit
+import gc
 
 def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,max_iter=100, display=1, stopping=1e-2):
 
@@ -55,6 +56,7 @@ def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,max_iter=100, d
     # Keep track of the error seen, so that if there is not change for m iteration, the algorithm stops
     previous_error = -1
     count = 0
+    m = 5
 
     for i in range(max_iter):
         # Step 1: Determining Z_k
@@ -95,6 +97,10 @@ def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,max_iter=100, d
             previous_error = error
             count = 1
 
+        if count > m:
+            print "Error did not change for the past ", m, " iterations"
+            return new_x_k_assignment
+
         # Otherwise, we update x_k_assignment and go back to step 1
         x_k_assignment.set_demand_with_vector(new_x_k_assignment_vector)
 
@@ -114,9 +120,10 @@ def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,max_iter=100, d
 
 def get_cost_function_coefficients(model_manager, T, tau, x_interm1):
     path_costs = model_manager.evaluate(x_interm1, T, initial_state=None)
+    gc.collect()
     x_interm_vector = np.asarray(x_interm1.vector_assignment())
     cost_vector = np.asarray(path_costs.vector_path_costs())
-    coefficients = np.subtract(x_interm_vector,(1/3600)*tau * cost_vector)
+    coefficients = np.subtract(x_interm_vector,tau * cost_vector)
     return coefficients
 
 

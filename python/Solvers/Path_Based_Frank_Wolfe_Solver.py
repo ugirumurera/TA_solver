@@ -12,9 +12,10 @@ from Data_Types.Path_Costs_Class import Path_Costs_class
 from copy import copy
 import numpy as np
 import timeit
+import gc
 
-def Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt, cost_function = None, coefficients = None, past=10, max_iter=1000, eps=1e-2, \
-    q=50, display=0, stop=1e-3):
+def Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt, cost_function = None, coefficients = None, past=10, max_iter=1000, eps=1e-4, \
+    q=50, display=0, stop=1e-2):
     # In this case, x_k is a demand assignment object that maps demand to paths
     # Constructing the x_0, the initial demand assignment, where all the demand for an OD is assigned to one path
     # We first create a list of paths from the traffic_scenario
@@ -183,6 +184,7 @@ def all_or_nothing(model_manager, assignment, od, initial_state = None, T = None
 
     if cost_function is None:
         path_costs = model_manager.evaluate(assignment,T, initial_state)
+        gc.collect()
         #path_costs.print_all()
     elif coefficients is None:
         print "Coefficients for cost function do not exist"
@@ -279,6 +281,7 @@ def g_function(model_manager, assignment, T, d_vector, cost_function, coefficien
     #y_vector = assignment.vector_assignment()
     if cost_function is None:
         path_costs = model_manager.evaluate(assignment, T, initial_state=None)
+        gc.collect()
     else:
         sampling_dt = assignment.get_dt()
 

@@ -2,6 +2,7 @@
 from __future__ import division
 from Abstract_Model_Manager import Abstract_Model_Manager_class
 from Data_Types.Path_Costs_Class import Path_Costs_class
+from copy import copy, deepcopy
 import numpy as np
 
 class BeATS_Model_Manager_class(Abstract_Model_Manager_class):
@@ -25,7 +26,9 @@ class BeATS_Model_Manager_class(Abstract_Model_Manager_class):
         demand_dt = float(demand_assignment.get_dt())
         demand_n = int(time_horizon/demand_dt)
 
-        api = self.beats_api
+        #api =self.beats_api
+        api = self.gateway.entry_point.get_BeATS_API()
+        api.load(self.configfile)
 
         #Clear the path requests
         api.clear_output_requests()
@@ -63,5 +66,6 @@ class BeATS_Model_Manager_class(Abstract_Model_Manager_class):
             path_costs.set_costs_path_commodity(path_data.getPathId(), comm_id, cost_list)
             #print "path id ", path_data.getPathId(), " cost ", cost_list
 
-        
+
+
         return path_costs
