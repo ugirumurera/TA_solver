@@ -7,7 +7,7 @@ import numpy as np
 import timeit
 import gc
 
-def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,max_iter=100, display=1, stopping=1e-2):
+def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,max_iter=1000, display=1, stopping=1e-2):
 
     # In this case, x_k is a demand assignment object that maps demand to paths
     # Constructing the x_0, the initial demand assignment, where all the demand for an OD is assigned to one path

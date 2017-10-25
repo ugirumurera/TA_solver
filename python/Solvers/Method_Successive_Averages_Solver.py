@@ -59,7 +59,7 @@ def Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt, max_iter
 
         error = np.abs(np.dot(current_cost_vector, y_assignment_vector - x_assignment_vector)/
                        np.dot(y_assignment_vector,current_cost_vector))
-        print "iteration: ", i, ", error: ", error
+        print "MSA iteration: ", i, ", error: ", error
         if error < stop:
             print "Stop with error: ", error
             return assignment

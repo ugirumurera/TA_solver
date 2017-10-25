@@ -123,7 +123,7 @@ class Path_Costs_class():
             plt.subplot(sub_index)
             x_axis = [self.__path_costs[key][0]]+ list(self.__path_costs[key])
             plt.step(y_axis, x_axis,linewidth= 5)
-            plt.ylabel("path "+ str(key[0]) + " cost (h)")
+            plt.ylabel("path "+ str(key[0]) + " cost (s)")
             plt.xlabel("Time (s)")
             sub_index += 1
 
