@@ -35,7 +35,7 @@ class Solver_class():
             assignment_seq = Path_Based_Frank_Wolfe_Solver(self.model_manager, T, sampling_dt)
 
         elapsed1 = timeit.default_timer() - start_time1
-        print ("Sequential Path-based took  %s seconds" % elapsed1)
+        print ("Solver took  %s seconds" % elapsed1)
 
         '''
         assignment_dec = None
