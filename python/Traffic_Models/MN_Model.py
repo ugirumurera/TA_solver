@@ -48,17 +48,18 @@ class MN_Model_Class(Abstract_Traffic_Model_class):
         # clear demands in beats ................
         api.clear_all_demands()
 
-        # send demand assignment to beats ............
+        # # send demand assignment to beats ............
         for path_comm, demand_list in demand_assignment.get_all_demands().iteritems():
             path_id = path_comm[0]
             comm_id = path_comm[1]
             java_array = self.gateway.jvm.java.util.ArrayList()
             for d in demand_list:
                 java_array.add(float(d))
+
             api.set_demand_on_path_in_vph(path_id, comm_id, start_time, demand_dt, java_array)
 
         # run BeATS .................
-        api.set_random_seed(1)
+        # api.set_random_seed(1)
         api.run(float(start_time), float(time_horizon))
 
         # cycle through beats outputs
@@ -77,7 +78,12 @@ class MN_Model_Class(Abstract_Traffic_Model_class):
                 for i in range(num_steps):
                     time = float(i * demand_assignment.get_dt())
                     state = MN_Traffic_State_class()
-                    state.set_state_parameters(profile.get_value_for_time(time), 1, 1)
+
+                    queue = profile.get_value_for_time(time);
+
+                    print link_id, time, queue
+
+                    state.set_state_parameters(profile.get_value_for_time(time), max_vehicles, capacity_vph)
                     link_states.set_state_on_link_comm_time(link_id, comm, i, state)
 
         #print "\n"
