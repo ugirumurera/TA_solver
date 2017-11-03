@@ -9,11 +9,11 @@ from abc import ABCMeta, abstractmethod
 class Abstract_Model_Manager_class():
     __metaclass__ = ABCMeta
 
-    def __init__(self, configfile, gateway):
+    def __init__(self, configfile, sim_dt, gateway):
         self.gateway = gateway
         self.configfile = configfile
         self.beats_api = gateway.entry_point.get_BeATS_API()
-        self.beats_api.load(configfile)
+        self.beats_api.load(configfile, sim_dt)
 
     def is_valid(self):
         return( self.beats_api is not None) and (self.beats_api.has_scenario())

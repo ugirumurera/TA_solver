@@ -12,11 +12,11 @@ plt.rcParams.update({'font.size': 17})
 conn = Java_Connection()
 
 this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'seven_links.xml')
+configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'seven_links_mn.xml')
 coefficients = {0L:[1,0,0,0,1],1L:[1,0,0,0,1],2L:[2,0,0,0,2], 3L:[1,0,0,0,1], 4L:[2,0,0,0,2], 5L:[1,0,0,0,1], 6L:[1,0,0,0,1]}
 
 T = 3600  # Time horizon of interest
-sim_dt = None  # Duration of one time_step for the traffic model
+sim_dt = 2.0  # Duration of one time_step for the traffic model
 
 sampling_dt = 1200     # Duration of time_step for the solver, in this case it is equal to sim_dt
 
@@ -35,7 +35,7 @@ for i in range(num_links):
     coefficients[i][0] = copy(fft)
     coefficients[i][4] = copy(fft*0.15)
 
-if(model_manager.is_valid()):
+if model_manager.is_valid():
     path_list = dict()
     od = model_manager.beats_api.get_od_info()
     num_steps = int(T / sampling_dt)
