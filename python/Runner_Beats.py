@@ -17,7 +17,7 @@ configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'seven_lin
 model_manager = BeATS_Model_Manager_class(configfile, conn.gateway)
 
 T = 3600  # Time horizon of interest
-sampling_dt = 150  # Duration of one time_step for the solver
+sampling_dt = 100  # Duration of one time_step for the solver
 
 if(model_manager.is_valid()):
     num_steps = T/sampling_dt
@@ -35,8 +35,8 @@ if(model_manager.is_valid()):
 
     #Distance to Nash
     print "\n"
-    dist_to_Nash = scenario_solver.distance_to_Nash(assignment, path_costs, sampling_dt)
-    print "Distance to Nash is: ", dist_to_Nash
+    error_percentage = scenario_solver.distance_to_Nash(assignment, path_costs, sampling_dt)
+    print "%.02f" % error_percentage ,"% vehicles from equilibrium"
 
     plt.figure(1)
     assignment.plot_demand()

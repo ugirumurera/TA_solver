@@ -2,6 +2,7 @@
 # the dictionary stores [path_id,commodity_id] as keys and each key is associated with (1 X number of time steps)
 # dimensional array of demands per (path,commodity) pair.
 
+from __future__ import division
 import numpy as np
 from copy import deepcopy, copy
 from collections import OrderedDict
@@ -145,6 +146,14 @@ class Demand_Assignment_class():
         for key in self.__assignment.keys():
             time_dict[key] = self.__assignment[key][time_step]
         return time_dict
+
+    # Get the total number of trips generated in vehicle per hour
+    def get_total_trips(self):
+        total_trips = 0
+        for key in self.__assignment.keys():
+            total_trips += sum(self.__dt *1/3600*self.__assignment[key])
+
+        return total_trips
 
     # Sets all the demands with an assignment dictionary
     def set_all_demands(self, demands):

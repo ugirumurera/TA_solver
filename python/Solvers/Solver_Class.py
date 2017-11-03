@@ -94,5 +94,6 @@ class Solver_class():
                 min_costs = np.ones(len(cost_on_paths))*min_cost
 
                 dist_to_Nash += sum(np.abs(((cost_on_paths-min_costs)/3600)*demand_on_paths))
-
-        return dist_to_Nash
+        total_trips = sol_assignment.get_total_trips()
+        error_percentage = dist_to_Nash/total_trips*100
+        return error_percentage
