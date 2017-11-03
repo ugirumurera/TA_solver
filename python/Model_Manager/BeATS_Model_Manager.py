@@ -63,7 +63,7 @@ class BeATS_Model_Manager_class(Abstract_Model_Manager_class):
 
         for path_data in api.get_output_data():
             cost_list = path_data.compute_travel_time_for_start_times(read_time, path_cost_dt, demand_n)
-            path_costs.set_costs_path_commodity(path_data.getPathId(), comm_id, cost_list)
+            path_costs.set_costs_path_commodity(path_data.get_path_id(), comm_id, cost_list)
             #print "path id ", path_data.getPathId(), " cost ", cost_list
 
 
