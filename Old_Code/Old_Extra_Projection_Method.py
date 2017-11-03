@@ -1,9 +1,8 @@
 from __future__ import division
 from Data_Types.Demand_Assignment_Class import Demand_Assignment_class
 from Data_Types.Path_Costs_Class import Path_Costs_class
-from collections import OrderedDict
 from Path_Based_Frank_Wolfe_Solver import all_or_nothing, Path_Based_Frank_Wolfe_Solver
-from Projection_onto_Simplex import Projection_onto_Simplex
+from copy import copy, deepcopy
 import numpy as np
 import timeit
 import gc
@@ -50,7 +49,7 @@ def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,max_iter=1000, 
     x_k_assignment, start_cost = all_or_nothing(model_manager, x_k_assignment, od, None, sampling_dt*num_steps)
 
     # tau, sigma and epslon parameters used in the Extra Projection Method
-    tau = 0.5*3600
+    tau = 0.5
     sigma = 0.9
     epslon = 0.05
 
@@ -62,10 +61,14 @@ def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,max_iter=1000, 
     for i in range(max_iter):
         # Step 1: Determining Z_k
         # get coefficients for cost function
-        z_k_assignment = project_modified_assignment(model_manager, T, tau, x_k_assignment)
+        coefficients = get_cost_function_coefficients(model_manager,T,tau,x_k_assignment)
+        z_k_assignment = Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt, cost_function, coefficients)
+        #print (cost_function(z_k_assignment,coefficients))
 
         # Step 2: Determining x_k=1
-        new_x_k_assignment = project_modified_assignment(model_manager, T, tau, z_k_assignment)
+        new_coefficients = get_cost_function_coefficients(model_manager,T,tau,z_k_assignment)
+        new_x_k_assignment = Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt, cost_function, new_coefficients)
+        #print (cost_function(new_x_k_assignment, new_coefficients))
 
         # Step 3: Calculating the error
         # All_or_nothing assignment
@@ -74,14 +77,13 @@ def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,max_iter=1000, 
 
         # Calculating the error
         current_cost_vector = np.asarray(current_path_costs.vector_path_costs())
-        #x_k_assignment_vector = np.asarray(x_k_assignment.vector_assignment())
-        new_x_k_assignment_vector = np.asarray(new_x_k_assignment.vector_assignment())
+        x_assignment_vector = np.asarray(new_x_k_assignment.vector_assignment())
         new_thetha_assignment_vector = np.asarray(new_theta_assignment.vector_assignment())
 
-        #error = np.abs(np.dot(current_cost_vector, new_thetha_assignment_vector - new_x_k_assignment_vector)/
-        #               np.dot(new_thetha_assignment_vector,current_cost_vector))
-        error = np.abs(np.dot(1/3600*current_cost_vector, new_thetha_assignment_vector - new_x_k_assignment_vector))
+        error = np.abs(np.dot(current_cost_vector, new_thetha_assignment_vector - x_assignment_vector)/
+                       np.dot(new_thetha_assignment_vector,current_cost_vector))
 
+        new_x_k_assignment_vector = np.asarray(new_x_k_assignment.vector_assignment())
 
         print "EPM iteration: ", i, ", error: ", error
         if error < stopping:
@@ -116,43 +118,18 @@ def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,max_iter=1000, 
 # m = number of paths in our demand assignment x number of timesteps in problem
 # n = 2, number of an affine function (a1*x + a0), a1 and a0 are 2 different coefficents
 
-def project_modified_assignment(model_manager, T, tau, x_interm1):
-    # Populating the Demand Assignment, based on the paths associated with ODs
+def get_cost_function_coefficients(model_manager, T, tau, x_interm1):
     path_costs = model_manager.evaluate(x_interm1, T, initial_state=None)
-    num_steps = x_interm1.get_num_time_step()
+    gc.collect()
+    x_interm_vector = np.asarray(x_interm1.vector_assignment())
+    cost_vector = np.asarray(path_costs.vector_path_costs())
+    coefficients = np.subtract(x_interm_vector,tau*1/3600*cost_vector)
+    return coefficients
 
-    for o in model_manager.beats_api.get_od_info():
-        od_demand_val = None
-        od_cost_val = None
-        od_keys = None
-        comm_id = o.get_commodity_id()
 
-        # Check if the number of paths is greater than 1
-        if len(o.get_subnetworks()) == 1:
-            break
-
-        # Get the demand and cost corresponding to the OD
-        for path in o.get_subnetworks():
-            if od_demand_val is None:
-                od_demand_val = np.array(x_interm1.get_all_demands_on_path_comm(path.getId(),comm_id))
-                od_cost_val = np.array(path_costs.get_all_costs_on_path_comm(path.getId(),comm_id))
-                od_keys = (path.getId(),comm_id)
-            else:
-                temp_demand = np.array(x_interm1.get_all_demands_on_path_comm(path.getId(),comm_id))
-                temp_cost = np.array(path_costs.get_all_costs_on_path_comm(path.getId(),comm_id))
-                od_demand_val = np.stack((od_demand_val,temp_demand))
-                od_cost_val = np.stack((od_cost_val,temp_cost))
-                od_keys = np.stack((od_keys,(path.getId(),comm_id)))
-
-        od_temp = np.subtract(od_demand_val, 1/3600*tau*od_cost_val)
-        od_projected_val = np.zeros(od_temp.shape)
-
-        # Here now we start the projection
-        for n in range(num_steps):
-            od_projected_val[:,n] = Projection_onto_Simplex(od_temp[:,n],sum(od_demand_val[:,n]))
-
-        #change the demand assignment
-        for i in range(od_projected_val.shape[0]):
-            x_interm1.set_all_demands_on_path_comm(od_keys[i][0], od_keys[i][1], od_projected_val[i,:])
-
-    return x_interm1
+# This function calculates the cost function for quadratic programming subproblem of the Modified_Projection_Method
+# Function Equation = (x - coefficients)^T *(x - coefficients), where x* is the varying assignment, x is the demand assignment
+def cost_function(assignment, coefficients):
+    x_vector = np.asarray(assignment.vector_assignment())
+    cost_vector = (np.subtract(x_vector, coefficients))
+    return cost_vector
