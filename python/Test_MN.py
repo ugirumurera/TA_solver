@@ -12,13 +12,13 @@ plt.rcParams.update({'font.size': 17})
 conn = Java_Connection()
 
 this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'seven_links.xml')
+configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'seven_links_mn.xml')
 coefficients = {0L:[1,0,0,0,1],1L:[1,0,0,0,1],2L:[2,0,0,0,2], 3L:[1,0,0,0,1], 4L:[2,0,0,0,2], 5L:[1,0,0,0,1], 6L:[1,0,0,0,1]}
 
 T = 3600  # Time horizon of interest
-sim_dt = None  # Duration of one time_step for the traffic model
+sim_dt = 2.0  # Duration of one time_step for the traffic model
 
-sampling_dt = 600     # Duration of time_step for the solver, in this case it is equal to sim_dt
+sampling_dt = 1200     # Duration of time_step for the solver, in this case it is equal to sim_dt
 
 model_manager = Link_Model_Manager_class(configfile, conn.gateway, "mn", sim_dt, "bpr", coefficients)
 
@@ -27,15 +27,12 @@ num_links = model_manager.beats_api.get_num_links()
 avg_travel_time = np.zeros(num_links)
 
 for i in range(num_links):
-    #fft = 1000/model_manager.beats_api.get_link_with_id(long(i)).get_ffspeed_mps()
     fft= (model_manager.beats_api.get_link_with_id(long(i)).getFull_length() \
                          / model_manager.beats_api.get_link_with_id(long(i)).get_ffspeed_mps())/3600
-    #avg_travel_time[i] = model_manager.beats_api.get_link_with_id(long(i)).getFull_length()\
-                      #/model_manager.beats_api.get_link_with_id(long(i)).get_ffspeed_mps()
     coefficients[i][0] = copy(fft)
     coefficients[i][4] = copy(fft*0.15)
 
-if(model_manager.is_valid()):
+if model_manager.is_valid():
     path_list = dict()
     od = model_manager.beats_api.get_od_info()
     num_steps = int(T / sampling_dt)

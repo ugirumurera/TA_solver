@@ -11,13 +11,15 @@ import matplotlib.pyplot as plt
 plt.rcParams.update({'font.size': 17})
 
 conn = Java_Connection()
+sim_dt = 2.0
 
 this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'seven_links.xml')
-model_manager = BeATS_Model_Manager_class(configfile, conn.gateway)
+model_manager = BeATS_Model_Manager_class(configfile, conn.gateway, sim_dt)
 
 T = 3600  # Time horizon of interest
-sampling_dt = 1200  # Duration of one time_step for the solver
+sampling_dt = 150  # Duration of one time_step for the solver
+
 
 if(model_manager.is_valid()):
     num_steps = T/sampling_dt
@@ -45,4 +47,4 @@ if(model_manager.is_valid()):
     path_costs.plot_costs()
 
 # kill jvm
-#conn.close()
+conn.close()

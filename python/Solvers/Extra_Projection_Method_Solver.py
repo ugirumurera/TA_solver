@@ -50,7 +50,7 @@ def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,max_iter=1000, 
     '''
     x_k_assignment = Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt)
     # tau, sigma and epslon parameters used in the Extra Projection Method
-    tau = 0.5*3600
+    tau = 0.5*100000
     sigma = 0.9
     epslon = 0.05
 
@@ -105,8 +105,8 @@ def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,max_iter=1000, 
         # Update tau as needed
         theta_assignment_vector = np.asarray(theta_assignment.vector_assignment())
         mod_theta_assignment = epslon * np.abs(theta_assignment_vector)
-        if (np.all(new_thetha_assignment_vector < theta_assignment_vector)) and \
-                np.all(np.fabs(np.subtract(new_thetha_assignment_vector,theta_assignment_vector)) > mod_theta_assignment):
+        if (any(new_thetha_assignment_vector < theta_assignment_vector)) and \
+                any(np.fabs(np.subtract(new_thetha_assignment_vector,theta_assignment_vector)) > mod_theta_assignment):
             tau = tau * sigma
     return x_k_assignment
 

@@ -29,7 +29,7 @@ configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'seven_lin
 coefficients = {0L:[1,0,0,0,1],1L:[1,0,0,0,1],2L:[2,0,0,0,2], 3L:[1,0,0,0,1], 4L:[2,0,0,0,2], 5L:[1,0,0,0,1], 6L:[1,0,0,0,1]}
 
 T = 3600  # Time horizon of interest
-sim_dt = None  # Duration of one time_step for the traffic model
+sim_dt = 0.0  # Duration of one time_step for the traffic model
 
 sampling_dt = 300     # Duration of time_step for the solver, in this case it is equal to sim_dt
 

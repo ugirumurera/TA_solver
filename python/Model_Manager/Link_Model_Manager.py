@@ -9,7 +9,7 @@ from Cost_Functions.BPR_Function import BPR_Function_class
 class Link_Model_Manager_class(Abstract_Model_Manager_class):
     # Constructor receives a Traffic model and cost functions instances
     def __init__(self, configfile, gateway, traffic_model_name, sim_dt, cost_function_name, cost_function_parameters):
-        Abstract_Model_Manager_class.__init__(self, configfile, gateway)
+        Abstract_Model_Manager_class.__init__(self, configfile, sim_dt, gateway)
 
         # create the traffic model
         if traffic_model_name == "static":
