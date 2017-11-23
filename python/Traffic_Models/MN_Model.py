@@ -47,7 +47,7 @@ class MN_Model_Class(Abstract_Traffic_Model_class):
 
         #request flow on links for all commodities
         for comm_id in comm_list:
-            api.request_links_veh(comm_id, java_array, path_cost_dt)
+            api.request_links_flow(comm_id, java_array, path_cost_dt)
 
         # clear demands in beats ................
         api.clear_all_demands()
@@ -76,20 +76,14 @@ class MN_Model_Class(Abstract_Traffic_Model_class):
             for link_id in output.get_link_ids():
                 profile = output.get_profile_for_linkid(link_id)
                 comm = output.get_commodity_id()
-                max_vehicles = self.beats_api.get_link_with_id(link_id).get_max_vehicles()
                 capacity_vph = self.beats_api.get_link_with_id(link_id).get_capacity_vps()*3600
 
                 for i in range(num_steps):
                     time = float(i * demand_assignment.get_dt())
                     state = MN_Traffic_State_class()
-
-                    queue = profile.get_value_for_time(time)
-
-                    #print link_id, time, queue
-                    v = api.get_link_with_id(link_id).get_ffspeed_mps()*2/api.get_link_with_id(link_id).getFull_length()
-
-                    flow = queue*v
-                    state.set_state_parameters(queue, capacity_vph)
+                    #flow = profile.get_value_for_time(time)
+                    flow = output.get_flow_vph_for_linkid_timestep(link_id,i)
+                    state.set_state_parameters(flow, capacity_vph)
                     link_states.set_state_on_link_comm_time(link_id, comm, i, state)
 
         #print "\n"

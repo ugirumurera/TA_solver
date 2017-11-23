@@ -14,23 +14,24 @@ plt.rcParams.update({'font.size': 17})
 conn = Java_Connection()
 
 this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'seven_links.xml')
-coefficients = {0L:[1,0,0,0,1],1L:[1,0,0,0,1],2L:[2,0,0,0,2], 3L:[1,0,0,0,1], 4L:[2,0,0,0,2], 5L:[1,0,0,0,1], 6L:[1,0,0,0,1]}
-
+configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'seven_links_mn.xml')
+coefficients = {}
 T = 3600  # Time horizon of interest
-sim_dt = None  # Duration of one time_step for the traffic model
+sim_dt = 2.0  # Duration of one time_step for the traffic model
 
-sampling_dt = 1200     # Duration of time_step for the solver, in this case it is equal to sim_dt
+sampling_dt = 300     # Duration of time_step for the solver, in this case it is equal to sim_dt
 
 model_manager = Link_Model_Manager_class(configfile, conn.gateway, "mn", sim_dt, "bpr", coefficients)
 
 #Estimating bpr coefficients with beats
 num_links = model_manager.beats_api.get_num_links()
 avg_travel_time = np.zeros(num_links)
+num_coeff = 5
 
 for i in range(num_links):
     fft= (model_manager.beats_api.get_link_with_id(long(i)).getFull_length() \
                          / model_manager.beats_api.get_link_with_id(long(i)).get_ffspeed_mps())/3600
+    coefficients[long(i)] = np.zeros(num_coeff)
     coefficients[i][0] = copy(fft)
     coefficients[i][4] = copy(fft*0.15)
 
@@ -41,7 +42,7 @@ if model_manager.is_valid():
     num_steps = T/sampling_dt
 
     scenario_solver = Solver_class(model_manager)
-    assignment, flow_sol = scenario_solver.Solver_function(T, sampling_dt, "EPM")
+    assignment, flow_sol = scenario_solver.Solver_function(T, sampling_dt, "FW")
 
     print "\n"
     assignment.print_all()
@@ -53,14 +54,14 @@ if model_manager.is_valid():
 
     # Distance to Nash
     print "\n"
-    dist_to_Nash = scenario_solver.distance_to_Nash(assignment, path_costs, sampling_dt)
-    print "Distance to Nash is: ", dist_to_Nash
+    error_percentage = scenario_solver.distance_to_Nash(assignment, path_costs, sampling_dt)
+    print "%.02f" % error_percentage, "% vehicles from equilibrium"
 
     plt.figure(1)
     assignment.plot_demand()
 
     plt.figure(2)
-    path_costs.plot_costs()
+    path_costs.plot_costs_in_seconds()
 
 # kill jvm
 conn.close()

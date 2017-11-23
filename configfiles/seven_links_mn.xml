@@ -23,13 +23,13 @@
 		</nodes>
 
 		<links>
-			<link id="0" length="100" start_node_id="0" end_node_id="1" roadparam="1" full_lanes="2"/>
-			<link id="1" length="1000" start_node_id="1" end_node_id="2" roadparam="1" full_lanes="1"/>
-			<link id="2" length="2000" start_node_id="1" end_node_id="3" roadparam="1" full_lanes="1"/>
-			<link id="3" length="1000" start_node_id="2" end_node_id="4" roadparam="1" full_lanes="1"/>
-			<link id="4" length="2000" start_node_id="3" end_node_id="4" roadparam="1" full_lanes="1"/>
-			<link id="5" length="1000" start_node_id="2" end_node_id="5" roadparam="1" full_lanes="1"/>
-			<link id="6" length="1000" start_node_id="4" end_node_id="6" roadparam="1" full_lanes="1"/>
+			<link id="0" length="1000" start_node_id="0" end_node_id="1" roadparam="1" full_lanes="2"/>
+			<link id="1" length="1000" start_node_id="1" end_node_id="2" roadparam="2" full_lanes="1"/>
+			<link id="2" length="1100" start_node_id="1" end_node_id="3" roadparam="1" full_lanes="1"/>
+			<link id="3" length="1000" start_node_id="2" end_node_id="4" roadparam="2" full_lanes="1"/>
+			<link id="4" length="1100" start_node_id="3" end_node_id="4" roadparam="1" full_lanes="1"/>
+			<link id="5" length="1000" start_node_id="2" end_node_id="5" roadparam="2" full_lanes="1"/>
+			<link id="6" length="1000" start_node_id="4" end_node_id="6" roadparam="2" full_lanes="1"/>
 		</links>
 
 		<roadconnections>
@@ -44,6 +44,7 @@
 
 		<roadparams>
 			<roadparam id="1" capacity="1000" speed="60" jam_density="80"/>
+			<roadparam id="2" capacity="1000" speed="60" jam_density="80"/>
 		</roadparams>
 
 	</network>
@@ -55,9 +56,9 @@
 	</subnetworks>
 
 	<demands>
-		<demand commodity_id="1" subnetwork="1" start_time="0" dt="1200">500</demand>
-		<demand commodity_id="1" subnetwork="2" start_time="0" dt="1200">0</demand>
-		<demand commodity_id="1" subnetwork="3" start_time="0" dt="1200">0</demand>
+		<demand commodity_id="1" subnetwork="1" start_time="0" dt="1800">100</demand>
+		<demand commodity_id="1" subnetwork="2" start_time="0" dt="1800">100</demand>
+		<demand commodity_id="1" subnetwork="3" start_time="0" dt="1800">100</demand>
 	</demands>
 
 </scenario>

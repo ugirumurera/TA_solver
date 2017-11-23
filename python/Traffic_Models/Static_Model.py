@@ -53,7 +53,7 @@ class Static_Model_Class(Abstract_Traffic_Model_class):
                     link_states.get_state_on_link_comm_time(link_id, key[1], i).add_flow(demand_value)
 
 
-        link_states.print_all()
+        #link_states.print_all()
 
         return link_states
 
