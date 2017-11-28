@@ -57,9 +57,9 @@ def main():
     # Size of grid
     graph_size = 5  # grid size, leads to a grid of graph_size*graph_size nodes
     num_nodes = graph_size*graph_size   # Number of nodes in the graph
-    num_ods = 10    # Number of od, have to be less that 1/2 number of nodes
+    num_ods = num_nodes/2    # Number of od, have to be less that 1/2 number of nodes
     scaling = 1000  # number used to scale the resulting grid graph
-    max_length = num_nodes/2  # Maximum length of paths returned
+    max_length = 6  # Maximum number of nodes in paths returned
     paths_per_od = 5    # Number of paths saved per OD
 
     g = Graph.Lattice([graph_size, graph_size], circular=False, directed = True)
@@ -100,24 +100,15 @@ def main():
     f = open('paths_info.csv', 'wb')
     writer = csv.writer(f)
     for o in ods:
-        paths = g.get_all_shortest_paths(o[0], o[1])
+        #Find all paths between origin and destination that have at most max_length edges
+        paths = find_all_paths_len(g,o[0],o[1],maxlen=max_length)
+
+        #If we could not get paths_per_od paths between the od, double the max_length value
         if len(paths) < paths_per_od:
-            temp_paths = find_all_paths_len(g,o[0],o[1],maxlen=max_length)
-            if not temp_paths:
-                new_max_length = max(o[0],o[1])
-                temp_paths = find_all_paths_len(g, o[0], o[1], maxlen=new_max_length)
+            paths = find_all_paths_len(g,o[0],o[1],maxlen=max_length*2)
 
-            temp_paths.sort(key=len)
-            additions = paths_per_od-len(paths)
-            i,j = 0,0
-            while i < additions:
-                if temp_paths[j] not in paths:
-                    paths.append(temp_paths[j])
-                    i += 1
-                    j += 1
-                else: j += 1
-
-
+        #Sort paths by length so that the shortest are first
+        paths.sort(key=len)
         new_paths = translate_paths(g, paths[0:paths_per_od])
         writer.writerows(new_paths)
 
