@@ -53,7 +53,9 @@ def translate_paths(g, paths):
             source_list = [p[i]]
             end_list = [p[i+1]]
             link_id = g.es.select(_between = (source_list,end_list))
-            trans_path.append(link_id.indices[0])
+            for e in link_id:
+                if e.source == p[i] and e.target == p[i+1]:
+                    trans_path.append(e.index)
 
         new_paths.append(trans_path)
     return new_paths
