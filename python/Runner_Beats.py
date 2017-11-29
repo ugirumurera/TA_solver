@@ -11,19 +11,21 @@ import matplotlib.pyplot as plt
 plt.rcParams.update({'font.size': 17})
 
 conn = Java_Connection()
+sim_dt = 2.0
 
 this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'seven_links.xml')
-model_manager = BeATS_Model_Manager_class(configfile, conn.gateway)
+model_manager = BeATS_Model_Manager_class(configfile, conn.gateway, sim_dt)
 
 T = 3600  # Time horizon of interest
 sampling_dt = 150  # Duration of one time_step for the solver
+
 
 if(model_manager.is_valid()):
     num_steps = T/sampling_dt
 
     scenario_solver = Solver_class(model_manager)
-    assignment, flow_sol = scenario_solver.Solver_function(T, sampling_dt, "EPM")
+    assignment, flow_sol = scenario_solver.Solver_function(T, sampling_dt, "FW")
 
     print "\n"
     assignment.print_all()
@@ -35,8 +37,8 @@ if(model_manager.is_valid()):
 
     #Distance to Nash
     print "\n"
-    dist_to_Nash = scenario_solver.distance_to_Nash(assignment, path_costs, sampling_dt)
-    print "Distance to Nash is: ", dist_to_Nash
+    error_percentage = scenario_solver.distance_to_Nash(assignment, path_costs, sampling_dt)
+    print "%.02f" % error_percentage ,"% vehicles from equilibrium"
 
     plt.figure(1)
     assignment.plot_demand()
@@ -45,4 +47,4 @@ if(model_manager.is_valid()):
     path_costs.plot_costs()
 
 # kill jvm
-#conn.close()
+conn.close()

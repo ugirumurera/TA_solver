@@ -30,7 +30,8 @@ class MN_Model_Class(Abstract_Traffic_Model_class):
     def Run_Model(self, demand_assignment, initial_state=None, time_horizon=None):
 
         start_time = 0.0
-        comm_id = 1L
+        #comm_id = 1L
+        comm_list = demand_assignment.get_commodity_list()
         path_cost_dt = float(demand_assignment.get_dt())
         demand_dt = float(demand_assignment.get_dt())
 
@@ -43,7 +44,10 @@ class MN_Model_Class(Abstract_Traffic_Model_class):
         java_array = self.gateway.jvm.java.util.ArrayList()
         for d in demand_assignment.get_list_of_links():
             java_array.add(d)
-        api.request_links_veh(comm_id, java_array, path_cost_dt)
+
+        #request flow on links for all commodities
+        for comm_id in comm_list:
+            api.request_links_flow(comm_id, java_array, path_cost_dt)
 
         # clear demands in beats ................
         api.clear_all_demands()
@@ -77,12 +81,9 @@ class MN_Model_Class(Abstract_Traffic_Model_class):
                 for i in range(num_steps):
                     time = float(i * demand_assignment.get_dt())
                     state = MN_Traffic_State_class()
-
-                    queue = profile.get_value_for_time(time)
-
-                    print link_id, time, queue
-
-                    state.set_state_parameters(profile.get_value_for_time(time), capacity_vph)
+                    #flow = profile.get_value_for_time(time)
+                    flow = output.get_flow_vph_for_linkid_timestep(link_id,i)
+                    state.set_state_parameters(flow, capacity_vph)
                     link_states.set_state_on_link_comm_time(link_id, comm, i, state)
 
         #print "\n"

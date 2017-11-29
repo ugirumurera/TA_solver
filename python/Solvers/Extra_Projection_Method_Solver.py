@@ -1,7 +1,6 @@
 from __future__ import division
 from Data_Types.Demand_Assignment_Class import Demand_Assignment_class
-from Data_Types.Path_Costs_Class import Path_Costs_class
-from collections import OrderedDict
+from Method_Successive_Averages_Solver import Method_of_Successive_Averages_Solver
 from Path_Based_Frank_Wolfe_Solver import all_or_nothing, Path_Based_Frank_Wolfe_Solver
 from Projection_onto_Simplex import Projection_onto_Simplex
 import numpy as np
@@ -16,7 +15,7 @@ def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,max_iter=1000, 
     path_list = dict()
     od = model_manager.beats_api.get_od_info()
     num_steps = int(T/sampling_dt)
-
+    '''
     # Initializing the demand assignment
     commodity_list = list(model_manager.beats_api.get_commodity_ids())
     x_k_assignment = Demand_Assignment_class(path_list,commodity_list,
@@ -48,9 +47,10 @@ def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,max_iter=1000, 
 
     # x_interm is the initial solution: Step 0
     x_k_assignment, start_cost = all_or_nothing(model_manager, x_k_assignment, od, None, sampling_dt*num_steps)
-
+    '''
+    x_k_assignment = Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt)
     # tau, sigma and epslon parameters used in the Extra Projection Method
-    tau = 0.5*3600
+    tau = 0.5*100000
     sigma = 0.9
     epslon = 0.05
 
@@ -105,8 +105,8 @@ def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,max_iter=1000, 
         # Update tau as needed
         theta_assignment_vector = np.asarray(theta_assignment.vector_assignment())
         mod_theta_assignment = epslon * np.abs(theta_assignment_vector)
-        if (np.all(new_thetha_assignment_vector < theta_assignment_vector)) and \
-                np.all(np.fabs(np.subtract(new_thetha_assignment_vector,theta_assignment_vector)) > mod_theta_assignment):
+        if (any(new_thetha_assignment_vector < theta_assignment_vector)) and \
+                any(np.fabs(np.subtract(new_thetha_assignment_vector,theta_assignment_vector)) > mod_theta_assignment):
             tau = tau * sigma
     return x_k_assignment
 

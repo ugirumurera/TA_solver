@@ -34,7 +34,7 @@ class MN_Traffic_State_class(Abstract_Traffic_State_class):
 
     def set_state_parameters(self, volume, capacity_vph):
         self.capacity = capacity_vph
-        self.flow = volume * capacity_vph
+        self.flow = volume
 
 
     # Print the flow value
