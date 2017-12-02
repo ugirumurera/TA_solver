@@ -6,6 +6,7 @@ import itertools
 import random
 from xml.dom import minidom
 import StringIO
+import random
 
 def csv2string(data):
     si = StringIO.StringIO()
@@ -68,17 +69,44 @@ def generate_graph_and_paths(graph_size, scaling, num_nodes, num_ods, max_length
 
     graph = Graph.Lattice([graph_size, graph_size], circular=False, directed = True)
 
+    # Generate od pairs
+    # For Beats purposes, the origins to be of outdegree 1 and the sinks have to be of outdegree 1
+    # For this reason, we choose vertices at the periphery of the grid graph, vertices with indegree < 4
+    graph.vs["indegree"] = graph.indegree()
+    od_indices = graph.vs.select(indegree_lt = 4).indices
+    num_pairs = len(od_indices)/2   # We can only have this many pairs since these correspond to periphery vertices
+    origins = random.sample(od_indices, num_pairs)
+    destinations = list(set(od_indices)-set(origins))[0:num_pairs]
+    pairs = list(itertools.combinations(od_indices, 2))   # Generates the pairs
+
+    #Adding source node and outgoing link to od
+    j = len(graph.vs)   # Starting index of new nodes
+    for i in range(len(origins)):
+        # add a new node and edge to graph for origin
+        graph.add_vertices(1)
+        graph.add_edge(j, origins[i])
+        origins[i] = j
+        j += 1
+
+        # add a new node and edge to the graph for destination
+        graph.add_vertices(1)
+        graph.add_edge(destinations[i], j)
+        destinations[i] = j
+        j += 1
+
     # Get node ids and positions
     layout = graph.layout("kk")     # This fixes the coordinates of the nodes
     layout.scale(scaling)
 
     coordinates = layout.coords    # Coordinates of the nodes
     graph.vs["Coordinates"] = coordinates
+    graph.vs["indices"] = graph.vs.indices
+    graph.vs["label"] = graph.vs["indices"]
+    plot(graph, layout=layout)
 
-    # Generate od pairs
-    pairs = list(itertools.combinations(range(num_nodes), 2))   # Generates the pairs
+
     random.shuffle(pairs)   # shuffles the od pairs to allow for variability
-    ods = pairs[0:num_ods]
+    ods = zip(origins,destinations)
 
     # Generate the paths between the od pairs
     all_paths = {}
