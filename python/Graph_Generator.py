@@ -1,13 +1,17 @@
 from igraph import *
-from xml.etree.ElementTree import ElementTree
 from xml.etree.ElementTree import Element
 import xml.etree.ElementTree as etree
 import csv
-# import numpy as np
 import itertools
 import random
 from xml.dom import minidom
+import StringIO
 
+def csv2string(data):
+    si = StringIO.StringIO()
+    cw = csv.writer(si)
+    cw.writerow(data)
+    return si.getvalue().strip('\r\n')
 
 #Function used to determine all paths between ods
 def find_all_paths(graph, start, end):
@@ -94,9 +98,7 @@ def generate_graph_and_paths(graph_size, scaling, num_nodes, num_ods, max_length
 
     return graph, all_paths
 
-def get_node_for_links(begin_node, end_node):
-    return 0
-
+# write the scenario to csv files
 def write_to_csv(graph, all_paths):
 
     # Print vertices and their coordinates
@@ -123,12 +125,10 @@ def write_to_csv(graph, all_paths):
     for o, path in all_paths.iteritems():
         writer.writerows(path)
 
-# generate an xml tree 
+# write the scenario to an xml file
 def write_to_xml(graph,all_paths):
 
-    # initialize xml
     xscenario = Element('scenario')
-    tree = ElementTree(xscenario)
 
     # network ---------------------
     xnetwork = Element('network')
@@ -147,14 +147,14 @@ def write_to_xml(graph,all_paths):
     # links .........................
     xlinks = Element('links')
     xnetwork.append(xlinks)
-    for v in graph.vs:
+    for e in graph.es:
         xlink = Element('link')
         xlinks.append(xlink)
-        xlink.set('id', str(v.index))
+        xlink.set('id', str(e.index))
         xlink.set('length', str(100))   # length in meters --- FIX THIS
         xlink.set('full_lanes', str(1)) # number of lanes --- FIX THIS
-        xlink.set('start_node_id', str(v["Coordinates"][0]))
-        xlink.set('end_node_id', str(v["Coordinates"][1]))
+        xlink.set('start_node_id', str(e.source))
+        xlink.set('end_node_id', str(e.target))
         xlink.set('roadparam', "0" )
 
     # road params .......................
@@ -169,15 +169,12 @@ def write_to_xml(graph,all_paths):
     xroadparam.set('jam_density', "100" )   # veh/km/lane
 
     # road connections .......................
+
     # add only the road connections needed for the paths
-    xroadconnections = Element('roadconnections')
-    xnetwork.append(xroadconnections)
+    # create a map from node id to road connections in that node
     road_connection_map = {}
     for od, paths in all_paths.iteritems():
-        print od
-
         for path in paths:
-
             for i in range(len(path)-1):
                 up_link = graph.es[path[i]]
                 dn_link = graph.es[path[i+1]]
@@ -187,31 +184,64 @@ def write_to_xml(graph,all_paths):
 
                 node_id = up_link.target
                 if node_id in road_connection_map:
+
                     # ignore if it is already present
-                    if len([item for item in road_connection_map[node_id] if item[0] == path[i] and item[0] == path[i+1]]) == 0:
+                    if 0==len([item for item in road_connection_map[node_id] if (item[0] == path[i] and item[1] == path[i+1])]):
                         road_connection_map[node_id].append((path[i], path[i+1]))
                 else:
                     road_connection_map[node_id] = [(path[i], path[i+1])]
 
-    print road_connection_map
+    # road connections to xml
+    xroadconnections = Element('roadconnections')
+    xnetwork.append(xroadconnections)
+    c = -1
+    for node_id, tuple_list in road_connection_map.iteritems():
+        for in_out_link in tuple_list:
+            c += 1
+            xrc = Element('roadconnection')
+            xroadconnections.append(xrc)
+            xrc.set('id',str(c))
+            xrc.set('in_link',str(in_out_link[0]))
+            xrc.set('out_link',str(in_out_link[1]))
+            xrc.set('in_link_lanes',"1#1")
+            xrc.set('out_link_lanes',"1#1")
 
-    # write to file
-    # with open(('scenario.xml'), 'w') as f:
-    #     f.write(minidom.parseString(etree.tostring(xscenario)).toprettyxml(indent="\t"))
-
-def this_test_fails(graph, all_paths):
-
+    # paths ---------------------
+    xsubnetworks = Element('subnetworks')
+    xscenario.append(xsubnetworks)
+    c = -1
+    path_ids = []
     for od, paths in all_paths.iteritems():
-
         for path in paths:
+            c += 1
+            path_ids.append(c)
+            xsubnetwork = Element('subnetwork')
+            xsubnetworks.append(xsubnetwork)
+            xsubnetwork.set('id',str(path_ids[c]))
+            xsubnetwork.text = csv2string(path)
 
-            for i in range(len(path)-1):
-                up_link = graph.es[path[i]]
-                dn_link = graph.es[path[i+1]]
+    # demands ---------------------
+    xdemands = Element('demands')
+    xscenario.append(xdemands)
+    for path_id in path_ids:
+        xdemand = Element('demand')
+        xdemands.append(xdemand)
+        xdemand.set('commodity_id',"0")
+        xdemand.set('subnetwork',str(path_id))
+        xdemand.text = "50"
 
-                if up_link.target != dn_link.source:
-                    print 'ERROR!!!!!', up_link.target, dn_link.source
+    # commodities ---------------------
+    xcommodities = Element('commodities')
+    xscenario.append(xcommodities)
+    xcommodity = Element('commodity')
+    xcommodities.append(xcommodity)
+    xcommodity.set('id','0')
+    xcommodity.set('name','car')
+    xcommodity.set('subnetworks',csv2string(path_ids))
 
+    # write to file ---------------------
+    with open(('scenario.xml'), 'w') as f:
+        f.write(minidom.parseString(etree.tostring(xscenario)).toprettyxml(indent="\t"))
 
 def main():
 
@@ -226,11 +256,10 @@ def main():
 
     graph, all_paths = generate_graph_and_paths(graph_size, scaling, num_nodes, num_ods, max_length, paths_per_od)
 
-    this_test_fails(graph, all_paths)
 
     # write_to_csv(graph,all_paths)
 
-    # write_to_xml(graph,all_paths)
+    write_to_xml(graph,all_paths)
 
     # Plot the resulting graph
     # graph.vs["ID"] = graph.vs.indices
