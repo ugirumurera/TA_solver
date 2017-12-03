@@ -102,8 +102,7 @@ def generate_graph_and_paths(graph_size, scaling, num_nodes, num_ods, max_length
     graph.vs["Coordinates"] = coordinates
     graph.vs["indices"] = graph.vs.indices
     graph.vs["label"] = graph.vs["indices"]
-    plot(graph, layout=layout)
-
+    # plot(graph, layout=layout)
 
     random.shuffle(pairs)   # shuffles the od pairs to allow for variability
     ods = zip(origins,destinations)
@@ -264,6 +263,7 @@ def write_to_xml(graph,all_paths):
     xcommodity = Element('commodity')
     xcommodities.append(xcommodity)
     xcommodity.set('id','0')
+    xcommodity.set('pathfull','true')
     xcommodity.set('name','car')
     xcommodity.set('subnetworks',csv2string(path_ids))
 
@@ -283,7 +283,6 @@ def main():
     num_ods = num_nodes/2    # Number of od, have to be less that 1/2 number of nodes
 
     graph, all_paths = generate_graph_and_paths(graph_size, scaling, num_nodes, num_ods, max_length, paths_per_od)
-
 
     # write_to_csv(graph,all_paths)
 
