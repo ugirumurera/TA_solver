@@ -125,6 +125,9 @@ def project_modified_assignment(model_manager, T, tau, x_interm1):
         od_demand_val = None
         od_cost_val = None
         od_keys = None
+        od_demand_seq = list()
+        od_cost_seq = list()
+        od_keys_seq = list()
         comm_id = o.get_commodity_id()
 
         # Check if the number of paths is greater than 1
@@ -134,16 +137,20 @@ def project_modified_assignment(model_manager, T, tau, x_interm1):
         # Get the demand and cost corresponding to the OD
         for path in o.get_subnetworks():
             if od_demand_val is None:
-                od_demand_val = np.array(x_interm1.get_all_demands_on_path_comm(path.getId(),comm_id))
-                od_cost_val = np.array(path_costs.get_all_costs_on_path_comm(path.getId(),comm_id))
-                od_keys = (path.getId(),comm_id)
+                od_demand_seq.append(np.array(x_interm1.get_all_demands_on_path_comm(path.getId(),comm_id)))
+                od_cost_seq.append(np.array(path_costs.get_all_costs_on_path_comm(path.getId(),comm_id)))
+                od_keys_seq.append((path.getId(),comm_id))
             else:
                 temp_demand = np.array(x_interm1.get_all_demands_on_path_comm(path.getId(),comm_id))
                 temp_cost = np.array(path_costs.get_all_costs_on_path_comm(path.getId(),comm_id))
-                od_demand_val = np.stack((od_demand_val,temp_demand))
-                od_cost_val = np.stack((od_cost_val,temp_cost))
-                od_keys = np.stack((od_keys,(path.getId(),comm_id)))
+                od_demand_seq.append(temp_demand)
+                od_cost_seq.append(temp_cost)
+                od_keys_seq.append((path.getId(),comm_id))
 
+        #We stack arrays to create matrices
+        od_demand_val = np.stack(od_demand_seq)
+        od_cost_val = np.stack(od_cost_seq)
+        od_keys = np.stack(od_keys_seq)
         od_temp = np.subtract(od_demand_val, 1/3600*tau*od_cost_val)
         od_projected_val = np.zeros(od_temp.shape)
 

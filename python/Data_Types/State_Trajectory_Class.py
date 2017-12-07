@@ -35,6 +35,11 @@ class State_Trajectory_class():
     def get_dt(self):
         return self.__dt
 
+    def add_linkId(self, link_id):
+        seen = set(self.__links_list)
+        if link_id not in seen:
+            self.__links_list.append(link_id)
+
     # Return all the states
     def get_all_states(self):
         return deepcopy(self.__state_trajectory)

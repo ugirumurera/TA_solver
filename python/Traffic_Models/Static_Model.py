@@ -35,12 +35,13 @@ class Static_Model_Class(Abstract_Traffic_Model_class):
         # Initialize the State_Trajectory object
         sampling_dt = demand_assignments.get_dt()
         num_steps = T/sampling_dt
-        link_states = State_Trajectory_class( list(self.beats_api.get_link_ids()),
+        link_states = State_Trajectory_class( list([]),
                                                  list(self.beats_api.get_commodity_ids()), num_steps, sampling_dt)
 
         for key in demand_assignments.get_all_demands().keys():
             route = demand_assignments.get_path_list()[key[0]]
             for link_id in route:
+                link_states.add_linkId(link_id)
                 for i in range(num_steps):
                     if ((link_id,key[1]) not in link_states.get_all_states().keys()) or \
                         not (isinstance(link_states.get_state_on_link_comm_time(link_id, key[1], i), Static_Traffic_State_class)):

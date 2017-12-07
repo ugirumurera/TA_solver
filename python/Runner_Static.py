@@ -25,12 +25,12 @@ connection = Java_Connection()
 
 # Contains local path to input configfile, for the three_links.xml network
 this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'seven_links.xml')
+configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'scenario.xml')
 coefficients = {}
 T = 3600  # Time horizon of interest
 sim_dt = 0.0  # Duration of one time_step for the traffic model
 
-sampling_dt = 300     # Duration of time_step for the solver, in this case it is equal to sim_dt
+sampling_dt = 600    # Duration of time_step for the solver, in this case it is equal to sim_dt
 
 model_manager = Link_Model_Manager_class(configfile, connection.gateway, "static", sim_dt, "bpr", coefficients)
 
@@ -56,6 +56,7 @@ if model_manager.is_valid():
     scenario_solver = Solver_class(model_manager)
     assignment, flow_sol = scenario_solver.Solver_function(T, sampling_dt, "FW")
 
+    print "\n"
     assignment.print_all()
 
     path_costs = model_manager.evaluate(assignment, T, initial_state=None)
@@ -68,11 +69,13 @@ if model_manager.is_valid():
     error_percentage = scenario_solver.distance_to_Nash(assignment, path_costs, sampling_dt)
     print "%.02f" % error_percentage, "% vehicles from equilibrium"
 
+    '''
     plt.figure(1)
     assignment.plot_demand()
 
     plt.figure(2)
     path_costs.plot_costs()
+    '''
 
 
 # kill jvm

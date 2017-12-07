@@ -14,11 +14,13 @@ conn = Java_Connection()
 sim_dt = 2.0
 
 this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'seven_links.xml')
+configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'scenario.xml')
 model_manager = BeATS_Model_Manager_class(configfile, conn.gateway, sim_dt)
 
+
+
 T = 3600  # Time horizon of interest
-sampling_dt = 150  # Duration of one time_step for the solver
+sampling_dt = 1800  # Duration of one time_step for the solver
 
 
 if(model_manager.is_valid()):
