@@ -46,11 +46,14 @@ def Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt, max_iter
             assignment.set_all_demands_on_path_comm(path.getId(), comm_id, demand)
 
     assignment, start_cost = all_or_nothing(model_manager, assignment, od, None, sampling_dt*num_steps)
-
+    prev_error = -1
+    assignment_to_return = None
 
     for i in range(max_iter):
         # All_or_nothing assignment
         y_assignment, current_path_costs = all_or_nothing(model_manager, assignment, od, None, sampling_dt*num_steps)
+
+        #current_path_costs.print_all()
 
         # Calculating the error
         current_cost_vector = np.asarray(current_path_costs.vector_path_costs())
@@ -59,10 +62,15 @@ def Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt, max_iter
 
         error = np.abs(np.dot(current_cost_vector, y_assignment_vector - x_assignment_vector)/
                        np.dot(y_assignment_vector,current_cost_vector))
+
+        if prev_error == -1 or prev_error > error:
+            prev_error = error
+            assignment_to_return = assignment
+
         print "MSA iteration: ", i, ", error: ", error
         if error < stop:
             print "Stop with error: ", error
-            return assignment
+            return assignment_to_return
 
         d_assignment = y_assignment_vector-x_assignment_vector
 
@@ -72,4 +80,4 @@ def Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt, max_iter
         x_assignment_vector = x_assignment_vector + s*d_assignment
         assignment.set_demand_with_vector(x_assignment_vector)
 
-    return assignment
+    return assignment_to_return

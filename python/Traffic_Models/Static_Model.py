@@ -9,7 +9,7 @@ class Static_Model_Class(Abstract_Traffic_Model_class):
     #Configfile is needed to initialize the model's scenario via beats_api
     def __init__(self, beats_api):
         Abstract_Traffic_Model_class.__init__(self, beats_api)
-        self.model_type = 's'     #Indicates that this is a static model
+        self.model_type = 'static'     #Indicates that this is a static model
 
         if not self.Validate_Configfile():
             self.beats_api = None

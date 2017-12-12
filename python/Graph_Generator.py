@@ -7,6 +7,7 @@ import random
 from xml.dom import minidom
 import StringIO
 import random
+import inspect
 
 def csv2string(data):
     si = StringIO.StringIO()
@@ -255,7 +256,9 @@ def write_to_xml(graph,all_paths):
         xdemands.append(xdemand)
         xdemand.set('commodity_id',"0")
         xdemand.set('subnetwork',str(path_id))
-        xdemand.text = "50"
+        xdemand.set('start_time',"0")
+        xdemand.set('dt',"1800")
+        xdemand.text = "400,50"
 
     # commodities ---------------------
     xcommodities = Element('commodities')
@@ -268,7 +271,9 @@ def write_to_xml(graph,all_paths):
     xcommodity.set('subnetworks',csv2string(path_ids))
 
     # write to file ---------------------
-    with open(('scenario.xml'), 'w') as f:
+    this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+    configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'scenario_varying_demand_2.xml')
+    with open(configfile, 'w') as f:
         f.write(minidom.parseString(etree.tostring(xscenario)).toprettyxml(indent="\t"))
 
 def main():

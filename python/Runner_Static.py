@@ -18,6 +18,7 @@ from copy import copy
 import matplotlib.pyplot as plt
 import os
 import inspect
+import csv
 
 plt.rcParams.update({'font.size': 18})
 
@@ -30,7 +31,7 @@ coefficients = {}
 T = 3600  # Time horizon of interest
 sim_dt = 0.0  # Duration of one time_step for the traffic model
 
-sampling_dt = 600    # Duration of time_step for the solver, in this case it is equal to sim_dt
+sampling_dt = 1800    # Duration of time_step for the solver, in this case it is equal to sim_dt
 
 model_manager = Link_Model_Manager_class(configfile, connection.gateway, "static", sim_dt, "bpr", coefficients)
 
@@ -55,6 +56,32 @@ if model_manager.is_valid():
 
     scenario_solver = Solver_class(model_manager)
     assignment, flow_sol = scenario_solver.Solver_function(T, sampling_dt, "FW")
+
+    #Save assignment into a csv file
+    this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+    outputfile = os.path.join(this_folder, os.path.pardir, 'output', 'medium_graph_static_exp_1.csv')
+
+    # We first save in the paramenters of the scenario
+    csv_file = open(outputfile, 'wb')
+    writer = csv.writer(csv_file)
+    # Saving the model type
+    writer.writerow(['model type:',model_manager.traffic_model.model_type])
+    od = model_manager.beats_api.get_od_info()
+    demand_api = [item * 3600 for item in od[0].get_total_demand_vps().getValues()]
+    od_dt = od[0].get_total_demand_vps().getDt()
+    if od_dt is None:
+        od_dt = sampling_dt
+
+    # Saving the demand per od and time horizon value
+    writer.writerow(['demand dt (s)', 'od demand (vh)','T (s)'])
+    writer.writerow([od_dt,demand_api,T])
+
+    writer.writerow(['(path ID, commodity ID)', 'array of demand (vh) per dt on path'])
+    # Now we save the assignment values to csv file
+    for key, value in assignment.get_all_demands().items():
+        writer.writerow([key, value])
+
+    csv_file.close()
 
     print "\n"
     assignment.print_all()
