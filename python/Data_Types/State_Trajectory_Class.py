@@ -39,6 +39,8 @@ class State_Trajectory_class():
         seen = set(self.__links_list)
         if link_id not in seen:
             self.__links_list.append(link_id)
+            return True
+        return False
 
     # Return all the states
     def get_all_states(self):
@@ -128,6 +130,10 @@ class State_Trajectory_class():
         for key in self.__state_trajectory.keys():
             time_dict[key] = self.__state_trajectory[key][time_step]
         return time_dict
+
+    # Initialize the states for a link with a list of none objects
+    def initialize_states(self, link_id, comm_id, lst_objects):
+        self.__state_trajectory[(link_id, comm_id)] = lst_objects
 
     # Sets all states with an state_trajectory dictionary
     def set_all_states(self, states):

@@ -258,7 +258,7 @@ def write_to_xml(graph,all_paths):
         xdemand.set('subnetwork',str(path_id))
         xdemand.set('start_time',"0")
         xdemand.set('dt',"1800")
-        xdemand.text = "400,50"
+        xdemand.text = "100"
 
     # commodities ---------------------
     xcommodities = Element('commodities')
@@ -272,16 +272,16 @@ def write_to_xml(graph,all_paths):
 
     # write to file ---------------------
     this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-    configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'scenario_varying_demand_2.xml')
+    configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'scenario_2500nodes.xml')
     with open(configfile, 'w') as f:
         f.write(minidom.parseString(etree.tostring(xscenario)).toprettyxml(indent="\t"))
 
 def main():
 
     # user definitions
-    graph_size = 5  # grid size, leads to a grid of graph_size*graph_size nodes
+    graph_size = 50  # grid size, leads to a grid of graph_size*graph_size nodes
     scaling = 1000  # number used to scale the resulting grid graph
-    max_length = 6  # Maximum number of nodes in paths returned
+    max_length = 20  # Maximum number of nodes in paths returned
     paths_per_od = 5    # Number of paths saved per OD
 
     num_nodes = graph_size*graph_size   # Number of nodes in the graph

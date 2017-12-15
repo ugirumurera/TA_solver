@@ -21,6 +21,9 @@ class Demand_Assignment_class():
         self.__assignment = {}
         self.__list_of_links = set()
 
+    def get_path_with_id(self, path_id):
+        return self.__path_list[path_id]
+
     def get_num_paths(self):
         return len(self.__path_list.keys())
 

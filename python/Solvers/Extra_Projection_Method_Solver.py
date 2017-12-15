@@ -50,9 +50,9 @@ def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,max_iter=100, d
     '''
     x_k_assignment = Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt,max_iter=100)
     # tau, sigma and epslon parameters used in the Extra Projection Method
-    tau = 0.5*1000
+    tau = 0.5*10000
     sigma = 0.9
-    epslon = 0.05
+    epslon = 0.025
 
     # Keep track of the error seen, so that if there is not change for m iteration, the algorithm stops
     previous_error = -1
@@ -70,11 +70,12 @@ def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,max_iter=100, d
         # Step 3: Calculating the error
         # All_or_nothing assignment
         new_theta_assignment, current_path_costs = all_or_nothing(model_manager, new_x_k_assignment, od, None, sampling_dt*num_steps)
-        theta_assignment, path_costs = all_or_nothing(model_manager, x_k_assignment, od, None, sampling_dt*num_steps)
+        theta_assignment, theta_path_costs = all_or_nothing(model_manager, x_k_assignment, od, None, sampling_dt*num_steps)
+
 
         # Calculating the error
         current_cost_vector = np.asarray(current_path_costs.vector_path_costs())
-        #x_k_assignment_vector = np.asarray(x_k_assignment.vector_assignment())
+        x_k_assignment_vector = np.asarray(x_k_assignment.vector_assignment())
         new_x_k_assignment_vector = np.asarray(new_x_k_assignment.vector_assignment())
         new_thetha_assignment_vector = np.asarray(new_theta_assignment.vector_assignment())
 
@@ -99,15 +100,19 @@ def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,max_iter=100, d
             print "Error did not change for the past ", m, " iterations"
             return new_x_k_assignment
 
+        # Update tau as needed
+        old_cost_vector = np.asarray(theta_path_costs.vector_path_costs())
+        theta_assignment_vector = np.asarray(theta_assignment.vector_assignment())
+        theta_value = np.dot(old_cost_vector,np.subtract(theta_assignment_vector,x_k_assignment_vector))
+        new_theta_value = np.dot(current_cost_vector,np.subtract(new_thetha_assignment_vector,new_x_k_assignment_vector))
+        mod_theta_assignment = epslon * np.abs(theta_value)
+        if (new_theta_value > theta_value) and \
+                np.abs(np.subtract(new_theta_value,theta_value)) < mod_theta_assignment:
+            tau = tau * sigma
+
         # Otherwise, we update x_k_assignment and go back to step 1
         x_k_assignment.set_demand_with_vector(new_x_k_assignment_vector)
 
-        # Update tau as needed
-        theta_assignment_vector = np.asarray(theta_assignment.vector_assignment())
-        mod_theta_assignment = epslon * np.abs(theta_assignment_vector)
-        if (any(new_thetha_assignment_vector < theta_assignment_vector)) and \
-                any(np.fabs(np.subtract(new_thetha_assignment_vector,theta_assignment_vector)) > mod_theta_assignment):
-            tau = tau * sigma
     return x_k_assignment
 
 # This function calculates the coefficient of the cost function for quadratic programming subproblem of the Extra_Projection_Method

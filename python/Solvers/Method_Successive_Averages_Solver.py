@@ -1,8 +1,8 @@
 # This is an implementation of the Method of Successive Averages used to solved traffic assignment problems
 
 from __future__ import division
-from Path_Based_Frank_Wolfe_Solver import all_or_nothing
 import numpy as np
+from All_or_Nothing_Function import all_or_nothing
 from Data_Types.Demand_Assignment_Class import Demand_Assignment_class
 from Data_Types.Path_Costs_Class import Path_Costs_class
 import timeit
@@ -81,3 +81,4 @@ def Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt, max_iter
         assignment.set_demand_with_vector(x_assignment_vector)
 
     return assignment_to_return
+

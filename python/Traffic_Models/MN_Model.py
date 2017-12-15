@@ -80,8 +80,8 @@ class MN_Model_Class(Abstract_Traffic_Model_class):
 
                 for i in range(num_steps):
                     state = MN_Traffic_State_class()
-                    flow = output.get_flow_vph_for_linkid_timestep(link_id,i)
-                    state.set_state_parameters(flow, capacity_vph)
+                    volume = output.get_flow_vph_for_linkid_timestep(link_id,i)
+                    state.set_state_parameters(volume, capacity_vph)
                     link_states.set_state_on_link_comm_time(link_id, comm, i, state)
 
         #print "\n"
