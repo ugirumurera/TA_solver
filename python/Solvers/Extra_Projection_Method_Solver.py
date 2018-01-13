@@ -48,7 +48,7 @@ def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,max_iter=100, d
     # x_interm is the initial solution: Step 0
     x_k_assignment, start_cost = all_or_nothing(model_manager, x_k_assignment, od, None, sampling_dt*num_steps)
     '''
-    x_k_assignment = Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt,max_iter=100)
+    x_k_assignment = Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt,max_iter=50)
     # tau, sigma and epslon parameters used in the Extra Projection Method
     tau = 0.5*10000
     sigma = 0.9
@@ -106,8 +106,8 @@ def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,max_iter=100, d
         theta_value = np.dot(old_cost_vector,np.subtract(theta_assignment_vector,x_k_assignment_vector))
         new_theta_value = np.dot(current_cost_vector,np.subtract(new_thetha_assignment_vector,new_x_k_assignment_vector))
         mod_theta_assignment = epslon * np.abs(theta_value)
-        if (new_theta_value > theta_value) and \
-                np.abs(np.subtract(new_theta_value,theta_value)) < mod_theta_assignment:
+        if (new_theta_value < theta_value) and \
+                np.abs(np.subtract(new_theta_value,theta_value)) > mod_theta_assignment:
             tau = tau * sigma
 
         # Otherwise, we update x_k_assignment and go back to step 1

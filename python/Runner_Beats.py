@@ -15,24 +15,24 @@ conn = Java_Connection()
 sim_dt = 2.0
 
 this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'scenario_varying_demand_2.xml')
+configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'scenario_high_2500_nodes.xml')
 model_manager = BeATS_Model_Manager_class(configfile, conn.gateway, sim_dt)
 
 
 
 T = 3600  # Time horizon of interest
-sampling_dt = 150  # Duration of one time_step for the solver
+sampling_dt = 300  # Duration of one time_step for the solver
 
 
 if(model_manager.is_valid()):
     num_steps = T/sampling_dt
 
     scenario_solver = Solver_class(model_manager)
-    assignment, flow_sol = scenario_solver.Solver_function(T, sampling_dt, "FW")
+    assignment, flow_sol = scenario_solver.Solver_function(T, sampling_dt, "EPM")
 
     #Save assignment into a csv file
     this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-    outputfile = os.path.join(this_folder, os.path.pardir, 'output', 'medium_graph_beats_exp_7.csv')
+    outputfile = os.path.join(this_folder, os.path.pardir, 'output', 'scenario_high_2500_nodes.csv')
 
     # We first save in the paramenters of the scenario
     csv_file = open(outputfile, 'wb')

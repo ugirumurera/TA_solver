@@ -26,12 +26,12 @@ connection = Java_Connection()
 
 # Contains local path to input configfile, for the three_links.xml network
 this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'scenario_varying_demand_2.xml')
+configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'scenario_low_2500_nodes.xml')
 coefficients = {}
 T = 3600  # Time horizon of interest
 sim_dt = 0.0  # Duration of one time_step for the traffic model
 
-sampling_dt = 150     # Duration of time_step for the solver, in this case it is equal to sim_dt
+sampling_dt = 1800     # Duration of time_step for the solver, in this case it is equal to sim_dt
 
 model_manager = Link_Model_Manager_class(configfile, connection.gateway, "static", sim_dt, "bpr", coefficients)
 
@@ -59,7 +59,7 @@ if model_manager.is_valid():
 
     #Save assignment into a csv file
     this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-    outputfile = os.path.join(this_folder, os.path.pardir, 'output', 'medium_graph_static_exp_5.csv')
+    outputfile = os.path.join(this_folder, os.path.pardir, 'output', 'scenario_low_2500_nodes.csv')
 
     # We first save in the paramenters of the scenario
     csv_file = open(outputfile, 'wb')

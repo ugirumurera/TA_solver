@@ -55,7 +55,7 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt, past=10, max_it
             assignment.set_all_demands_on_path_comm(path.getId(), comm_id, demand)
 
 
-    assignment = Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt,max_iter=100)
+    assignment = Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt,max_iter=50)
     #assignment, start_cost = all_or_nothing(model_manager, assignment, od, None, T)
     past_assignment = np.zeros((len(path_list.keys())*num_steps, past), dtype="float64")
 
@@ -87,7 +87,7 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt, past=10, max_it
             print ("Iteration took took  %s seconds" % elapsed1)
         '''
 
-        past_assignment[:,i%past] = y_assignment_vector
+        past_assignment[:,i%past] = y_assignment
         d_assignment = y_assignment_vector-x_assignment_vector
 
         if i > q:
