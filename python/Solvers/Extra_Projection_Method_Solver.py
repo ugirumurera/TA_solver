@@ -2,12 +2,12 @@ from __future__ import division
 from Data_Types.Demand_Assignment_Class import Demand_Assignment_class
 from Method_Successive_Averages_Solver import Method_of_Successive_Averages_Solver
 from Path_Based_Frank_Wolfe_Solver import all_or_nothing, Path_Based_Frank_Wolfe_Solver
-from Projection_onto_Simplex import Projection_onto_Simplex
+from Projection_onto_Simplex import Projection_onto_Simplex, Projection_onto_Simplex_old
 import numpy as np
 import timeit
 import gc
 
-def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,max_iter=1000, display=1, stopping=1e-2):
+def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,max_iter=100, display=1, stopping=1e-2):
 
     # In this case, x_k is a demand assignment object that maps demand to paths
     # Constructing the x_0, the initial demand assignment, where all the demand for an OD is assigned to one path
@@ -48,11 +48,11 @@ def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,max_iter=1000, 
     # x_interm is the initial solution: Step 0
     x_k_assignment, start_cost = all_or_nothing(model_manager, x_k_assignment, od, None, sampling_dt*num_steps)
     '''
-    x_k_assignment = Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt)
+    x_k_assignment = Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt,max_iter=50)
     # tau, sigma and epslon parameters used in the Extra Projection Method
-    tau = 0.5*100000
+    tau = 0.5*10000
     sigma = 0.9
-    epslon = 0.05
+    epslon = 0.025
 
     # Keep track of the error seen, so that if there is not change for m iteration, the algorithm stops
     previous_error = -1
@@ -70,17 +70,18 @@ def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,max_iter=1000, 
         # Step 3: Calculating the error
         # All_or_nothing assignment
         new_theta_assignment, current_path_costs = all_or_nothing(model_manager, new_x_k_assignment, od, None, sampling_dt*num_steps)
-        theta_assignment, path_costs = all_or_nothing(model_manager, x_k_assignment, od, None, sampling_dt*num_steps)
+        theta_assignment, theta_path_costs = all_or_nothing(model_manager, x_k_assignment, od, None, sampling_dt*num_steps)
+
 
         # Calculating the error
         current_cost_vector = np.asarray(current_path_costs.vector_path_costs())
-        #x_k_assignment_vector = np.asarray(x_k_assignment.vector_assignment())
+        x_k_assignment_vector = np.asarray(x_k_assignment.vector_assignment())
         new_x_k_assignment_vector = np.asarray(new_x_k_assignment.vector_assignment())
         new_thetha_assignment_vector = np.asarray(new_theta_assignment.vector_assignment())
 
-        #error = np.abs(np.dot(current_cost_vector, new_thetha_assignment_vector - new_x_k_assignment_vector)/
-        #               np.dot(new_thetha_assignment_vector,current_cost_vector))
-        error = np.abs(np.dot(1/3600*current_cost_vector, new_thetha_assignment_vector - new_x_k_assignment_vector))
+        error = np.abs(np.dot(current_cost_vector, new_thetha_assignment_vector - new_x_k_assignment_vector)/
+                      np.dot(new_thetha_assignment_vector,current_cost_vector))
+        #error = np.abs(np.dot(1/3600*current_cost_vector, new_thetha_assignment_vector - new_x_k_assignment_vector))
 
 
         print "EPM iteration: ", i, ", error: ", error
@@ -99,15 +100,19 @@ def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,max_iter=1000, 
             print "Error did not change for the past ", m, " iterations"
             return new_x_k_assignment
 
+        # Update tau as needed
+        old_cost_vector = np.asarray(theta_path_costs.vector_path_costs())
+        theta_assignment_vector = np.asarray(theta_assignment.vector_assignment())
+        theta_value = np.dot(old_cost_vector,np.subtract(theta_assignment_vector,x_k_assignment_vector))
+        new_theta_value = np.dot(current_cost_vector,np.subtract(new_thetha_assignment_vector,new_x_k_assignment_vector))
+        mod_theta_assignment = epslon * np.abs(theta_value)
+        if (new_theta_value < theta_value) and \
+                np.abs(np.subtract(new_theta_value,theta_value)) > mod_theta_assignment:
+            tau = tau * sigma
+
         # Otherwise, we update x_k_assignment and go back to step 1
         x_k_assignment.set_demand_with_vector(new_x_k_assignment_vector)
 
-        # Update tau as needed
-        theta_assignment_vector = np.asarray(theta_assignment.vector_assignment())
-        mod_theta_assignment = epslon * np.abs(theta_assignment_vector)
-        if (any(new_thetha_assignment_vector < theta_assignment_vector)) and \
-                any(np.fabs(np.subtract(new_thetha_assignment_vector,theta_assignment_vector)) > mod_theta_assignment):
-            tau = tau * sigma
     return x_k_assignment
 
 # This function calculates the coefficient of the cost function for quadratic programming subproblem of the Extra_Projection_Method
@@ -125,6 +130,9 @@ def project_modified_assignment(model_manager, T, tau, x_interm1):
         od_demand_val = None
         od_cost_val = None
         od_keys = None
+        od_demand_seq = list()
+        od_cost_seq = list()
+        od_keys_seq = list()
         comm_id = o.get_commodity_id()
 
         # Check if the number of paths is greater than 1
@@ -133,23 +141,30 @@ def project_modified_assignment(model_manager, T, tau, x_interm1):
 
         # Get the demand and cost corresponding to the OD
         for path in o.get_subnetworks():
+            '''
             if od_demand_val is None:
-                od_demand_val = np.array(x_interm1.get_all_demands_on_path_comm(path.getId(),comm_id))
-                od_cost_val = np.array(path_costs.get_all_costs_on_path_comm(path.getId(),comm_id))
-                od_keys = (path.getId(),comm_id)
+                od_demand_seq.append(np.array(x_interm1.get_all_demands_on_path_comm(path.getId(),comm_id)))
+                od_cost_seq.append(np.array(path_costs.get_all_costs_on_path_comm(path.getId(),comm_id)))
+                od_keys_seq.append((path.getId(),comm_id))
             else:
-                temp_demand = np.array(x_interm1.get_all_demands_on_path_comm(path.getId(),comm_id))
-                temp_cost = np.array(path_costs.get_all_costs_on_path_comm(path.getId(),comm_id))
-                od_demand_val = np.stack((od_demand_val,temp_demand))
-                od_cost_val = np.stack((od_cost_val,temp_cost))
-                od_keys = np.stack((od_keys,(path.getId(),comm_id)))
+            '''
+            temp_demand = np.array(x_interm1.get_all_demands_on_path_comm(path.getId(),comm_id))
+            temp_cost = np.array(path_costs.get_all_costs_on_path_comm(path.getId(),comm_id))
+            od_demand_seq.append(temp_demand)
+            od_cost_seq.append(temp_cost)
+            od_keys_seq.append((path.getId(),comm_id))
 
-        od_temp = np.subtract(od_demand_val, 1/3600*tau*od_cost_val)
+        #We stack arrays to create matrices
+        od_demand_val = np.stack(od_demand_seq)
+        od_cost_val = np.stack(od_cost_seq)
+        od_keys = np.stack(od_keys_seq)
+        od_temp = np.subtract(od_demand_val,tau*od_cost_val)
         od_projected_val = np.zeros(od_temp.shape)
 
         # Here now we start the projection
         for n in range(num_steps):
-            od_projected_val[:,n] = Projection_onto_Simplex(od_temp[:,n],sum(od_demand_val[:,n]))
+            od_projected_val[:, n] = Projection_onto_Simplex(od_temp[:, n], sum(od_demand_val[:, n]))
+            #od_projected_val[:, n] =  Projection_onto_Simplex_old(od_temp[:, n], sum(od_demand_val[:, n]))
 
         #change the demand assignment
         for i in range(od_projected_val.shape[0]):

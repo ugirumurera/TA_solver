@@ -12,7 +12,7 @@ from Data_Types.Path_Costs_Class import Path_Costs_class
 from copy import copy
 import numpy as np
 import timeit
-import gc
+from Method_Successive_Averages_Solver import Method_of_Successive_Averages_Solver
 
 def Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt, past=10, max_iter=1000, eps=1e-4, \
     q=50, display=1, stop=1e-2):
@@ -23,6 +23,7 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt, past=10, max_it
     od = model_manager.beats_api.get_od_info()
     num_steps = int(T/sampling_dt)
 
+
     # Initializing the demand assignment
     commodity_list = list(model_manager.beats_api.get_commodity_ids())
     assignment = Demand_Assignment_class(path_list,commodity_list,
@@ -30,6 +31,7 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt, past=10, max_it
 
     start_time1 = timeit.default_timer()
     # Populating the Demand Assignment, based on the paths associated with ODs
+
     for o in od:
         comm_id = o.get_commodity_id()
 
@@ -52,10 +54,9 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt, past=10, max_it
             demand = np.zeros(num_steps)
             assignment.set_all_demands_on_path_comm(path.getId(), comm_id, demand)
 
-    assignment, start_cost = all_or_nothing(model_manager, assignment, od, None, sampling_dt*num_steps)
-    #elapsed1 = timeit.default_timer() - start_time1
-    #print ("Demand Initialization took  %s seconds" % elapsed1)
 
+    assignment = Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt,max_iter=50)
+    #assignment, start_cost = all_or_nothing(model_manager, assignment, od, None, T)
     past_assignment = np.zeros((len(path_list.keys())*num_steps, past), dtype="float64")
 
     for i in range(max_iter):
@@ -70,13 +71,23 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt, past=10, max_it
         x_assignment_vector = np.asarray(assignment.vector_assignment())
         y_assignment_vector = np.asarray(y_assignment.vector_assignment())
 
-        error = np.abs(np.dot(current_cost_vector, y_assignment_vector - x_assignment_vector))
+        #error = np.abs(np.dot(current_cost_vector, y_assignment_vector - x_assignment_vector))
+        error = np.abs(np.dot(current_cost_vector, y_assignment_vector - x_assignment_vector) /
+                       np.dot(y_assignment_vector, current_cost_vector))
         if display == 1: print "iteration: ", i, ", error: ", error
         if error < stop :
             if display == 1: print "Stop with error: ", error
             return assignment
+        '''
+        if i == 0:
+            start_time1 = timeit.default_timer()
 
-        past_assignment[:,i%past] = y_assignment_vector
+        if  i == 1:
+            elapsed1 = timeit.default_timer() - start_time1
+            print ("Iteration took took  %s seconds" % elapsed1)
+        '''
+
+        past_assignment[:,i%past] = y_assignment
         d_assignment = y_assignment_vector-x_assignment_vector
 
         if i > q:
@@ -222,6 +233,7 @@ def all_or_nothing(model_manager, assignment, od, initial_state = None, T = None
 
     #y_assignment.print_all()
     return y_assignment,path_costs
+
 
 def line_search(model_manager, x_assignment, x_vector, y_assignment, y_vector, d_vector, eps):
     # alfa = 0 corresponds to when assignment is equal to original assignment x_assignment

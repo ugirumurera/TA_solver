@@ -69,25 +69,23 @@ class MN_Model_Class(Abstract_Traffic_Model_class):
         # cycle through beats outputs
         sampling_dt = demand_assignment.get_dt()
         num_steps = int(time_horizon/sampling_dt)
-        link_states = State_Trajectory_class(list(self.beats_api.get_link_ids()),
+        link_states = State_Trajectory_class(list([]),
                                              list(self.beats_api.get_commodity_ids()), num_steps, sampling_dt)
 
         for output in api.get_output_data():
             for link_id in output.get_link_ids():
-                profile = output.get_profile_for_linkid(link_id)
+                link_states.add_linkId(link_id)
                 comm = output.get_commodity_id()
                 capacity_vph = self.beats_api.get_link_with_id(link_id).get_capacity_vps()*3600
 
                 for i in range(num_steps):
-                    time = float(i * demand_assignment.get_dt())
                     state = MN_Traffic_State_class()
-                    #flow = profile.get_value_for_time(time)
-                    flow = output.get_flow_vph_for_linkid_timestep(link_id,i)
-                    state.set_state_parameters(flow, capacity_vph)
+                    volume = output.get_flow_vph_for_linkid_timestep(link_id,i)
+                    state.set_state_parameters(volume, capacity_vph)
                     link_states.set_state_on_link_comm_time(link_id, comm, i, state)
 
         #print "\n"
-        link_states.print_all()
+        #link_states.print_all()
 
         return link_states
 

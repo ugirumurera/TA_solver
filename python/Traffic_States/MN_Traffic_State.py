@@ -1,5 +1,6 @@
 #Static Traffic State, Assuming the demand is fixed
 
+from __future__ import division
 from Abstract_Traffic_State import Abstract_Traffic_State_class
 from copy import copy
 
@@ -34,7 +35,7 @@ class MN_Traffic_State_class(Abstract_Traffic_State_class):
 
     def set_state_parameters(self, volume, capacity_vph):
         self.capacity = capacity_vph
-        self.flow = volume
+        self.flow = volume/capacity_vph
 
 
     # Print the flow value
