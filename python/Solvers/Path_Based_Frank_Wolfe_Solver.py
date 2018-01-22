@@ -87,7 +87,7 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt, past=10, max_it
             print ("Iteration took took  %s seconds" % elapsed1)
         '''
 
-        past_assignment[:,i%past] = y_assignment
+        past_assignment[:,i%past] = y_assignment_vector
         d_assignment = y_assignment_vector-x_assignment_vector
 
         if i > q:

@@ -1,3 +1,4 @@
+from __future__ import division
 import os
 import inspect
 from Model_Manager.BeATS_Model_Manager import BeATS_Model_Manager_class
@@ -15,24 +16,24 @@ conn = Java_Connection()
 sim_dt = 2.0
 
 this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'scenario_high_2500_nodes.xml')
+configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'scenario_low_2500_nodes.xml')
 model_manager = BeATS_Model_Manager_class(configfile, conn.gateway, sim_dt)
 
-
+print "Finished Loading. Going to Solving"
 
 T = 3600  # Time horizon of interest
 sampling_dt = 300  # Duration of one time_step for the solver
 
 
 if(model_manager.is_valid()):
-    num_steps = T/sampling_dt
+    num_steps = int(T/sampling_dt)
 
     scenario_solver = Solver_class(model_manager)
     assignment, flow_sol = scenario_solver.Solver_function(T, sampling_dt, "EPM")
 
     #Save assignment into a csv file
     this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-    outputfile = os.path.join(this_folder, os.path.pardir, 'output', 'scenario_high_2500_nodes.csv')
+    outputfile = os.path.join(this_folder, os.path.pardir, 'output', 'scenario_low_2500_nodes.csv')
 
     # We first save in the paramenters of the scenario
     csv_file = open(outputfile, 'wb')
@@ -56,13 +57,13 @@ if(model_manager.is_valid()):
 
     csv_file.close()
 
-    print "\n"
-    assignment.print_all()
+    #print "\n"
+    #assignment.print_all()
 
     path_costs = model_manager.evaluate(assignment, T, initial_state=None)
 
-    print "\n"
-    path_costs.print_all()
+    #print "\n"
+    #path_costs.print_all()
 
     #Distance to Nash
     print "\n"

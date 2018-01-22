@@ -50,7 +50,7 @@ def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,max_iter=100, d
     '''
     x_k_assignment = Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt,max_iter=50)
     # tau, sigma and epslon parameters used in the Extra Projection Method
-    tau = 0.5*10000
+    tau = 0.5*10
     sigma = 0.9
     epslon = 0.025
 
@@ -127,9 +127,6 @@ def project_modified_assignment(model_manager, T, tau, x_interm1):
     num_steps = x_interm1.get_num_time_step()
 
     for o in model_manager.beats_api.get_od_info():
-        od_demand_val = None
-        od_cost_val = None
-        od_keys = None
         od_demand_seq = list()
         od_cost_seq = list()
         od_keys_seq = list()

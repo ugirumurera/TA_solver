@@ -111,7 +111,7 @@ def generate_graph_and_paths(graph_size, scaling, num_nodes, num_ods, max_length
     graph.vs["indices"] = graph.vs.indices
     graph.vs["label"] = graph.vs["indices"]
     print(graph.ecount()) #printing the number of edges
-    #plot(graph, layout=layout)
+    plot(graph, layout=layout)
 
 
     # Generate the paths between the od pairs
@@ -307,8 +307,8 @@ def main():
     paths_per_od = 5    # Number of paths saved per OD
 
     num_nodes = graph_size*graph_size   # Number of nodes in the graph
-    #num_ods = num_nodes/4    # Number of od, have to be less that 1/2 number of nodes
-    num_ods = 100
+    num_ods = num_nodes/4    # Number of od, have to be less that 1/2 number of nodes
+    #num_ods = 100
 
     graph, all_paths = generate_graph_and_paths(graph_size, scaling, num_nodes, num_ods, max_length, paths_per_od)
 
