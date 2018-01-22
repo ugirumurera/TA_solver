@@ -197,8 +197,10 @@ def write_to_xml(graph,all_paths):
     # links .........................
     xlinks = Element('links')
     xnetwork.append(xlinks)
+    link_ids = []
     for e in graph.es:
         xlink = Element('link')
+        link_ids.append(e.index)
         xlinks.append(xlink)
         xlink.set('id', str(e.index))
         xlink.set('length', str(100))   # length in meters --- FIX THIS
@@ -255,6 +257,14 @@ def write_to_xml(graph,all_paths):
             xrc.set('out_link',str(in_out_link[1]))
             xrc.set('in_link_lanes',"1#1")
             xrc.set('out_link_lanes',"1#1")
+
+    # MN model --------------------
+    xmodel = Element('model')
+    xscenario.append(xmodel)
+    xmn = Element('mn')
+    xmodel.append(xmn)
+    xmn.set('max_cell_length', '100')  # m
+    xmn.text = csv2string(link_ids)
 
     # paths ---------------------
     xsubnetworks = Element('subnetworks')
