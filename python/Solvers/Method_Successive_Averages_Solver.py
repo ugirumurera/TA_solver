@@ -35,7 +35,7 @@ def Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt, max_iter
         # Time step in our problem
         if (sampling_dt > demand_dt or demand_dt % sampling_dt > 0) and (demand_size > 1):
             print "Demand specified in xml cannot not be properly divided among time steps"
-            return
+            return None
         #if demand_size > num_steps or num_steps % len(demand_api) != 0:
             #print "Demand specified in xml cannot not be properly divided among time steps"
             #return

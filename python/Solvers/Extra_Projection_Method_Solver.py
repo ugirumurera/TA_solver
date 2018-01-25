@@ -5,7 +5,7 @@ from Path_Based_Frank_Wolfe_Solver import all_or_nothing, Path_Based_Frank_Wolfe
 from Projection_onto_Simplex import Projection_onto_Simplex, Projection_onto_Simplex_old
 import numpy as np
 import timeit
-import gc
+from copy import copy
 
 def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,max_iter=100, display=1, stopping=1e-2):
 
@@ -49,8 +49,13 @@ def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,max_iter=100, d
     x_k_assignment, start_cost = all_or_nothing(model_manager, x_k_assignment, od, None, sampling_dt*num_steps)
     '''
     x_k_assignment = Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt,max_iter=50)
+
+    # If assignment is None, then return from the solver
+    if x_k_assignment is None:
+        print "Demand dt is less than sampling dt, or demand not specified properly"
+        return None
     # tau, sigma and epslon parameters used in the Extra Projection Method
-    tau = 0.5*10
+    tau = 0.5*100000
     sigma = 0.9
     epslon = 0.025
 
@@ -62,10 +67,12 @@ def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,max_iter=100, d
     for i in range(max_iter):
         # Step 1: Determining Z_k
         # get coefficients for cost function
-        z_k_assignment = project_modified_assignment(model_manager, T, tau, x_k_assignment)
-
+        z_k_assignment,new_tau = project_modified_assignment(model_manager, T, tau, x_k_assignment)
+        tau = new_tau
         # Step 2: Determining x_k=1
-        new_x_k_assignment = project_modified_assignment(model_manager, T, tau, z_k_assignment)
+        new_x_k_assignment,new_tau = project_modified_assignment(model_manager, T, tau, z_k_assignment)
+
+        tau = new_tau
 
         # Step 3: Calculating the error
         # All_or_nothing assignment
@@ -125,46 +132,63 @@ def project_modified_assignment(model_manager, T, tau, x_interm1):
     # Populating the Demand Assignment, based on the paths associated with ODs
     path_costs = model_manager.evaluate(x_interm1, T, initial_state=None)
     num_steps = x_interm1.get_num_time_step()
+    stuck_flag = True
+    count = 0   # Counts how many times we have gone through the while loop
+    mutiple = 10    # Multiple to use on tau
 
-    for o in model_manager.beats_api.get_od_info():
-        od_demand_seq = list()
-        od_cost_seq = list()
-        od_keys_seq = list()
-        comm_id = o.get_commodity_id()
+    while stuck_flag:
+        stuck_flag = False
+        tau = tau /(mutiple**count)
+        for o in model_manager.beats_api.get_od_info():
+            od_demand_seq = list()
+            od_cost_seq = list()
+            od_keys_seq = list()
+            comm_id = o.get_commodity_id()
 
-        # Check if the number of paths is greater than 1
-        if len(o.get_subnetworks()) == 1:
-            break
+            # Check if the number of paths is greater than 1
+            if len(o.get_subnetworks()) == 1:
+                break
 
-        # Get the demand and cost corresponding to the OD
-        for path in o.get_subnetworks():
-            '''
-            if od_demand_val is None:
+            # Get the demand and cost corresponding to the OD
+            for path in o.get_subnetworks():
+                '''
+                if od_demand_val is None:
                 od_demand_seq.append(np.array(x_interm1.get_all_demands_on_path_comm(path.getId(),comm_id)))
                 od_cost_seq.append(np.array(path_costs.get_all_costs_on_path_comm(path.getId(),comm_id)))
                 od_keys_seq.append((path.getId(),comm_id))
+                else:
+                '''
+                temp_demand = np.array(x_interm1.get_all_demands_on_path_comm(path.getId(),comm_id))
+                temp_cost = np.array(path_costs.get_all_costs_on_path_comm(path.getId(),comm_id))
+                od_demand_seq.append(temp_demand)
+                od_cost_seq.append(temp_cost)
+                od_keys_seq.append((path.getId(),comm_id))
+
+            #We stack arrays to create matrices
+            od_demand_val = np.stack(od_demand_seq)
+            od_cost_val = np.stack(od_cost_seq)
+            od_keys = np.stack(od_keys_seq)
+            od_temp = np.subtract(od_demand_val,tau*od_cost_val)
+            od_projected_val = np.zeros(od_temp.shape)
+
+            # Here now we start the projection
+            for n in range(num_steps):
+                #od_projected_val[:, n] = Projection_onto_Simplex(od_temp[:, n], sum(od_demand_val[:, n]))
+                projected_values = Projection_onto_Simplex(od_temp[:, n], sum(od_demand_val[:, n]))
+
+                if projected_values is not None:
+                    od_projected_val[:, n] = copy(projected_values)
+                else:
+                    stuck_flag = True
+                    break
+
+                #od_projected_val[:, n] =  Projection_onto_Simplex(od_temp[:, n], sum(od_demand_val[:, n]))
+
+            #change the demand assignment
+            if not stuck_flag:
+                for i in range(od_projected_val.shape[0]):
+                    x_interm1.set_all_demands_on_path_comm(od_keys[i][0], od_keys[i][1], od_projected_val[i,:])
             else:
-            '''
-            temp_demand = np.array(x_interm1.get_all_demands_on_path_comm(path.getId(),comm_id))
-            temp_cost = np.array(path_costs.get_all_costs_on_path_comm(path.getId(),comm_id))
-            od_demand_seq.append(temp_demand)
-            od_cost_seq.append(temp_cost)
-            od_keys_seq.append((path.getId(),comm_id))
-
-        #We stack arrays to create matrices
-        od_demand_val = np.stack(od_demand_seq)
-        od_cost_val = np.stack(od_cost_seq)
-        od_keys = np.stack(od_keys_seq)
-        od_temp = np.subtract(od_demand_val,tau*od_cost_val)
-        od_projected_val = np.zeros(od_temp.shape)
-
-        # Here now we start the projection
-        for n in range(num_steps):
-            od_projected_val[:, n] = Projection_onto_Simplex(od_temp[:, n], sum(od_demand_val[:, n]))
-            #od_projected_val[:, n] =  Projection_onto_Simplex_old(od_temp[:, n], sum(od_demand_val[:, n]))
-
-        #change the demand assignment
-        for i in range(od_projected_val.shape[0]):
-            x_interm1.set_all_demands_on_path_comm(od_keys[i][0], od_keys[i][1], od_projected_val[i,:])
-
-    return x_interm1
+                break
+        count += 1
+    return x_interm1, tau

@@ -56,6 +56,12 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt, past=10, max_it
 
 
     assignment = Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt,max_iter=50)
+
+    #If assignment is None, then return from the solver
+    if assignment is None:
+        print "Demand dt is less than sampling dt, or demand not specified properly"
+        return None
+
     #assignment, start_cost = all_or_nothing(model_manager, assignment, od, None, T)
     past_assignment = np.zeros((len(path_list.keys())*num_steps, past), dtype="float64")
 

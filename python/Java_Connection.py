@@ -20,16 +20,22 @@ class Java_Connection():
         this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
         jar_file_name = os.path.join(this_folder, 'py4jbeats-1.0-SNAPSHOT-jar-with-dependencies.jar')
 
-        if platform.system() == "Windows":
-            self.openWindows(jar_file_name, self.port_number)
-        elif platform.system() == "Linux":
-            self.openLinux(jar_file_name, self.port_number)
+        #First check if the file exists indeed:
+        if os.path.isfile('py4jbeats-1.0-SNAPSHOT-jar-with-dependencies.jar'):
+
+            if platform.system() == "Windows":
+                self.openWindows(jar_file_name, self.port_number)
+            elif platform.system() == "Linux":
+                self.openLinux(jar_file_name, self.port_number)
+            else:
+                raise Exception('Unknown platform')
+
+            self.gateway = JavaGateway(gateway_parameters=GatewayParameters(port=int(self.port_number)))
+
+            print(platform.system())
+
         else:
-            raise Exception('Unknown platform')
-
-        self.gateway = JavaGateway(gateway_parameters=GatewayParameters(port=int(self.port_number)))
-
-        print(platform.system())
+            print "Jar file missing"
 
     def openWindows(self, jar_file_name, port_number):
         try:
@@ -43,9 +49,9 @@ class Java_Connection():
 
     def openLinux(self, jar_file_name, port_number):
 
-        pid = os.fork()
+        self.pid = os.fork()
 
-        if pid == 0:
+        if self.pid == 0:
             self.pid = os.getpid()
             retcode = call(['java', '-jar', jar_file_name, port_number])
             sys.exit()

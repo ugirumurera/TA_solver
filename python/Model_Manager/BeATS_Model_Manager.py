@@ -4,6 +4,7 @@ from Abstract_Model_Manager import Abstract_Model_Manager_class
 from Data_Types.Path_Costs_Class import Path_Costs_class
 from copy import copy, deepcopy
 import numpy as np
+import timeit
 
 class BeATS_Model_Manager_class(Abstract_Model_Manager_class):
 
@@ -28,7 +29,7 @@ class BeATS_Model_Manager_class(Abstract_Model_Manager_class):
 
         #api =self.beats_api
         api = self.gateway.entry_point.get_BeATS_API()
-        api.load(self.configfile)
+        api.load(self.configfile, 2.0)
 
         #Clear the path requests
         api.clear_output_requests()
@@ -49,9 +50,12 @@ class BeATS_Model_Manager_class(Abstract_Model_Manager_class):
                 java_array.add(float(d))
             api.set_demand_on_path_in_vph(path_id, comm_id, start_time, demand_dt, java_array)
 
+        #begin = timeit.default_timer()
         # run BeATS
         api.set_random_seed(1)      #Initialize the random seed
         api.run(float(start_time), float(time_horizon))
+        #elapsed = timeit.default_timer() - begin
+        #print ("api.run took  %s seconds" % elapsed)
 
         # extract the path costs
         path_costs = Path_Costs_class(path_cost_n, demand_dt)

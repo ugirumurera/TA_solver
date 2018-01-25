@@ -109,9 +109,9 @@ def generate_graph_and_paths(graph_size, scaling, num_nodes, num_ods, max_length
     coordinates = layout.coords    # Coordinates of the nodes
     graph.vs["Coordinates"] = coordinates
     graph.vs["indices"] = graph.vs.indices
-    graph.vs["label"] = graph.vs["indices"]
+    #graph.vs["label"] = graph.vs["indices"]
     print(graph.ecount()) #printing the number of edges
-    plot(graph, layout=layout)
+    #plot(graph, layout=layout)
 
 
     # Generate the paths between the od pairs
@@ -312,13 +312,13 @@ def main():
 
     # user definitions
     graph_size = 50  # grid size, leads to a grid of graph_size*graph_size nodes
-    scaling = 1000  # number used to scale the resulting grid graph
+    scaling = 10 # number used to scale the resulting grid graph
     max_length =25  # Maximum number of nodes in paths returned
     paths_per_od = 5    # Number of paths saved per OD
 
     num_nodes = graph_size*graph_size   # Number of nodes in the graph
     num_ods = num_nodes/4    # Number of od, have to be less that 1/2 number of nodes
-    #num_ods = 100
+    #num_ods = 18
 
     graph, all_paths = generate_graph_and_paths(graph_size, scaling, num_nodes, num_ods, max_length, paths_per_od)
 

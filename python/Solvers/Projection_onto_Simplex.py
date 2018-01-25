@@ -16,11 +16,18 @@ def Projection_onto_Simplex(vector_to_project, a):
     rel_tol = 1e-09
     current_len_v = N
     new_v = v[np.where(v > (rou+rel_tol))]
+    count = 0   # Keeps track of the number of iterations done in
 
-    while len(new_v) != current_len_v:
+    while len(new_v) != current_len_v and not(np.array_equal(new_v,vector_to_project)):
         current_len_v = len(new_v)
         rou = (sum(new_v)-a)/current_len_v
         new_v = v[np.where(v > (rou+rel_tol))]
+        count += 1
+
+    #If new_v = vector_to_project, then the projection is not able to converge, hence requiring a change of tau
+    # in the original algorithm. We then return None, and do not project this vector.
+    if np.array_equal(new_v,vector_to_project):
+        return None
 
     # Step 3
     tau = rou
@@ -33,7 +40,6 @@ def Projection_onto_Simplex(vector_to_project, a):
 def Projection_onto_Simplex_old(vector_to_project, a):
     v = np.asarray(copy(vector_to_project))
     u_vector = np.sort(v)[::-1]
-
     K = 1
 
     for i in range(len(u_vector)):
