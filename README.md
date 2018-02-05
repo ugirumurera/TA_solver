@@ -38,7 +38,9 @@ Alternatively you can grab the required jar files [here](https://gcgomes.bitbuck
 
 **Step 10.** Run Test to validate installation:
 
-* On Windows: Run **Runner_Static.py**
+* Run **Runner_Static.py** to test the **Static Model**
+* Run **Runner_MN.py** to test the **MN Model**
+* Run **Runner_Beats.py** to test the **PointQ Model**
 
 This will initialize a small instance of the static traffic assignment problem and solve it using the Frank-Wolfe algorithm. 
 
