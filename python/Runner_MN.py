@@ -9,6 +9,8 @@ import numpy as np
 import time
 from copy import copy
 import matplotlib.pyplot as plt
+import csv
+
 plt.rcParams.update({'font.size': 17})
 
 conn = Java_Connection()
@@ -16,12 +18,12 @@ conn = Java_Connection()
 if conn.pid is not None:
 
     this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-    configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'scenario_varying_2500_nodes_MN.xml')
+    configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'seven_links_mn.xml')
     coefficients = {}
     T = 3600  # Time horizon of interest
     sim_dt = 2.0  # Duration of one time_step for the traffic model
 
-    sampling_dt = 300     # Duration of time_step for the solver, in this case it is equal to sim_dt
+    sampling_dt = 1800     # Duration of time_step for the solver, in this case it is equal to sim_dt
 
     model_manager = Link_Model_Manager_class(configfile, conn.gateway, "mn", sim_dt, "bpr", coefficients)
 
@@ -42,29 +44,50 @@ if conn.pid is not None:
         num_steps = T/sampling_dt
 
         scenario_solver = Solver_class(model_manager)
-        assignment = scenario_solver.Solver_function(T, sampling_dt, "FW")
+        assignment, assignment_vector = scenario_solver.Solver_function(T, sampling_dt, "FW")
 
         if assignment is None:
             print "Solver did not run"
         else:
 
-            #print "\n"
-            #assignment.print_all()
+            #Save assignment into a csv file
+            this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+            outputfile = os.path.join(this_folder, os.path.pardir, 'output', 'seven_links_mn.csv')
+
+            # We first save in the paramenters of the scenario
+            csv_file = open(outputfile, 'wb')
+            writer = csv.writer(csv_file)
+            # Saving the model type
+            writer.writerow(['model type:','BeATS'])
+            od = model_manager.beats_api.get_od_info()
+            demand_api = [item * 3600 for item in od[0].get_total_demand_vps().getValues()]
+            od_dt = od[0].get_total_demand_vps().getDt()
+            if od_dt is None:
+                od_dt = sampling_dt
+
+            # Saving the demand per od and time horizon value
+            writer.writerow(['demand dt (s)', 'od demand (vh)','T (s)'])
+            writer.writerow([od_dt,demand_api,T])
+
+            writer.writerow(['(path ID, commodity ID)', 'array of demand (vh) per dt on path'])
+            # Now we save the assignment values to csv file
+            for key, value in assignment.get_all_demands().items():
+                writer.writerow([key, value])
+
+            csv_file.close()
+
+            print "\nDemand Assignment:"
+            assignment.print_all()
 
             path_costs = model_manager.evaluate(assignment, T, initial_state=None)
 
-            #print "\n"
-            #path_costs.print_all_in_seconds()
+            print "\nPath cost in seconds:"
+            path_costs.print_all_in_seconds()
 
-            # Distance to Nash
+            #Distance to Nash
             print "\n"
             error_percentage = scenario_solver.distance_to_Nash(assignment, path_costs, sampling_dt)
-            print "%.02f" % error_percentage, "% vehicles from equilibrium"
-            #plt.figure(1)
-            #assignment.plot_demand()
-
-            #plt.figure(2)
-            #path_costs.plot_costs_in_seconds()
+            print "%.02f" % error_percentage ,"% vehicles from equilibrium"
 
     # kill jvm
     conn.close()

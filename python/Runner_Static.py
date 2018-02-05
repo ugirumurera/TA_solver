@@ -28,7 +28,7 @@ if connection.pid is not None:
 
     # Contains local path to input configfile, for the three_links.xml network
     this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-    configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'scenario_high_2500_nodes.xml')
+    configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'seven_links.xml')
     coefficients = {}
     T = 3600  # Time horizon of interest
     sim_dt = 0.0  # Duration of one time_step for the traffic model
@@ -57,14 +57,14 @@ if connection.pid is not None:
         num_steps = T/sampling_dt
 
         scenario_solver = Solver_class(model_manager)
-        assignment= scenario_solver.Solver_function(T, sampling_dt, "FW")
+        assignment, assignment_vector = scenario_solver.Solver_function(T, sampling_dt, "FW")
 
         if assignment is None:
             print "Solver did not run"
         else:
             #Save assignment into a csv file
             this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-            outputfile = os.path.join(this_folder, os.path.pardir, 'output', 'scenario_varying_2500_nodes.csv')
+            outputfile = os.path.join(this_folder, os.path.pardir, 'output', 'seven_links.csv')
 
             # We first save in the paramenters of the scenario
             csv_file = open(outputfile, 'wb')
@@ -88,13 +88,13 @@ if connection.pid is not None:
 
             csv_file.close()
 
-            #print "\n"
-            #assignment.print_all()
+            print "\nDemand Assignment:"
+            assignment.print_all()
 
             path_costs = model_manager.evaluate(assignment, T, initial_state=None)
 
-            #print "\n"
-            #path_costs.print_all_in_seconds()
+            print "\nPath costs in seconds:"
+            path_costs.print_all_in_seconds()
 
             #Distance to Nash
             print "\n"

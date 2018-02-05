@@ -17,10 +17,10 @@ conn = Java_Connection()
 if conn.pid is not None:
     sim_dt = 2.0
     T = 3600  # Time horizon of interest
-    sampling_dt = 300  # Duration of one time_step for the solver
+    sampling_dt = 1800  # Duration of one time_step for the solver
 
     this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-    configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'scenario_varying_2500_nodes.xml')
+    configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'seven_links.xml')
     model_manager = BeATS_Model_Manager_class(configfile, conn.gateway, sim_dt)
 
     print "Finished Loading. Going to Solving"
@@ -30,15 +30,14 @@ if conn.pid is not None:
         num_steps = int(T/sampling_dt)
 
         scenario_solver = Solver_class(model_manager)
-        assignment = scenario_solver.Solver_function(T, sampling_dt, "EPM")
+        assignment, assignment_vector = scenario_solver.Solver_function(T, sampling_dt, "EPM")
 
         if assignment is None:
             print "Solver did not run"
         else:
-
             #Save assignment into a csv file
             this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-            outputfile = os.path.join(this_folder, os.path.pardir, 'output', 'scenario_varying_2500_nodes.csv')
+            outputfile = os.path.join(this_folder, os.path.pardir, 'output', 'seven_links.csv')
 
             # We first save in the paramenters of the scenario
             csv_file = open(outputfile, 'wb')
@@ -62,13 +61,13 @@ if conn.pid is not None:
 
             csv_file.close()
 
-            #print "\n"
-            #assignment.print_all()
+            print "\nDemand Assignment:"
+            assignment.print_all()
 
             path_costs = model_manager.evaluate(assignment, T, initial_state=None)
 
-            #print "\n"
-            #path_costs.print_all()
+            print "\nPath costs in secons:"
+            path_costs.print_all()
 
             #Distance to Nash
             print "\n"

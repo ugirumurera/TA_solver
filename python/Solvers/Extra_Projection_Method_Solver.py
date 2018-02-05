@@ -7,14 +7,14 @@ import numpy as np
 import timeit
 from copy import copy
 
-def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,max_iter=100, display=1, stopping=1e-2):
+def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,od = None, assignment = None, max_iter=100, display=1, stopping=1e-2):
 
     # In this case, x_k is a demand assignment object that maps demand to paths
-    # Constructing the x_0, the initial demand assignment, where all the demand for an OD is assigned to one path
-    # We first create a list of paths from the traffic_scenario
-    path_list = dict()
-    od = model_manager.beats_api.get_od_info()
+    # If no subset of od provided, get od from the model manager
+    if od is None: od = model_manager.beats_api.get_od_info()
+
     num_steps = int(T/sampling_dt)
+
     '''
     # Initializing the demand assignment
     commodity_list = list(model_manager.beats_api.get_commodity_ids())
@@ -48,12 +48,15 @@ def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,max_iter=100, d
     # x_interm is the initial solution: Step 0
     x_k_assignment, start_cost = all_or_nothing(model_manager, x_k_assignment, od, None, sampling_dt*num_steps)
     '''
-    x_k_assignment = Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt,max_iter=50)
+
+    # Initialize the algorithm with the solution returned by Method_of_Successive_Averages
+    x_k_assignment, assignment_vector = Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt, od,
+                                                                             assignment, max_iter=50)
 
     # If assignment is None, then return from the solver
     if x_k_assignment is None:
         print "Demand dt is less than sampling dt, or demand not specified properly"
-        return None
+        return None, None
     # tau, sigma and epslon parameters used in the Extra Projection Method
     tau = 0.5*100000
     sigma = 0.9
@@ -63,14 +66,15 @@ def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,max_iter=100, d
     previous_error = -1
     count = 0
     m = 5
+    x_k_assignment_vector = None
 
     for i in range(max_iter):
         # Step 1: Determining Z_k
         # get coefficients for cost function
-        z_k_assignment,new_tau = project_modified_assignment(model_manager, T, tau, x_k_assignment)
+        z_k_assignment,new_tau = project_modified_assignment(model_manager, T, tau, x_k_assignment, od)
         tau = new_tau
         # Step 2: Determining x_k=1
-        new_x_k_assignment,new_tau = project_modified_assignment(model_manager, T, tau, z_k_assignment)
+        new_x_k_assignment,new_tau = project_modified_assignment(model_manager, T, tau, z_k_assignment, od)
 
         tau = new_tau
 
@@ -94,7 +98,7 @@ def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,max_iter=100, d
         print "EPM iteration: ", i, ", error: ", error
         if error < stopping:
             print "Stop with error: ", error
-            return new_x_k_assignment
+            return new_x_k_assignment, x_k_assignment_vector
 
         #keeping track of the error values seen
         if(previous_error == -1):previous_error = error
@@ -105,7 +109,7 @@ def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,max_iter=100, d
 
         if count > m:
             print "Error did not change for the past ", m, " iterations"
-            return new_x_k_assignment
+            return new_x_k_assignment, x_k_assignment_vector
 
         # Update tau as needed
         old_cost_vector = np.asarray(theta_path_costs.vector_path_costs())
@@ -120,15 +124,10 @@ def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,max_iter=100, d
         # Otherwise, we update x_k_assignment and go back to step 1
         x_k_assignment.set_demand_with_vector(new_x_k_assignment_vector)
 
-    return x_k_assignment
+    return x_k_assignment, x_k_assignment_vector
 
-# This function calculates the coefficient of the cost function for quadratic programming subproblem of the Extra_Projection_Method
-# Function Equation = taw*F(x_interm1), where x_interm1 is intermidiate demand assignment.
-# The shape of the coefficient object will be m by n:
-# m = number of paths in our demand assignment x number of timesteps in problem
-# n = 2, number of an affine function (a1*x + a0), a1 and a0 are 2 different coefficents
-
-def project_modified_assignment(model_manager, T, tau, x_interm1):
+# Projecting the modified assignment into a simplex
+def project_modified_assignment(model_manager, T, tau, x_interm1, od):
     # Populating the Demand Assignment, based on the paths associated with ODs
     path_costs = model_manager.evaluate(x_interm1, T, initial_state=None)
     num_steps = x_interm1.get_num_time_step()
@@ -139,7 +138,7 @@ def project_modified_assignment(model_manager, T, tau, x_interm1):
     while stuck_flag:
         stuck_flag = False
         tau = tau /(mutiple**count)
-        for o in model_manager.beats_api.get_od_info():
+        for o in od:
             od_demand_seq = list()
             od_cost_seq = list()
             od_keys_seq = list()

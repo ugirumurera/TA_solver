@@ -14,24 +14,29 @@ import numpy as np
 import timeit
 from Method_Successive_Averages_Solver import Method_of_Successive_Averages_Solver
 
-def Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt, past=10, max_iter=1000, eps=1e-4, \
+def Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt,  od = None, assignment = None, past=10, max_iter=1000, eps=1e-4, \
     q=50, display=1, stop=1e-2):
     # In this case, x_k is a demand assignment object that maps demand to paths
     # Constructing the x_0, the initial demand assignment, where all the demand for an OD is assigned to one path
     # We first create a list of paths from the traffic_scenario
     path_list = dict()
-    od = model_manager.beats_api.get_od_info()
+
+    # If no subset of od provided, get od from the model manager
+    if od is None: od = model_manager.beats_api.get_od_info()
+
     num_steps = int(T/sampling_dt)
 
-
+    '''
     # Initializing the demand assignment
     commodity_list = list(model_manager.beats_api.get_commodity_ids())
+    
     assignment = Demand_Assignment_class(path_list,commodity_list,
                                          num_steps, sampling_dt)
-
+    
+    
     start_time1 = timeit.default_timer()
     # Populating the Demand Assignment, based on the paths associated with ODs
-
+    
     for o in od:
         comm_id = o.get_commodity_id()
 
@@ -54,16 +59,18 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt, past=10, max_it
             demand = np.zeros(num_steps)
             assignment.set_all_demands_on_path_comm(path.getId(), comm_id, demand)
 
-
-    assignment = Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt,max_iter=50)
+    '''
+    assignment, ass_vector = Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt, od, assignment, max_iter=50)
 
     #If assignment is None, then return from the solver
     if assignment is None:
         print "Demand dt is less than sampling dt, or demand not specified properly"
-        return None
+        return None, None
 
     #assignment, start_cost = all_or_nothing(model_manager, assignment, od, None, T)
     past_assignment = np.zeros((len(path_list.keys())*num_steps, past), dtype="float64")
+
+    x_assignment_vector = None
 
     for i in range(max_iter):
         # All_or_nothing assignment
@@ -80,10 +87,10 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt, past=10, max_it
         #error = np.abs(np.dot(current_cost_vector, y_assignment_vector - x_assignment_vector))
         error = np.abs(np.dot(current_cost_vector, y_assignment_vector - x_assignment_vector) /
                        np.dot(y_assignment_vector, current_cost_vector))
-        if display == 1: print "iteration: ", i, ", error: ", error
+        if display == 1: print "FW iteration: ", i, ", error: ", error
         if error < stop :
-            if display == 1: print "Stop with error: ", error
-            return assignment
+            if display == 1: print "FW Stop with error: ", error
+            return assignment, ass_vector
         '''
         if i == 0:
             start_time1 = timeit.default_timer()
@@ -101,18 +108,18 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt, past=10, max_it
             v = np.sum(past_assignment,axis=1) / min(past,i+1) - x_assignment_vector
             norm_v = np.linalg.norm(v,1)
             if norm_v < eps:
-                if display >= 1: print 'stop with norm_v: {}'.format(norm_v)
-                return assignment
+                if display >= 1: print 'FW stop with norm_v: {}'.format(norm_v)
+                return assignment, x_assignment_vector
             norm_w = np.linalg.norm(d_assignment,1)
             if norm_w < eps:
-                if display >= 1: print 'stop with norm_w: {}'.format(norm_w)
-                return assignment
+                if display >= 1: print 'FW stop with norm_w: {}'.format(norm_w)
+                return assignment, x_assignment_vector
             # step 4 of Fukushima
             gamma_1 = current_cost_vector.dot(v) / norm_v
             gamma_2 = current_cost_vector.dot(d_assignment) / norm_w
             if gamma_2 > -eps:
-                if display >= 1: print 'stop with gamma_2: {}'.format(gamma_2)
-                return assignment
+                if display >= 1: print 'FW stop with gamma_2: {}'.format(gamma_2)
+                return assignment, x_assignment_vector
             d = v if gamma_1 < gamma_2 else d_assignment
 
         else:
@@ -126,12 +133,13 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt, past=10, max_it
         #print ("Line_Search took  %s seconds" % elapsed1)
 
         if s < eps:
-            if display >= 1: print 'stop with step_size: {}'.format(s)
-            return assignment
+            if display >= 1: print 'FW stop with step_size: {}'.format(s)
+            return assignment, x_assignment_vector
+
         x_assignment_vector = x_assignment_vector + s*d
         assignment.set_demand_with_vector(x_assignment_vector)
 
-    return assignment
+    return assignment, x_assignment_vector
 
 
 def Path_Based_Frank_Wolfe_Solver_Dec(traffic_model, cost_function, assignment, od_subset,path_list,

@@ -21,7 +21,7 @@ if __name__ == '__main__':
     names = ['Brown', 'Sasa', 'Wilson', 'Bartlett', 'Rivera', 'Molloy', 'Opie','hehe', 'Mary']
 
 
-    with poolcontext(processes=8) as pool:
+    with poolcontext(processes=1) as pool:
         results = pool.map(merge_names_unpack, izip(names, names))
 
     '''

@@ -21,6 +21,9 @@ class Demand_Assignment_class():
         self.__assignment = {}
         self.__list_of_links = set()
 
+    def restart_demand(self):
+        self.__assignment = dict.fromkeys(self.__assignment, np.zeros(self.__num_time_steps))
+
     def get_path_with_id(self, path_id):
         return self.__path_list[path_id]
 

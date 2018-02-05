@@ -15,7 +15,9 @@ class Java_Connection():
 
         self.process = None
         self.pid = None
-        self.port_number = '25335'
+        rank = 0
+        port_num = 25335 + rank
+        self.port_number = str(port_num)
 
         this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
         jar_file_name = os.path.join(this_folder, 'py4jbeats-1.0-SNAPSHOT-jar-with-dependencies.jar')
