@@ -38,8 +38,7 @@ Alternatively you can grab the required jar files [here](https://gcgomes.bitbuck
 
 **Step 10.** Run Test to validate installation:
 
-* On Windows: Run **Test_on_Windows.py**
-* On Linux/MacOS: Run **Test_on_Linux.py**
+* On Windows: Run **Runner_Static.py**
 
 This will initialize a small instance of the static traffic assignment problem and solve it using the Frank-Wolfe algorithm. 
 
