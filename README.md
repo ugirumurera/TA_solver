@@ -38,7 +38,8 @@ Alternatively you can grab the required jar files [here](https://gcgomes.bitbuck
 
 **Step 10.** Run the scripts below to validate installation:
 
-* Run **Runner_Static.py** to test the **Static Model**
+* Run **Runner_Static.py** to test the **Static Model**, you should see the following output:
+
 
 # Contacts #
 
