@@ -19,7 +19,6 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt,  od = None, ass
     # In this case, x_k is a demand assignment object that maps demand to paths
     # Constructing the x_0, the initial demand assignment, where all the demand for an OD is assigned to one path
     # We first create a list of paths from the traffic_scenario
-    path_list = dict()
 
     # If no subset of od provided, get od from the model manager
     if od is None: od = model_manager.beats_api.get_od_info()
@@ -68,6 +67,7 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt,  od = None, ass
         return None, None
 
     #assignment, start_cost = all_or_nothing(model_manager, assignment, od, None, T)
+    path_list = assignment.get_path_list()
     past_assignment = np.zeros((len(path_list.keys())*num_steps, past), dtype="float64")
 
     x_assignment_vector = None

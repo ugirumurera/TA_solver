@@ -87,27 +87,15 @@ if connection.pid is not None:
 
             csv_file.close()
 
-            print "\nDemand Assignment:"
-            assignment.print_all()
-
             path_costs = model_manager.evaluate(assignment, T, initial_state=None)
 
-            print "\nPath costs in seconds:"
-            path_costs.print_all_in_seconds()
 
             #Distance to Nash
             print "\n"
             error_percentage = scenario_solver.distance_to_Nash(assignment, path_costs, sampling_dt)
-            print "%.02f" % error_percentage, "% vehicles from equilibrium"
 
-            '''
-            plt.figure(1)
-            assignment.plot_demand()
 
-            plt.figure(2)
-            path_costs.plot_costs()
-            '''
-
+            print "SUCCESS!!"
 
     # kill jvm
     connection.close()
