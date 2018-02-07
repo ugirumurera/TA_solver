@@ -10,6 +10,7 @@ import time
 from copy import copy
 import matplotlib.pyplot as plt
 import csv
+from Solvers.Path_Based_Frank_Wolfe_Solver import Path_Based_Frank_Wolfe_Solver
 
 plt.rcParams.update({'font.size': 17})
 
@@ -43,8 +44,11 @@ if conn.pid is not None:
     if model_manager.is_valid():
         num_steps = T/sampling_dt
 
-        scenario_solver = Solver_class(model_manager)
-        assignment, assignment_vector = scenario_solver.Solver_function(T, sampling_dt, "FW")
+        # Algorithm to use
+        solver_algorithm = Path_Based_Frank_Wolfe_Solver
+
+        scenario_solver = Solver_class(model_manager, solver_algorithm)
+        assignment, assignment_vector = scenario_solver.Solver_function(T, sampling_dt)
 
         if assignment is None:
             print "Solver did not run"

@@ -10,7 +10,8 @@ import numpy as np
 import time
 import matplotlib.pyplot as plt
 import csv
-plt.rcParams.update({'font.size': 17})
+from Solvers.Path_Based_Frank_Wolfe_Solver import Path_Based_Frank_Wolfe_Solver
+from Solvers.Extra_Projection_Method_Solver import Extra_Projection_Method_Solver
 
 conn = Java_Connection()
 
@@ -23,14 +24,15 @@ if conn.pid is not None:
     configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'seven_links.xml')
     model_manager = BeATS_Model_Manager_class(configfile, conn.gateway, sim_dt)
 
-    print "Finished Loading. Going to Solving"
-
 
     if(model_manager.is_valid()):
         num_steps = int(T/sampling_dt)
 
-        scenario_solver = Solver_class(model_manager)
-        assignment, assignment_vector = scenario_solver.Solver_function(T, sampling_dt, "EPM")
+        # Algorithm to solve the problem
+        solver_algorithm = Extra_Projection_Method_Solver
+
+        scenario_solver = Solver_class(model_manager, solver_algorithm)
+        assignment, assignment_vector = scenario_solver.Solver_function(T, sampling_dt)
 
         if assignment is None:
             print "Solver did not run"

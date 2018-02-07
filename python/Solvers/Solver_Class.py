@@ -16,8 +16,9 @@ import math
 #from mpi4py import MPI
 
 class Solver_class():
-    def __init__(self, model_manager):
+    def __init__(self, model_manager, solver_algorithm):
         self.model_manager = model_manager
+        self.solver_algorithm = solver_algorithm
 
     #This is the function that actually solves a problem
     #The Dec parameter indicates whether we are going to use decomposition or not
@@ -26,29 +27,19 @@ class Solver_class():
         assignment, assignment_vect = None, None
 
         start_time1 = timeit.default_timer()
-        if solver_name == "MSA":
-            #assignment, assignment_vect = Method_of_Successive_Averages_Solver(self.model_manager, T, sampling_dt)
-            solver_function = Method_of_Successive_Averages_Solver
-        elif solver_name == "EPM":
-            #assignment, assignment_vect = Extra_Projection_Method_Solver(self.model_manager, T, sampling_dt)
-            solver_function = Extra_Projection_Method_Solver
-        else:
-            #assignment, assignment_vect = Path_Based_Frank_Wolfe_Solver(self.model_manager, T, sampling_dt)
-            solver_function = Path_Based_Frank_Wolfe_Solver
-
         # Call solver with decompostion, or just call the solver
-        if Decomposition: self.decomposed_solver(T, sampling_dt, solver_function)
+        if Decomposition: self.decomposed_solver(T, sampling_dt, self.solver_algorithm)
 
         else:
-            assignment, assignment_vect = solver_function(self.model_manager, T, sampling_dt)
+            assignment, assignment_vect = self.solver_algorithm(self.model_manager, T, sampling_dt)
 
         elapsed1 = timeit.default_timer() - start_time1
-        print ("Solver took  %s seconds" % elapsed1)
+        print ("\nSolver took  %s seconds" % elapsed1)
         
         return assignment, assignment_vect
 
 
-    def decomposed_solver(self, T, sampling_dt, solver_function, max_iter = 1000, stop=1e-2):
+    def decomposed_solver(self, T, sampling_dt, max_iter = 1000, stop=1e-2):
         #MPI Directives
         #comm = MPI.COMM_WORLD
         #rank = comm.Get_rank()
