@@ -22,7 +22,7 @@ class Solver_class():
 
     #This is the function that actually solves a problem
     #The Dec parameter indicates whether we are going to use decomposition or not
-    def Solver_function(self, T, sampling_dt, solver_name = None, Decomposition = False):
+    def Solver_function(self, T, sampling_dt, Decomposition = False):
         #The name of algorithm to call is passed as name
         assignment, assignment_vect = None, None
 
@@ -39,7 +39,7 @@ class Solver_class():
         return assignment, assignment_vect
 
 
-    def decomposed_solver(self, T, sampling_dt, max_iter = 1000, stop=1e-2):
+    def decomposed_solver(self, T, sampling_dt, solver_function, max_iter = 1000, stop=1e-2):
         #MPI Directives
         #comm = MPI.COMM_WORLD
         #rank = comm.Get_rank()
@@ -80,8 +80,12 @@ class Solver_class():
         assignment = Demand_Assignment_class(path_list,commodity_list,
                                          num_steps, sampling_dt)
 
+        local_keys = []
+        possible_indices =[]
+
         # We start with an initial Demand assignment with demands all equal to zeros
         count = 0
+        path_index = 0
         for o in od:
             comm_id = o.get_commodity_id()
 
@@ -99,12 +103,16 @@ class Solver_class():
             for path in o.get_subnetworks():
                 path_list[path.getId()] = path.get_link_ids()
                 if count >= local_a and count < local_b:
+                    local_keys.append((path.getId(), comm_id))
+                    possible_indices= possible_indices + range(path_index*num_steps, (path_index+1)*num_steps)
                     demand = np.zeros(num_steps)
                 else: demand = np.ones(num_steps)
                 assignment.set_all_demands_on_path_comm(path.getId(), comm_id, demand)
+                path_index += 1
             count += 1
 
         #vector for previous iteration solution
+        ordering_of_keys = assignment.get_keys_ordering()
         prev_vector = np.asarray(assignment.vector_assignment())
         # indices in solution vector corresponding to other ods other than the current subset
         out_od_indices = np.nonzero(prev_vector)

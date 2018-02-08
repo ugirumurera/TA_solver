@@ -27,7 +27,7 @@ class Java_Connection():
 
             if platform.system() == "Windows":
                 self.openWindows(jar_file_name, self.port_number)
-            elif platform.system() == "Linux":
+            elif platform.system() in ["Linux", "Darwin"]:
                 self.openLinux(jar_file_name, self.port_number)
             else:
                 raise Exception('Unknown platform')
@@ -65,7 +65,7 @@ class Java_Connection():
         if platform.system() == "Windows":
             #self.process.terminate()
             os.kill(self.process.pid, signal.CTRL_C_EVENT)
-        elif platform.system() == "Linux":
+        elif platform.system() in ["Linux", "Darwin"]:
             os.kill(0, signal.SIGTERM)
         else:
             raise Exception('Unknown platform')

@@ -46,10 +46,22 @@ def Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt, od = Non
                 #print "Demand specified in xml cannot not be properly divided among time steps"
                 #return
 
-            for path in o.get_subnetworks():
-                path_list[path.getId()] = path.get_link_ids()
-                demand = np.zeros(num_steps)
-                assignment.set_all_demands_on_path_comm(path.getId(), comm_id, demand)
+            for i in range(num_steps):
+                paths_demand = dict()
+                count = 0
+                for path in o.get_subnetworks():
+                    path_list[path.getId()] = path.get_link_ids()
+                    if count == 0:
+                        index = int(i / (num_steps / demand_size))
+                        demand = o.get_total_demand_vps().get_value(index) * 3600
+                        paths_demand[path.getId()] = demand
+                        count += 1
+                    else:
+                        paths_demand[path.getId()] = 0
+
+                # Putting all the demand on the minimum cost path
+                # First set to zero all demands on all path for commodity comm_id and time_step i
+                assignment.add_demand_at_comm_time_step(comm_id, i, paths_demand)
 
     assignment, start_cost = all_or_nothing(model_manager, assignment, od, None, sampling_dt*num_steps)
     prev_error = -1
