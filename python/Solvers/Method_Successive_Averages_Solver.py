@@ -5,7 +5,12 @@ import numpy as np
 from All_or_Nothing_Function import all_or_nothing
 from Data_Types.Demand_Assignment_Class import Demand_Assignment_class
 from Data_Types.Path_Costs_Class import Path_Costs_class
+from Error_Calculation import distance_to_Nash
 import timeit
+
+from copy import copy, deepcopy
+
+#from mpi4py import MPI
 
 # od is used in decomposition mode, where od is the subset of origin-destination pairs to consider for one
 # decomposition subproblem
@@ -19,6 +24,9 @@ def Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt, od = Non
     if od is None: od = model_manager.beats_api.get_od_info()
 
     num_steps = int(T/sampling_dt)
+
+    #comm = MPI.COMM_WORLD
+    #rank = comm.Get_rank()
 
     # Initializing the demand assignment only if the assignment variable is None
     if assignment is None:
@@ -46,32 +54,23 @@ def Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt, od = Non
                 #print "Demand specified in xml cannot not be properly divided among time steps"
                 #return
 
-            for i in range(num_steps):
-                paths_demand = dict()
-                count = 0
-                for path in o.get_subnetworks():
-                    path_list[path.getId()] = path.get_link_ids()
-                    if count == 0:
-                        index = int(i / (num_steps / demand_size))
-                        demand = o.get_total_demand_vps().get_value(index) * 3600
-                        paths_demand[path.getId()] = demand
-                        count += 1
-                    else:
-                        paths_demand[path.getId()] = 0
-
-                # Putting all the demand on the minimum cost path
-                # First set to zero all demands on all path for commodity comm_id and time_step i
-                assignment.add_demand_at_comm_time_step(comm_id, i, paths_demand)
+            for path in o.get_subnetworks():
+                path_list[path.getId()] = path.get_link_ids()
+                demand = np.zeros(num_steps)
+                assignment.set_all_demands_on_path_comm(path.getId(), comm_id, demand)
 
     assignment, start_cost = all_or_nothing(model_manager, assignment, od, None, sampling_dt*num_steps)
     prev_error = -1
-    assignment_to_return = None
     assignment_vector_to_return = None
 
     for i in range(max_iter):
+
+        #start_time2 = timeit.default_timer()
         # All_or_nothing assignment
         y_assignment, current_path_costs = all_or_nothing(model_manager, assignment, od, None, sampling_dt*num_steps)
 
+        #elapsed2 = timeit.default_timer() - start_time2
+        #print ("All_or_Nothing took %s seconds" % elapsed2)
         #current_path_costs.print_all()
 
         # Calculating the error
@@ -82,15 +81,16 @@ def Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt, od = Non
         error = np.abs(np.dot(current_cost_vector, y_assignment_vector - x_assignment_vector)/
                        np.dot(y_assignment_vector,current_cost_vector))
 
+        #error = distance_to_Nash(assignment,current_path_costs,od)
+
         if prev_error == -1 or prev_error > error:
             prev_error = error
-            assignment_to_return = assignment
-            assignment_vector_to_return = x_assignment_vector
+            assignment_vector_to_return = copy(x_assignment_vector)
 
-        print "MSA iteration: ", i, ", error: ", error
+        if display == 1: print "MSA iteration: ", i, ", error: ", error
         if error < stop:
-            print "Stop with error: ", error
-            return assignment_to_return, assignment_vector_to_return
+            if display == 1: print "Stop with error: ", error
+            return assignment, x_assignment_vector
 
         d_assignment = y_assignment_vector-x_assignment_vector
 
@@ -99,6 +99,10 @@ def Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt, od = Non
 
         x_assignment_vector = x_assignment_vector + s*d_assignment
         assignment.set_demand_with_vector(x_assignment_vector)
+        #elapsed2 = timeit.default_timer() - start_time2
+        #print ("One Iteration took %s seconds" % elapsed2)
+        # current_path_costs.print_all()
 
-    return assignment_to_return, assignment_vector_to_return
+    assignment.set_demand_with_vector(assignment_vector_to_return)
+    return assignment, assignment_vector_to_return
 

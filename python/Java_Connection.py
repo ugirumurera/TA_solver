@@ -11,12 +11,21 @@ from py4j.java_gateway import JavaGateway, GatewayParameters
 
 class Java_Connection():
 
-    def __init__(self):
+    def __init__(self, decomposition_flag = False):
 
         self.process = None
         self.pid = None
-        rank = 0
+
+        #If we are using mpi, then the port number should depend on the processors rank
+        if decomposition_flag:
+            from mpi4py import MPI
+            comm = MPI.COMM_WORLD
+            rank = comm.Get_rank()
+        else: rank = 0
+
+        #Port Number
         port_num = 25335 + rank
+
         self.port_number = str(port_num)
 
         this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))

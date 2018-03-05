@@ -78,12 +78,12 @@ def generate_graph_and_paths(graph_size, scaling, num_nodes, num_ods, max_length
     graph.vs["indegree"] = graph.indegree()
     #od_indices = graph.vs.select(indegree_lt = 4).indices
     #Only periphery nodes can be origin or destinations
-    #num_pairs = len(od_indices)/2
+    #num_pairs = len(od_indices)/2)   # Generates the pairs
+
     #origins = random.sample(od_indices, num_pairs)
     origins = random.sample(range(graph.vcount()), num_ods)
     destinations = list(set(range(graph.vcount()))-set(origins))[0:num_ods]
-    #pairs = list(itertools.combinations(od_indices, 2))   # Generates the pairs
-
+    #pairs = list(itertools.combinations(od_indices, 2)
     #Adding source node and outgoing link to od
     j = len(graph.vs)   # Starting index of new nodes
     for i in range(len(origins)):

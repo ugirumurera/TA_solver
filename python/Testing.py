@@ -12,15 +12,91 @@ import matplotlib.pyplot as plt
 import csv
 import multiprocessing as mp
 from copy import copy, deepcopy
+from Solvers.Projection_onto_Simplex import Projection_onto_Simplex
+import csv
+
+#from mpi4py import MPI
+
+d = {}
+d[(1,2)] = np.zeros(5)
+
+d2 = deepcopy(d)
+
+d2[(1,3)] = 'hello'
+
+def array_combine(a, b, indices):
+    b[indices] = a
+    return b
+
+if __name__ == '__main__':
+    #comm = MPI.COMM_WORLD
+    #rank = comm.Get_rank()
+    #my_op = MPI.Op.Create(my_dic_combine)
+    rank = 0
+
+    x = 5*np.ones(3)
+
+    key_start = rank*10
+
+    indices = np.asarray(range(1,5))
+
+    #y = np.concatenate(x,indices)
+
+    dict_i = np.ones(3)
+
+    dict_k = np.zeros(10)
+    indices_k = [1,2,5]
+
+    array_combine(dict_i,dict_k, indices_k)
+    #comm.Allreduce(dict_i, dict_k, op = my_op)
+
+    print dict_k
+
+
+'''
+data = [np.arange(8).reshape(2, 4), np.arange(10).reshape(2, 5)]
+
+
+#Testing writing numpy to csv
+this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+outputfile = os.path.join(this_folder, os.path.pardir, 'output', 'testing.csv')
+
+c = np.ones(5)*12
+d = np.ones(3)*4
+
+csv_file = open(outputfile, 'wb')
+writer = csv.writer(csv_file)
+
+# Saving the demand per od and time horizon value
+writer.writerow(c)
+writer.writerow(d)
+
+csv_file.close()
+
+csv_file = open(outputfile, 'a')
+np.savetxt(csv_file,c)
+np.savetxt(csv_file,d)
+
+f_handle = file('my_file.csv', 'a')
+np.savetxt(f_handle, c)
+np.savetxt(f_handle, d)
+f_handle.close()
+
+
+x = [20399.998,20399.998,20399.998,20459.998,20399.998]
+a = 3000
+
+y = Projection_onto_Simplex(x,a)
 
 x = [1,2,3]
 a = np.linalg.norm(x,1)
+
 
 conn = Java_Connection()
 
 def initialize_assignment(a):
     print 'process id:', os.getpid(), " num ", a
-    '''
+    
     for o in od:
         count = 0
         comm_id = o.get_commodity_id()
@@ -39,7 +115,7 @@ def initialize_assignment(a):
             path_list[path.getId()] = path.get_link_ids()
             demand = np.zeros(num_steps)
             assignment.set_all_demands_on_path_comm(path.getId(), comm_id, demand)
-    '''
+    
 if __name__ == '__main__':
 
     if conn.pid is not None:
@@ -75,9 +151,6 @@ if __name__ == '__main__':
         # kill jvm
         conn.close()
 
-
-
-'''
 import os
 import inspect
 from Model_Manager.Link_Model_Manager import Link_Model_Manager_class
@@ -165,4 +238,5 @@ if model_manager.is_valid():
 
 # kill jvm
 conn.close()
+
 '''
