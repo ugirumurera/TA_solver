@@ -29,6 +29,7 @@ class Solver_class():
         assignment, assignment_vect = None, None
 
         start_time1 = timeit.default_timer()
+
         # Call solver with decompostion, or just call the solver
         if Decomposition: assignment, assignment_vect = self.decomposed_solver(T, sampling_dt, self.solver_algorithm)
 
@@ -40,7 +41,7 @@ class Solver_class():
         
         return assignment, assignment_vect
 
-    def decomposed_solver(self, T, sampling_dt, solver_function, max_iter=500, stop=1e-2):
+    def decomposed_solver(self, T, sampling_dt, solver_function, max_iter=20, stop=1e-2):
         from mpi4py import MPI
 
         # MPI Directives
@@ -48,8 +49,20 @@ class Solver_class():
         rank = comm.Get_rank()
         size = comm.Get_size()
 
+        #rank = 0
+        #size = 2
+
+
         # We first start by initializing an initial solution/ demand assignment
-        od = list(self.model_manager.beats_api.get_od_info())
+        od_temp = list(self.model_manager.beats_api.get_od_info())
+
+        od = np.asarray(sorted(od_temp, key=lambda h: (h.get_origin_node_id(), h.get_destination_node_id())))
+        #od = np.asarray(sorted(od))
+        #od_sorted = np.sort(od)
+
+        #else: od = None
+
+        #od = comm.bcast(od, root = 0)
 
         # Determine which subset of od to be addressed by the current process
         n = len(od)
@@ -82,21 +95,22 @@ class Solver_class():
         num_steps = int(T / sampling_dt)
         path_list = dict()
         commodity_list = list(self.model_manager.beats_api.get_commodity_ids())
-        assignment = Demand_Assignment_class(path_list, commodity_list,
+        init_assignment = Demand_Assignment_class(path_list, commodity_list,
                                              num_steps, sampling_dt)
 
         # We start with an initial Demand assignment with demands all equal to zeros
+        #all_keys = []           # List of all keys in assignment dictionary
+        #current_keys = []       # List of keys for current od assignment
 
-        # We start with an initial Demand assignment with demands all equal to zeros
         count = 0
         path_index = 0
-        for o in od:
-            comm_id = o.get_commodity_id()
+        for i in range(len(od)):
+            comm_id = od[i].get_commodity_id()
 
-            demand_api = [item * 3600 for item in o.get_total_demand_vps().getValues()]
+            demand_api = [item * 3600 for item in od[i].get_total_demand_vps().getValues()]
             demand_api = np.asarray(demand_api)
             demand_size = len(demand_api)
-            demand_dt = o.get_total_demand_vps().getDt()
+            demand_dt = od[i].get_total_demand_vps().getDt()
 
             # Before assigning the demand, we want to make sure it can be properly distributed given the number of
             # Time step in our problem
@@ -104,29 +118,48 @@ class Solver_class():
                 print "Demand specified in xml cannot not be properly divided among time steps"
                 return None, None
 
-            for path in o.get_subnetworks():
-                path_list[path.getId()] = path.get_link_ids()
+            for path in od[i].get_subnetworks():
+                path_id = path.getId()
+                path_list[path_id] = path.get_link_ids()
                 if count >= local_a and count < local_b:
                     demand = np.zeros(num_steps)
+                    #current_keys.append(tuple([path_id,comm_id]))
                 else:
                     demand = np.ones(num_steps)
 
-                assignment.set_all_demands_on_path_comm(path.getId(), comm_id, demand)
+                init_assignment.set_all_demands_on_path_comm(path.getId(), comm_id, demand)
+                #all_keys.append(tuple([path_id,comm_id]))
                 path_index += 1
+
+            #print "rank: ", rank, " ", od[count].get_origin_node_id(), od[count].get_destination_node_id()
             count += 1
 
         # vector for previous iteration solution
-        prev_vector = np.asarray(assignment.vector_assignment())
+        start_time1 = timeit.default_timer()
+        prev_vector = np.asarray(init_assignment.vector_assignment())
+        #print prev_vector
         # indices in solution vector corresponding to other ods other than the current subset
         out_od_indices = np.nonzero(prev_vector)
+        #print out_od_indices
         prev_vector = np.zeros(len(prev_vector))
+        init_assignment.set_demand_with_vector(prev_vector)
+
+        elapsed1 = timeit.default_timer() - start_time1
+        print "Initializing indices too ", elapsed1
+
         # Initial solution with all_or_nothing assignment
-        assignment, path_costs = all_or_nothing(self.model_manager, assignment, od, None, sampling_dt * num_steps)
+        #assignment, path_costs = all_or_nothing(self.model_manager, assignment, od, None, sampling_dt * num_steps)
         x_k_vector = np.zeros(len(prev_vector))
 
+        prev_vector = np.asarray(init_assignment.vector_assignment())
+
+        #print "Prev_vector ", prev_vector
+
         for i in range(max_iter):
-            x_i_assignment, x_i_vector = solver_function(self.model_manager, T, sampling_dt, od_subset, assignment,
-                                                             display = 0)
+            display = 0
+            if rank == 0: display = 1
+            x_i_assignment, x_i_vector = solver_function(self.model_manager, T, sampling_dt, od_subset, init_assignment,
+                                                             display = display)
 
             # print x_i_vector[od_indices]
             # print x_i_vector[out_od_indices]
@@ -134,11 +167,13 @@ class Solver_class():
             # First zero out all elements in results not corresponding to current odsubset
             x_i_vector[out_od_indices] = 0
 
+            #writer.writerow(np.asarray(out_od_indices))
+            writer.writerow(prev_vector)
+
             # Combine the x_i_vectors with all_reduce directive into x_k_vector
             comm.Allreduce(x_i_vector, x_k_vector, op=MPI.SUM)
 
             writer.writerow(x_k_vector)
-
             # print x_k_vector[od_indices]
 
             # Calculate error and if error is below predifined level stop
@@ -148,7 +183,9 @@ class Solver_class():
             # z_k_vector = np.asarray(z_k_assignment.vector_assignment())
             # z_k_cost_vector = np.asarray(z_k_path_costs.vector_path_costs())
 
-            error = np.linalg.norm(x_k_vector - prev_vector, 1)
+            #error = np.linalg.norm(x_k_vector - prev_vector, 1)
+
+            error = sum(np.absolute(np.subtract(x_k_vector,prev_vector)))
             # error = np.abs(np.dot(z_k_cost_vector,  z_k_vector- x_k_vector) /
             # np.dot(z_k_vector, z_k_cost_vector))
 
@@ -156,16 +193,17 @@ class Solver_class():
                 if rank == 0:
                     print "Stop with error: ", error
                 csv_file.close()
-                return assignment, x_k_vector
+                init_assignment.set_demand_with_vector(x_k_vector)
+                return init_assignment, x_k_vector
 
             # Change assignment with current x_k_vector
-            assignment.set_demand_with_vector(x_k_vector)
+            init_assignment.set_demand_with_vector(x_k_vector)
 
             if rank == 0: print "Decomposition Iteration ", i, " error: ", error
             prev_vector = copy(x_k_vector)
 
         csv_file.close()
-        return assignment, x_k_vector
+        return init_assignment, x_k_vector
 
 
 

@@ -61,7 +61,15 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt,  od = None, ass
             assignment.set_all_demands_on_path_comm(path.getId(), comm_id, demand)
 
     '''
-    assignment, ass_vector = Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt, od, assignment, max_iter=20, display = 0)
+
+    init_vector = 0
+
+    if assignment is not None:
+        init_vector = np.asarray(assignment.vector_assignment())
+
+    if assignment is None or np.count_nonzero(init_vector) == 0:
+        assignment, ass_vector = Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt, od, assignment,
+                                                                  max_iter=20, display = display)
 
     #If assignment is None, then return from the solver
     if assignment is None:
@@ -92,9 +100,10 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt,  od = None, ass
         #error = distance_to_Nash(assignment,current_path_costs,od)
 
         if display == 1: print "FW iteration: ", i, ", error: ", error
+
         if error < stop :
             if display == 1: print "FW Stop with error: ", error
-            return assignment, ass_vector
+            return assignment, x_assignment_vector
         '''
         if i == 0:
             start_time1 = timeit.default_timer()

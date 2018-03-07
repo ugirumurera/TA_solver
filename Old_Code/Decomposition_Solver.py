@@ -9,6 +9,16 @@ from Data_Types.Demand_Assignment_Class import Demand_Assignment_class
 from python.Solvers.Path_Based_Frank_Wolfe_Solver import Path_Based_Frank_Wolfe_Solver_Dec
 from copy import deepcopy, copy
 
+
+#To calculate indices of od demands in demand vector using keys
+'''
+# Getting the OD indices using dictionary keys
+all_keys = np.sort(np.asarray(all_keys))
+current_keys = np.sort(np.asarray(current_keys))
+x = np.in1d(all_keys, current_keys)
+out_indices = [(a, b) for (a, b) in all_keys for (c, d) in current_keys if ((a == c) and (b == d))]
+'''
+
 def Decomposition_Solver_Static(traffic_scenario, cost_function, number_of_subproblems, epsilon = 1e-2):
     comm = MPI.COMM_WORLD
     error = -1

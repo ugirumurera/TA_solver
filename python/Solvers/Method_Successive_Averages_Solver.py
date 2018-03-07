@@ -14,7 +14,7 @@ from copy import copy, deepcopy
 
 # od is used in decomposition mode, where od is the subset of origin-destination pairs to consider for one
 # decomposition subproblem
-def Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt, od = None, assignment = None, max_iter=1000,
+def Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt, od = None, init_assignment = None, max_iter=1000,
                                          display=1, stop=1e-2):
 
     # In this case, x_k is a demand assignment object that maps demand to paths
@@ -29,11 +29,11 @@ def Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt, od = Non
     #rank = comm.Get_rank()
 
     # Initializing the demand assignment only if the assignment variable is None
-    if assignment is None:
+    if init_assignment is None:
         # We first create a list of paths from the traffic_scenario
         path_list = dict()
         commodity_list = list(model_manager.beats_api.get_commodity_ids())
-        assignment = Demand_Assignment_class(path_list,commodity_list,
+        init_assignment = Demand_Assignment_class(path_list,commodity_list,
                                          num_steps, sampling_dt)
 
         # Populating the Demand Assignment, based on the paths associated with ODs
@@ -57,9 +57,10 @@ def Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt, od = Non
             for path in o.get_subnetworks():
                 path_list[path.getId()] = path.get_link_ids()
                 demand = np.zeros(num_steps)
-                assignment.set_all_demands_on_path_comm(path.getId(), comm_id, demand)
+                init_assignment.set_all_demands_on_path_comm(path.getId(), comm_id, demand)
 
-    assignment, start_cost = all_or_nothing(model_manager, assignment, od, None, sampling_dt*num_steps)
+    assignment, start_cost = all_or_nothing(model_manager, init_assignment, od, None, sampling_dt*num_steps)
+
     prev_error = -1
     assignment_vector_to_return = None
 
