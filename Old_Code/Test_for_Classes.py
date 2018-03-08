@@ -4,7 +4,7 @@
 import numpy as np
 
 from python.Cost_Functions.BPR_Function import BPR_Function_class
-from python.Traffic_Models.Static_Model import Static_Model_Class
+from python.Traffic_Models import Static_Model_Class
 from python.Data_Types.Demand_Assignment_Class import Demand_Assignment_class
 from python.Data_Types.Link_Costs_Class import Link_Costs_class
 from python.Traffic_States.Static_Traffic_State import Static_Traffic_State_class
@@ -20,7 +20,6 @@ def get_path_list(paths):
 # This code is used on any Windows systems to self start the Entry_Point_BeATS java code
 # This code launches a java server that allow to use Beasts java object
 import os
-import signal
 import subprocess
 import time
 import sys

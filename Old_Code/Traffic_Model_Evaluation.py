@@ -5,7 +5,7 @@
 # And comment out the portion marked for linux system
 
 from python.Cost_Functions.BPR_Function import BPR_Function_class
-from python.Traffic_Models.Static_Model import Static_Model_Class
+from python.Traffic_Models import Static_Model_Class
 from python.Solvers.Solver_Class import Solver_class
 from python.Data_Types.Demand_Assignment_Class import Demand_Assignment_class
 

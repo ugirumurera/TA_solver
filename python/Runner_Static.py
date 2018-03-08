@@ -18,71 +18,100 @@ from copy import copy
 import matplotlib.pyplot as plt
 import os
 import inspect
+import csv
+from Solvers.Path_Based_Frank_Wolfe_Solver import Path_Based_Frank_Wolfe_Solver
 
 plt.rcParams.update({'font.size': 18})
 
 connection = Java_Connection()
 
-# Contains local path to input configfile, for the three_links.xml network
-this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'seven_links.xml')
-coefficients = {0L:[1,0,0,0,1],1L:[1,0,0,0,1],2L:[2,0,0,0,2], 3L:[1,0,0,0,1], 4L:[2,0,0,0,2], 5L:[1,0,0,0,1], 6L:[1,0,0,0,1]}
+if connection.pid is not None:
 
-T = 3600  # Time horizon of interest
-sim_dt = None  # Duration of one time_step for the traffic model
+    # Contains local path to input configfile, for the three_links.xml network
+    this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+    configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'scenario_high_100_nodes.xml')
+    coefficients = {}
+    T = 3600  # Time horizon of interest
+    sim_dt = 0.0  # Duration of one time_step for the traffic model
 
-sampling_dt = 1800     # Duration of time_step for the solver, in this case it is equal to sim_dt
+    sampling_dt = 600     # Duration of time_step for the solver, in this case it is equal to sim_dt
 
-model_manager = Link_Model_Manager_class(configfile, connection.gateway, "static", sim_dt, "bpr", coefficients)
+    model_manager = Link_Model_Manager_class(configfile, connection.gateway, "static", sim_dt, "bpr", coefficients)
 
-#Estimating bpr coefficients with beats
-num_links = 7
-avg_travel_time = np.zeros(num_links)
+    #Estimating bpr coefficients with beats
+    num_links = model_manager.beats_api.get_num_links()
+    avg_travel_time = np.zeros(num_links)
 
-for i in range(num_links):
-    #fft = 1000/model_manager.beats_api.get_link_with_id(long(i)).get_ffspeed_mps()
-    fft= (model_manager.beats_api.get_link_with_id(long(i)).getFull_length() \
-                         / model_manager.beats_api.get_link_with_id(long(i)).get_ffspeed_mps())/3600
-    #avg_travel_time[i] = model_manager.beats_api.get_link_with_id(long(i)).getFull_length()\
-                      #/model_manager.beats_api.get_link_with_id(long(i)).get_ffspeed_mps()
-    coefficients[i][0] = copy(fft)
-    coefficients[i][4] = copy(fft*0.15)
+    num_coeff = 5
 
-#print avg_travel_time
+    for i in range(num_links):
+        fft= (model_manager.beats_api.get_link_with_id(long(i)).getFull_length() \
+          / model_manager.beats_api.get_link_with_id(long(i)).get_ffspeed_mps())/3600
+        coefficients[long(i)] = np.zeros(num_coeff)
+        coefficients[i][0] = copy(fft)
+        coefficients[i][4] = copy(fft*0.15)
+
 
 # If scenario.beast_api is none, it means the configfile provided was not valid for the particular traffic model type
-if model_manager.is_valid():
-    num_steps = T/sampling_dt
+    if model_manager.is_valid():
+        num_steps = T/sampling_dt
 
-    scenario_solver = Solver_class(model_manager)
-    assignment, flow_sol = scenario_solver.Solver_function(T, sampling_dt, "FW")
+        #Algorithm to use
+        solver_algorithm = Path_Based_Frank_Wolfe_Solver
 
-    plt.figure(1)
-    assignment.plot_demand()
-    assignment.print_all()
+        scenario_solver = Solver_class(model_manager, solver_algorithm)
+        assignment, assignment_vector = scenario_solver.Solver_function(T, sampling_dt,False)
 
-    path_costs = model_manager.evaluate(assignment, T, initial_state=None)
+        if assignment is None:
+            print "Solver did not run"
+        else:
+            #Save assignment into a csv file
+            this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+            outputfile = os.path.join(this_folder, os.path.pardir, 'output', 'scenario_high_100_nodes.csv')
 
-    print "\n"
-    path_costs.print_all_in_seconds()
+            # We first save in the paramenters of the scenario
+            csv_file = open(outputfile, 'wb')
+            writer = csv.writer(csv_file)
+            # Saving the model type
+            writer.writerow(['model type:',model_manager.traffic_model.model_type])
+            od = model_manager.beats_api.get_od_info()
+            demand_api = [item * 3600 for item in od[0].get_total_demand_vps().getValues()]
+            od_dt = od[0].get_total_demand_vps().getDt()
+            if od_dt is None:
+                od_dt = sampling_dt
 
-    plt.figure(2)
-    path_costs.plot_costs_in_seconds()
+            # Saving the demand per od and time horizon value
+            writer.writerow(['demand dt (s)', 'od demand (vh)','T (s)'])
+            writer.writerow([od_dt,demand_api,T])
 
-    #plt.show()
-    # Cost resulting from the path_based Frank-Wolfe
-    #link_states = model_manager.traffic_model.Run_Model(assignment, None, sampling_dt, T)
-    #cost_path_based = model_manager.cost_function.evaluate_BPR_Potential(link_states)
+            writer.writerow(['(path ID, commodity ID)', 'array of demand (vh) per dt on path'])
+            # Now we save the assignment values to csv file
+            for key, value in assignment.get_all_demands().items():
+                writer.writerow([key, value])
 
-    # Cost resulting from link-based Frank-Wolfe
-    #cost_link_based = model_manager.cost_function.evaluate_BPR_Potential_FW(flow_sol)
+            csv_file.close()
 
-    #print "\n"
-    #link_states.print_all()
-    #print "\n", flow_sol
-    #print "path-based cost: ", cost_path_based
-    #print "link-based cost: ", cost_link_based
+            print "\nDemand Assignment:"
+            assignment.print_all()
+
+            path_costs = model_manager.evaluate(assignment, T, initial_state=None)
+
+            print "\nPath costs in seconds:"
+            path_costs.print_all_in_seconds()
+
+            #Distance to Nash
+            print "\n"
+            error_percentage = scenario_solver.distance_to_Nash(assignment, path_costs, sampling_dt)
+            print "%.02f" % error_percentage, "% vehicles from equilibrium"
+
+            '''
+            plt.figure(1)
+            assignment.plot_demand()
+
+            plt.figure(2)
+            path_costs.plot_costs()
+            '''
 
 
-# kill jvm
-connection.close()
+    # kill jvm
+    connection.close()

@@ -36,14 +36,10 @@ Alternatively you can grab the required jar files [here](https://gcgomes.bitbuck
 
 **Step 9.** Copy py4jbeats-1.0-SNAPSHOT-jar-with-dependencies.jar to the ta_solver directory under ta_solver/python
 
-**Step 10.** Run Test to validate installation:
+**Step 10.** Run the scripts below to validate installation:
 
-* On Windows: Run **Test_on_Windows.py**
-* On Linux/MacOS: Run **Test_on_Linux.py**
+* Run **First_Test.py** to test the **Static Model**, which should print out **SUCCESS** at the end of the output.
 
-This will initialize a small instance of the static traffic assignment problem and solve it using the Frank-Wolfe algorithm. 
-
-It will print "Installation Successful!" to the console if everything goes well. 
 
 # Contacts #
 

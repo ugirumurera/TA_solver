@@ -29,20 +29,42 @@ class Path_Costs_class():
 
     # Receives a Link_Costs_Class and demand_assignment objects and returns a path_costs object containing the travel
     # cost per path, where the path_costs is a [(path_id, commodity_id)] = [cost_1, cost_2,...] dictionary
-    def get_path_costs(self, link_costs, demand_assignment):
+    def get_path_costs(self, link_costs, demand_assignment, Vectorize = True):
+        if Vectorize:
+            self.__path_list = demand_assignment.get_path_list()
+            self.__commodity_list = demand_assignment.get_commodity_list()
+
+            for key in demand_assignment.get_all_demands().keys():
+                # Get the route (list of link_ids) associated with the current path_id in key[0]
+                route = list(demand_assignment.get_path_list()[key[0]])
+
+                self.__path_costs[key] = np.sum(link_costs[route, :], axis=0)
+        else:
+            self.__path_list = demand_assignment.get_path_list()
+            self.__commodity_list = demand_assignment.get_commodity_list()
+            l_costs = link_costs.get_all_costs()
+
+            for key in demand_assignment.get_all_demands().keys():
+            # Get the route (list of link_ids) associated with the current path_id in key[0]
+                route = demand_assignment.get_path_list()[key[0]]
+                for i in range(self.__num_time_steps):
+                    for link_id in route:
+                        if key not in self.__path_costs.keys():
+                            self.__path_costs[key] = np.zeros(self.__num_time_steps)
+
+                        self.__path_costs[key][i] = self.__path_costs[key][i] + l_costs[(link_id,key[1])][i]
+
+        return self
+
+    def mod_get_path_costs(self, link_costs, demand_assignment):
         self.__path_list = demand_assignment.get_path_list()
         self.__commodity_list = demand_assignment.get_commodity_list()
-        l_costs = link_costs.get_all_costs()
 
         for key in demand_assignment.get_all_demands().keys():
             # Get the route (list of link_ids) associated with the current path_id in key[0]
-            route = demand_assignment.get_path_list()[key[0]]
-            for i in range(self.__num_time_steps):
-                for link_id in route:
-                    if key not in self.__path_costs.keys():
-                        self.__path_costs[key] = np.zeros(self.__num_time_steps)
+            route = list(demand_assignment.get_path_list()[key[0]])
 
-                    self.__path_costs[key][i] = self.__path_costs[key][i] + l_costs[(link_id,key[1])][i]
+            self.__path_costs[key] = np.sum(link_costs[route,:], axis = 0)
 
         return self
 
@@ -81,6 +103,13 @@ class Path_Costs_class():
             return
 
         return self.__path_costs[(path_id, comm_id)][time_step]
+
+    #Returns all demands assigned to a particular path and commodity as an array of size: number of time steps
+    def get_all_costs_on_path_comm(self, path_id, comm_id):
+        if path_id not in self.__path_list or comm_id not in self.__commodity_list:
+            print("path id or commodity id not in Demand_Assignment object")
+            return False
+        return self.__path_costs[(path_id,comm_id)]
 
     def set_costs_path_commodity(self, path_id, comm_id, cost_list):
         x = []
@@ -123,7 +152,7 @@ class Path_Costs_class():
             plt.subplot(sub_index)
             x_axis = [self.__path_costs[key][0]]+ list(self.__path_costs[key])
             plt.step(y_axis, x_axis,linewidth= 5)
-            plt.ylabel("path "+ str(key[0]) + " cost (h)")
+            plt.ylabel("path "+ str(key[0]) + " cost (s)")
             plt.xlabel("Time (s)")
             sub_index += 1
 

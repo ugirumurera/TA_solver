@@ -1,6 +1,3 @@
-# Here is implemented the Modified_Projection_Method (MPM) as presented by Nagurney, 1999 (Network Economics)
-# The algorithm solves quadratic subproblems in each iteration, for which we use the Path_Based_Frank_Wolfe Algorithm
-
 from __future__ import division
 from Data_Types.Demand_Assignment_Class import Demand_Assignment_class
 from Data_Types.Path_Costs_Class import Path_Costs_class
@@ -8,9 +5,9 @@ from Path_Based_Frank_Wolfe_Solver import all_or_nothing, Path_Based_Frank_Wolfe
 from copy import copy, deepcopy
 import numpy as np
 import timeit
+import gc
 
-
-def Modified_Projection_Method_Solver(model_manager, T, sampling_dt,max_iter=1000, display=1, stop=2):
+def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,max_iter=1000, display=1, stopping=1e-2):
 
     # In this case, x_k is a demand assignment object that maps demand to paths
     # Constructing the x_0, the initial demand assignment, where all the demand for an OD is assigned to one path
@@ -51,62 +48,88 @@ def Modified_Projection_Method_Solver(model_manager, T, sampling_dt,max_iter=100
     # x_interm is the initial solution: Step 0
     x_k_assignment, start_cost = all_or_nothing(model_manager, x_k_assignment, od, None, sampling_dt*num_steps)
 
-    # row parameter used in the modified projection method
-    row = 1
+    # tau, sigma and epslon parameters used in the Extra Projection Method
+    tau = 0.5
+    sigma = 0.9
+    epslon = 0.05
+
+    # Keep track of the error seen, so that if there is not change for m iteration, the algorithm stops
+    previous_error = -1
+    count = 0
+    m = 5
 
     for i in range(max_iter):
-        # Step 1: Determining X_bar
+        # Step 1: Determining Z_k
         # get coefficients for cost function
-        coefficients = get_cost_function_coefficients(model_manager,T,row,x_k_assignment,x_k_assignment)
-        x_bar_assignment = Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt, cost_function, coefficients)
-        #print (cost_function(x_bar_assignment,coefficients))
+        coefficients = get_cost_function_coefficients(model_manager,T,tau,x_k_assignment)
+        z_k_assignment = Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt, cost_function, coefficients)
+        #print (cost_function(z_k_assignment,coefficients))
 
         # Step 2: Determining x_k=1
-        new_coefficients = get_cost_function_coefficients(model_manager,T,row,x_bar_assignment,x_k_assignment)
+        new_coefficients = get_cost_function_coefficients(model_manager,T,tau,z_k_assignment)
         new_x_k_assignment = Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt, cost_function, new_coefficients)
         #print (cost_function(new_x_k_assignment, new_coefficients))
 
-        # Step 3
+        # Step 3: Calculating the error
+        # All_or_nothing assignment
+        new_theta_assignment, current_path_costs = all_or_nothing(model_manager, new_x_k_assignment, od, None, sampling_dt*num_steps)
+        theta_assignment, path_costs = all_or_nothing(model_manager, x_k_assignment, od, None, sampling_dt*num_steps)
+
         # Calculating the error
-        x_k_assignment_vector = np.asarray(x_k_assignment.vector_assignment())
+        current_cost_vector = np.asarray(current_path_costs.vector_path_costs())
+        x_assignment_vector = np.asarray(new_x_k_assignment.vector_assignment())
+        new_thetha_assignment_vector = np.asarray(new_theta_assignment.vector_assignment())
+
+        error = np.abs(np.dot(current_cost_vector, new_thetha_assignment_vector - x_assignment_vector)/
+                       np.dot(new_thetha_assignment_vector,current_cost_vector))
+
         new_x_k_assignment_vector = np.asarray(new_x_k_assignment.vector_assignment())
 
-        error = max(np.abs(x_k_assignment_vector- new_x_k_assignment_vector))
-        print "MPM iteration: ", i, ", error: ", error
-        if error < stop:
+        print "EPM iteration: ", i, ", error: ", error
+        if error < stopping:
             print "Stop with error: ", error
+            return new_x_k_assignment
+
+        #keeping track of the error values seen
+        if(previous_error == -1):previous_error = error
+        elif(previous_error == error): count += 1
+        else:
+            previous_error = error
+            count = 1
+
+        if count > m:
+            print "Error did not change for the past ", m, " iterations"
             return new_x_k_assignment
 
         # Otherwise, we update x_k_assignment and go back to step 1
         x_k_assignment.set_demand_with_vector(new_x_k_assignment_vector)
 
+        # Update tau as needed
+        theta_assignment_vector = np.asarray(theta_assignment.vector_assignment())
+        mod_theta_assignment = epslon * np.abs(theta_assignment_vector)
+        if (np.all(new_thetha_assignment_vector < theta_assignment_vector)) and \
+                np.all(np.fabs(np.subtract(new_thetha_assignment_vector,theta_assignment_vector)) > mod_theta_assignment):
+            tau = tau * sigma
+    return x_k_assignment
 
-# This function calculates the coefficient of the cost function for quadratic programming subproblem of the Modified_Projection_Method
-# Function Equation = x* + [row*F(x_interm1) - x_interm2], where x* is the varying assignment, x_interm1 and x_interm2 are intermidiate
-# demand assignments. The shape of the coefficient object will be m by n:
+# This function calculates the coefficient of the cost function for quadratic programming subproblem of the Extra_Projection_Method
+# Function Equation = taw*F(x_interm1), where x_interm1 is intermidiate demand assignment.
+# The shape of the coefficient object will be m by n:
 # m = number of paths in our demand assignment x number of timesteps in problem
 # n = 2, number of an affine function (a1*x + a0), a1 and a0 are 2 different coefficents
 
-def get_cost_function_coefficients(model_manager, T, row, x_interm1, x_interm2):
-    m = x_interm1.get_num_entries() * x_interm1.get_num_time_step()
-
-    # Calculating F(x_interm1)
-    path_costs = model_manager.evaluate(x_interm1, T, initial_state = None)
+def get_cost_function_coefficients(model_manager, T, tau, x_interm1):
+    path_costs = model_manager.evaluate(x_interm1, T, initial_state=None)
+    gc.collect()
+    x_interm_vector = np.asarray(x_interm1.vector_assignment())
     cost_vector = np.asarray(path_costs.vector_path_costs())
-    #Calculating a0
-    x_interm2_vector = np.asarray(x_interm2.vector_assignment())
-    a0 = row*cost_vector - x_interm2_vector
-
-    a1 = np.ones(m)     # a1 is all ones since x* has no coefficient in the cost function
-    coefficients = np.zeros((m,2))
-    coefficients[:,0] = a0
-    coefficients[:,1] = a1
+    coefficients = np.subtract(x_interm_vector,tau*1/3600*cost_vector)
     return coefficients
 
+
 # This function calculates the cost function for quadratic programming subproblem of the Modified_Projection_Method
-# Function Equation = x* + [row*F(x_interm1) - x_interm2], where x* is the varying assignment, x_interm1 and x_interm2 are intermidiate
-# demand assignments
+# Function Equation = (x - coefficients)^T *(x - coefficients), where x* is the varying assignment, x is the demand assignment
 def cost_function(assignment, coefficients):
     x_vector = np.asarray(assignment.vector_assignment())
-    cost_vector = coefficients[:,0] + np.multiply(coefficients[:,1],x_vector)
+    cost_vector = (np.subtract(x_vector, coefficients))
     return cost_vector

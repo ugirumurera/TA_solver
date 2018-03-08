@@ -2,6 +2,7 @@
 # the dictionary stores [path_id,commodity_id] as keys and each key is associated with (1 X number of time steps)
 # dimensional array of demands per (path,commodity) pair.
 
+from __future__ import division
 import numpy as np
 from copy import deepcopy, copy
 from collections import OrderedDict
@@ -17,8 +18,15 @@ class Demand_Assignment_class():
         self.__commodity_list = commodity_list
         self.__num_time_steps = num_time_steps
         self.__dt = dt
-        self.__assignment = {}
+        self.__assignment = OrderedDict()
         self.__list_of_links = set()
+        self.__keys_ordering = None
+
+    def restart_demand(self):
+        self.__assignment = dict.fromkeys(self.__assignment, np.zeros(self.__num_time_steps))
+
+    def get_path_with_id(self, path_id):
+        return self.__path_list[path_id]
 
     def get_num_paths(self):
         return len(self.__path_list.keys())
@@ -43,6 +51,9 @@ class Demand_Assignment_class():
 
     def get_dt(self):
         return self.__dt
+
+    def get_keys_ordering(self):
+        return self.__keys_ordering
 
     # Adds new routes to the Demand_Assignment object using a [path_id]:[link_id_1, link_id_2, ...]
     def add_path(self, route_list):
@@ -146,6 +157,14 @@ class Demand_Assignment_class():
             time_dict[key] = self.__assignment[key][time_step]
         return time_dict
 
+    # Get the total number of trips generated in vehicle per hour
+    def get_total_trips(self):
+        total_trips = 0
+        for key in self.__assignment.keys():
+            total_trips += sum(self.__dt *1/3600*self.__assignment[key])
+
+        return total_trips
+
     # Sets all the demands with an assignment dictionary
     def set_all_demands(self, demands):
         if (any(len(key) != 2 for key in demands.keys()) or
@@ -224,6 +243,31 @@ class Demand_Assignment_class():
             self.__assignment[(path_id, comm_id)][time_step] = demand
             route_list = {path_id:route}
             self.__path_list.update(route_list)
+
+    # Adds a demand for a particular path, commodity, and time_step or adds the entry if did not exist in the dictionary
+    # route is a list of links that makes up the path with path_id
+    def add_demand_at_comm_time_step(self, comm_id, time_step, demand):
+
+        #time_step = self.get_time_step(time)
+
+        if (demand < 0):
+            print("Error: Negative value for demand")
+            return False
+
+        if comm_id not in self.__commodity_list:
+            print("Error: commodity id not in Demand Assignment object")
+            return False
+
+        if time_step < 0 or time_step > (self.__num_time_steps - 1):
+            print("Error: time period has to be between 0 and ", self.__num_time_steps - 1)
+            return False
+
+        for path_id in demand.keys():
+            if ((path_id, comm_id) in self.__assignment.keys()):
+                self.__assignment[(path_id, comm_id)][time_step] = demand[path_id]
+            else:
+                self.__assignment[(path_id, comm_id)] = np.zeros((self.__num_time_steps))
+                self.__assignment[(path_id, comm_id)][time_step] =demand[path_id]
 
     # Sets all demands assigned for a particular path with path_id with a [comm_id_1]:[demand_t1, demand_t2,...] dictionary
     def set_all_demands_on_path(self, path_id, demands):
@@ -451,8 +495,13 @@ class Demand_Assignment_class():
     # Creates a vector out of the demand_assignment values
     def vector_assignment(self):
         a = OrderedDict(sorted(self.__assignment.items()))
+
+        if self.__keys_ordering is None:
+            self.__keys_ordering = a.keys()
+
         return [item for sublist in a.values() for item in sublist]
         #return np.concatenate(self.__assignment.values())
+
 
     def set_demand_with_vector(self, demand_vector):
         a, b = 0, self.__num_time_steps -1

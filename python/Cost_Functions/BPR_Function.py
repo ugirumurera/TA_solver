@@ -49,33 +49,63 @@ class BPR_Function_class(Abstract_Cost_Function):
 
         return link_costs
 
-    def evaluate_Cost_Function(self, link_states):
-        num_steps = link_states.get_num_time_step()
-        comm_list = link_states.get_comm_list()
-        '''
-        if num_steps != 1:
-            raise "num_steps!=1"
+    def evaluate_Cost_Function(self, link_states, Vectorize = False):
+        if Vectorize:
+            coeff = np.array(self.__Coefficients.values())
+            # Stands for coeff[4]*flow^4, where flow is the link states as matrix
+            power_4_coeff = np.matmul(np.array(coeff[:, 4]).reshape(len(coeff[:, 4]), 1),
+                                      np.ones((1, link_states.shape[1])))
+            # Stands for coeff[4]*flow^3, where flow is the link states as matrix
+            power_3_coeff = np.matmul(np.array(coeff[:, 3]).reshape(len(coeff[:, 3]), 1),
+                                      np.ones((1, link_states.shape[1])))
+            # Stands for coeff[4]*flow^2, where flow is the link states as matrix
+            power_2_coeff = np.matmul(np.array(coeff[:, 2]).reshape(len(coeff[:, 2]), 1),
+                                      np.ones((1, link_states.shape[1])))
+            # Stands for coeff[4]*flow^1, where flow is the link states as matrix
+            power_1_coeff = np.matmul(np.array(coeff[:, 1]).reshape(len(coeff[:, 1]), 1),
+                                      np.ones((1, link_states.shape[1])))
+            #Putting all the above together + the free-flow travel time (coeff[0] in the form of matrix)
+            link_costs = np.matmul(np.array(coeff[:, 0]).reshape(len(coeff[:, 0]), 1),
+                                   np.ones((1, link_states.shape[1]))) + \
+                         power_1_coeff * (link_states ** 1) + power_2_coeff * (link_states ** 2) + power_3_coeff * ( link_states ** 3) + \
+                         power_4_coeff * (link_states ** 4)
+        else:
+            num_steps = link_states.get_num_time_step()
+            comm_list = link_states.get_comm_list()
 
-        if len(comm_list) != 1:
-            raise "This works only for single commodity"
-        '''
+            link_list = link_states.get_links_list()
+            link_costs = Link_Costs_class(link_list, comm_list, num_steps)
+            comm_id = comm_list[0]
 
-        link_list = link_states.get_links_list()
-        link_costs = Link_Costs_class(link_list, comm_list, num_steps)
-        comm_id = comm_list[0]
+            coeff = self.get_coefficients()
 
-        coeff = self.get_coefficients()
+            for link_id in link_list:
+                x = link_states.get_all_states_on_link_comm(link_id, comm_id)
+                for i in range(num_steps):
+                    flow = x[i].get_flow()
+                    c = coeff.get(link_id)
+                    link_cost = c[0] + flow*(c[1] + flow*(c[2] + flow*(c[3] + c[4]*flow)))
+                    link_costs.set_cost_at_link_comm_time(link_id, comm_id,i, link_cost)
 
-        for link_id in link_list:
-            x = link_states.get_all_states_on_link_comm(link_id, comm_id)
-            for i in range(num_steps):
-                # We devide volume by capacity to get the flow
-                flow = x[i].get_flow()/x[i].get_capacity()
-                c = coeff.get(link_id)
-                link_cost = c[0] + flow*(c[1] + flow*(c[2] + flow*(c[3] + c[4]*flow)))
-                link_costs.set_cost_at_link_comm_time(link_id, comm_id,i, link_cost)
+            #link_costs.print_all()
 
-        #link_costs.print_all()
+        return link_costs
+
+    def mod_evaluate_Cost_Function(self,linkstates):
+        coeff = np.array(self.__Coefficients.values())
+        power_4_coeff = np.matmul(np.array(coeff[:,4]).reshape(len(coeff[:,4]),1),np.ones((1,linkstates.shape[1])))
+        #power_4 =power_4_coeff *(linkstates**4)
+        power_3_coeff = np.matmul(np.array(coeff[:, 3]).reshape(len(coeff[:, 3]), 1), np.ones((1, linkstates.shape[1])))
+        #power_3 =power_3_coeff*(linkstates**3)
+        power_2_coeff = np.matmul(np.array(coeff[:, 2]).reshape(len(coeff[:, 2]), 1), np.ones((1, linkstates.shape[1])))
+        #power_2 = power_2_coeff * linkstates ** 2
+        power_1_coeff = np.matmul(np.array(coeff[:, 1]).reshape(len(coeff[:, 1]), 1), np.ones((1, linkstates.shape[1])))
+        #power_1 = power_1_coeff * linkstates ** 1
+        #power_0 = np.matmul(np.array(coeff[:, 0]).reshape(len(coeff[:, 0]), 1), np.ones((1, linkstates.shape[1])))
+
+        link_costs = np.matmul(np.array(coeff[:, 0]).reshape(len(coeff[:, 0]), 1), np.ones((1, linkstates.shape[1]))) + \
+                     power_1_coeff * (linkstates ** 1) + power_2_coeff * (linkstates ** 2) + power_3_coeff*(linkstates**3) + \
+                     power_4_coeff * (linkstates ** 4)
 
         return link_costs
 

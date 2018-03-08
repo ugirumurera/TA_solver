@@ -15,21 +15,29 @@ class Java_Connection():
 
         self.process = None
         self.pid = None
-        self.port_number = '25335'
+        rank = 0
+        port_num = 25335 + rank
+        self.port_number = str(port_num)
 
         this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
         jar_file_name = os.path.join(this_folder, 'py4jbeats-1.0-SNAPSHOT-jar-with-dependencies.jar')
 
-        if platform.system() == "Windows":
-            self.openWindows(jar_file_name, self.port_number)
-        elif platform.system() == "Linux":
-            self.openLinux(jar_file_name, self.port_number)
+        #First check if the file exists indeed:
+        if os.path.isfile('py4jbeats-1.0-SNAPSHOT-jar-with-dependencies.jar'):
+
+            if platform.system() == "Windows":
+                self.openWindows(jar_file_name, self.port_number)
+            elif platform.system() in ["Linux", "Darwin"]:
+                self.openLinux(jar_file_name, self.port_number)
+            else:
+                raise Exception('Unknown platform')
+
+            self.gateway = JavaGateway(gateway_parameters=GatewayParameters(port=int(self.port_number)))
+
+            print(platform.system())
+
         else:
-            raise Exception('Unknown platform')
-
-        self.gateway = JavaGateway(gateway_parameters=GatewayParameters(port=int(self.port_number)))
-
-        print(platform.system())
+            print "Jar file missing"
 
     def openWindows(self, jar_file_name, port_number):
         try:
@@ -43,9 +51,9 @@ class Java_Connection():
 
     def openLinux(self, jar_file_name, port_number):
 
-        pid = os.fork()
+        self.pid = os.fork()
 
-        if pid == 0:
+        if self.pid == 0:
             self.pid = os.getpid()
             retcode = call(['java', '-jar', jar_file_name, port_number])
             sys.exit()
@@ -57,7 +65,7 @@ class Java_Connection():
         if platform.system() == "Windows":
             #self.process.terminate()
             os.kill(self.process.pid, signal.CTRL_C_EVENT)
-        elif platform.system() == "Linux":
+        elif platform.system() in ["Linux", "Darwin"]:
             os.kill(0, signal.SIGTERM)
         else:
             raise Exception('Unknown platform')

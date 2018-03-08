@@ -2,13 +2,15 @@
 from __future__ import division
 from Abstract_Model_Manager import Abstract_Model_Manager_class
 from Data_Types.Path_Costs_Class import Path_Costs_class
+from copy import copy, deepcopy
 import numpy as np
+import timeit
 
 class BeATS_Model_Manager_class(Abstract_Model_Manager_class):
 
     # Constructor receives a Traffic model and cost functions instances
-    def __init__(self, configfile, gateway):
-        Abstract_Model_Manager_class.__init__(self, configfile, gateway)
+    def __init__(self, configfile, gateway, sim_dt):
+        Abstract_Model_Manager_class.__init__(self, configfile, sim_dt, gateway)
 
     # This overrides the evaluate function in the abstract class. Returns a Path_Cost object of costs on paths
     def evaluate(self, demand_assignment, time_horizon, initial_state=None):
@@ -25,7 +27,9 @@ class BeATS_Model_Manager_class(Abstract_Model_Manager_class):
         demand_dt = float(demand_assignment.get_dt())
         demand_n = int(time_horizon/demand_dt)
 
-        api = self.beats_api
+        #api =self.beats_api
+        api = self.gateway.entry_point.get_BeATS_API()
+        api.load(self.configfile, 2.0)
 
         #Clear the path requests
         api.clear_output_requests()
@@ -46,9 +50,12 @@ class BeATS_Model_Manager_class(Abstract_Model_Manager_class):
                 java_array.add(float(d))
             api.set_demand_on_path_in_vph(path_id, comm_id, start_time, demand_dt, java_array)
 
+        #begin = timeit.default_timer()
         # run BeATS
         api.set_random_seed(1)      #Initialize the random seed
         api.run(float(start_time), float(time_horizon))
+        #elapsed = timeit.default_timer() - begin
+        #print ("api.run took  %s seconds" % elapsed)
 
         # extract the path costs
         path_costs = Path_Costs_class(path_cost_n, demand_dt)
@@ -60,8 +67,9 @@ class BeATS_Model_Manager_class(Abstract_Model_Manager_class):
 
         for path_data in api.get_output_data():
             cost_list = path_data.compute_travel_time_for_start_times(read_time, path_cost_dt, demand_n)
-            path_costs.set_costs_path_commodity(path_data.getPathId(), comm_id, cost_list)
+            path_costs.set_costs_path_commodity(path_data.get_path_id(), comm_id, cost_list)
             #print "path id ", path_data.getPathId(), " cost ", cost_list
 
-        
+
+
         return path_costs

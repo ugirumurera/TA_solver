@@ -1,0 +1,7 @@
+*.exe
+.idea/*
+python/*.jar
+*.pyc
+*.jar
+*.csv
+*.xml
