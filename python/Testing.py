@@ -17,7 +17,8 @@ import csv
 
 #from mpi4py import MPI
 
-d = {}
+d = np.array([])
+print d.size
 d[(1,2)] = np.zeros(5)
 
 d2 = deepcopy(d)

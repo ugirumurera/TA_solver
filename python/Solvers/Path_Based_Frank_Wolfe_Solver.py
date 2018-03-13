@@ -16,8 +16,12 @@ import timeit
 from All_or_Nothing_Function import all_or_nothing
 from Method_Successive_Averages_Solver import Method_of_Successive_Averages_Solver
 
-def Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt,  od = None, assignment = None, past=10, max_iter=1000, eps=1e-4, \
-    q=50, display=1, stop=1e-2):
+# od is used in decomposition mode, where od is the subset of origin-destination pairs to consider for one
+# decomposition subproblem
+#Added od_out_indices to be used in the parallel version on the algorithm
+# od_out_indices are the indices in the assignment vector that is not modified by the current subproblem
+def Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt,  od = None, od_out_indices = None, assignment = None,
+                                  past=10, max_iter=1000, eps=1e-4, q=50, display=1, stop=1e-2):
     # In this case, x_k is a demand assignment object that maps demand to paths
     # Constructing the x_0, the initial demand assignment, where all the demand for an OD is assigned to one path
     # We first create a list of paths from the traffic_scenario
@@ -62,14 +66,15 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt,  od = None, ass
 
     '''
 
-    init_vector = 0
+    init_vector = None
+    x_assignment_vector = None
 
     if assignment is not None:
         init_vector = np.asarray(assignment.vector_assignment())
 
     if assignment is None or np.count_nonzero(init_vector) == 0:
-        assignment, ass_vector = Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt, od, assignment,
-                                                                  max_iter=20, display = display)
+        assignment, x_assignment_vector = Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt, od, od_out_indices,
+                                                                      assignment, max_iter=50, display = display)
 
     #If assignment is None, then return from the solver
     if assignment is None:
@@ -80,7 +85,6 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt,  od = None, ass
     path_list = assignment.get_path_list()
     past_assignment = np.zeros((len(path_list.keys())*num_steps, past), dtype="float64")
 
-    x_assignment_vector = None
 
     for i in range(max_iter):
         # All_or_nothing assignment
@@ -91,8 +95,30 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt,  od = None, ass
 
         # Calculating the error
         current_cost_vector = np.asarray(current_path_costs.vector_path_costs())
-        x_assignment_vector = np.asarray(assignment.vector_assignment())
-        y_assignment_vector = np.asarray(y_assignment.vector_assignment())
+
+        if x_assignment_vector is None: x_assignment_vector = np.asarray(assignment.vector_assignment())
+
+        # When in parallel strategy, the y_assignment_vector has to be combined from all subproblems
+        # If we are doing the parallel strategy, then od_out_indices is not None
+        if od_out_indices is not None :
+            from mpi4py import MPI
+            comm = MPI.COMM_WORLD
+            y_temp_vector = np.asarray(y_assignment.vector_assignment())
+            y_assignment_vector = np.zeros(len(y_temp_vector))
+
+            # First zero out the values corresponding to other subproblems
+            y_temp_vector[od_out_indices] = 0
+
+            # Combine assignment from all subproblems into ass_vector
+            start_time1 = timeit.default_timer()
+
+            comm.Allreduce(y_temp_vector, y_assignment_vector, op=MPI.SUM)
+
+            elapsed1 = timeit.default_timer() - start_time1
+            if display == 1: print ("Communication took  %s seconds" % elapsed1)
+
+        else:
+            y_assignment_vector = np.asarray(y_assignment.vector_assignment())
 
         error = np.abs(np.dot(current_cost_vector, y_assignment_vector - x_assignment_vector) /
                        np.dot(y_assignment_vector, current_cost_vector))
@@ -140,10 +166,10 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt,  od = None, ass
 
         # step 5 of Fukushima
         start_time1 = timeit.default_timer()
-        s = line_search(model_manager, assignment, x_assignment_vector, y_assignment, y_assignment_vector, d, 1e-3)
+        s = line_search(model_manager, assignment, x_assignment_vector, y_assignment, y_assignment_vector, d, 1e-2)
         #s = line_search_original(model_manager, assignment, x_assignment_vector, d)
-        #elapsed1 = timeit.default_timer() - start_time1
-        #print ("Line_Search took  %s seconds" % elapsed1)
+        elapsed1 = timeit.default_timer() - start_time1
+        if display == 1: print ("Line_Search took  %s seconds" % elapsed1)
 
         if s < eps:
             if display >= 1: print 'FW stop with step_size: {}'.format(s)

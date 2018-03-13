@@ -11,7 +11,7 @@ def all_or_nothing(model_manager, assignment, od, initial_state = None, T = None
     num_steps = assignment.get_num_time_step()
     path_list = assignment.get_path_list()
 
-    start_time1 = timeit.default_timer()
+    #start_time1 = timeit.default_timer()
 
     path_costs = model_manager.evaluate(assignment,T, initial_state)
     #path_costs.print_all_in_seconds()
@@ -25,7 +25,10 @@ def all_or_nothing(model_manager, assignment, od, initial_state = None, T = None
     y_assignment.set_all_demands(assignment.get_all_demands())
 
     # For each OD, we are going to move its demand to the shortest path at current iteration
+    count = 0
+    #start_time1 = timeit.default_timer()
     for o in od:
+        count += 1
         min_cost = 0
         comm_id = o.get_commodity_id()
 
@@ -52,6 +55,11 @@ def all_or_nothing(model_manager, assignment, od, initial_state = None, T = None
             index = int(i / (num_steps / demand_size))
             demand = o.get_total_demand_vps().get_value(index)*3600
             y_assignment.set_demand_at_path_comm_time(min_path_id, comm_id, i, demand)
+
+    #print "All_or_nothing for ", count, " ods"
+
+    #elapsed1 = timeit.default_timer() - start_time1
+    #print ("Changing Demand assignment took  %s seconds" % elapsed1)
 
     #y_assignment.print_all()
     return y_assignment,path_costs

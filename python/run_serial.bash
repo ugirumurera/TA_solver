@@ -10,6 +10,6 @@ module load java
 module load python/2.7-anaconda
 source activate myenv
 
-srun -n 10 python -u Runner_Static.py &
+python -u Runner_Static.py &
 
 wait

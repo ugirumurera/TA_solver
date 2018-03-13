@@ -81,26 +81,33 @@ def generate_graph_and_paths(graph_size, scaling, num_nodes, num_ods, max_length
     #num_pairs = len(od_indices)/2)   # Generates the pairs
 
     #origins = random.sample(od_indices, num_pairs)
-    origins = random.sample(range(graph.vcount()), num_ods)
-    destinations = list(set(range(graph.vcount()))-set(origins))[0:num_ods]
+    #origins = random.sample(range(graph.vcount()), num_ods)
+    #destinations = list(set(range(graph.vcount()))-set(origins))[0:num_ods]
+    odpairs = list(itertools.permutations(range(graph.vcount()), 2))[0:num_ods]
     #pairs = list(itertools.combinations(od_indices, 2)
     #Adding source node and outgoing link to od
     j = len(graph.vs)   # Starting index of new nodes
-    for i in range(len(origins)):
+    #for i in range(len(origins)):
+    for o in odpairs:
         # add a new node and edge to graph for origin
         graph.add_vertices(1)
-        graph.add_edge(j, origins[i])
-        origins[i] = j
+        #graph.add_edge(j, origins[i])
+        graph.add_edge(j, o[0])
+        #origins[i] = j
         j += 1
 
         # add a new node and edge to the graph for destination
         graph.add_vertices(1)
-        graph.add_edge(destinations[i], j)
-        destinations[i] = j
+        #graph.add_edge(destinations[i], j)
+        graph.add_edge(o[1], j)
+        #destinations[i] = j
         j += 1
 
+        print "od is ", o
+
+    print "Finished Adding All ods, now getting node coordinates with layout"
     #random.shuffle(pairs)   # shuffles the od pairs to allow for variability
-    ods = zip(origins,destinations)
+    #ods = zip(origins,destinations)
 
     # Get node ids and positions
     layout = graph.layout("kk")     # This fixes the coordinates of the nodes
@@ -113,10 +120,11 @@ def generate_graph_and_paths(graph_size, scaling, num_nodes, num_ods, max_length
     print(graph.ecount()) #printing the number of edges
     #plot(graph, layout=layout)
 
-
+    print "Moving to getting paths for all ods"
     # Generate the paths between the od pairs
     all_paths = {}
-    for o in ods:
+    #for o in ods:
+    for o in odpairs:
         #Find all paths between origin and destination that have at most max_length edges
         #start_time1 = timeit.default_timer()
         # Each iteration the weight of the shortest path is multiplied by power to allow to
@@ -304,15 +312,15 @@ def write_to_xml(graph,all_paths):
 
     # write to file ---------------------
     this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-    configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'scenario_varying_2500_nodes.xml')
+    configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'scenario_varying_100_nodes_100_ods.xml')
     with open(configfile, 'w') as f:
         f.write(minidom.parseString(etree.tostring(xscenario)).toprettyxml(indent="\t"))
 
 def main():
 
     # user definitions
-    graph_size = 50  # grid size, leads to a grid of graph_size*graph_size nodes
-    scaling = 10 # number used to scale the resulting grid graph
+    graph_size = 10  # grid size, leads to a grid of graph_size*graph_size nodes
+    scaling = 1000 # number used to scale the resulting grid graph
     max_length =25  # Maximum number of nodes in paths returned
     paths_per_od = 5    # Number of paths saved per OD
 
@@ -322,6 +330,7 @@ def main():
 
     graph, all_paths = generate_graph_and_paths(graph_size, scaling, num_nodes, num_ods, max_length, paths_per_od)
 
+    print "Now writing to xml file"
     # write_to_csv(graph,all_paths)
 
     write_to_xml(graph,all_paths)

@@ -14,8 +14,11 @@ from copy import copy, deepcopy
 
 # od is used in decomposition mode, where od is the subset of origin-destination pairs to consider for one
 # decomposition subproblem
-def Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt, od = None, init_assignment = None, max_iter=1000,
-                                         display=1, stop=1e-2):
+# Added od_out_indices to be used in the parallel version on the algorithm
+# od_out_indices are the indices in the assignment vector that is not modified by the current subproblem
+
+def Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt, od = None, od_out_indices = None,
+                                         init_assignment = None, max_iter=1000, display=1, stop=1e-2):
 
     # In this case, x_k is a demand assignment object that maps demand to paths
     # Constructing the x_0, the initial demand assignment, where all the demand for an OD is assigned to one path
@@ -59,10 +62,43 @@ def Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt, od = Non
                 demand = np.zeros(num_steps)
                 init_assignment.set_all_demands_on_path_comm(path.getId(), comm_id, demand)
 
-    assignment, start_cost = all_or_nothing(model_manager, init_assignment, od, None, sampling_dt*num_steps)
+        assignment, start_cost = all_or_nothing(model_manager, init_assignment, od, None, sampling_dt * num_steps)
+
+    # Only call the first all or nothing if the given assignment is empty (all zeros)
+    else:
+        init_vector = np.asarray(init_assignment.vector_assignment())
+
+        if np.count_nonzero(init_vector) == 0:
+            assignment, start_cost = all_or_nothing(model_manager, init_assignment, od, None, sampling_dt*num_steps)
+        else:
+            commodity_list = init_assignment.get_commodity_list()
+            num_steps = init_assignment.get_num_time_step()
+            path_list = init_assignment.get_path_list()
+            assignment = Demand_Assignment_class(path_list, commodity_list,
+                                                   num_steps, sampling_dt)
+            assignment.set_all_demands(init_assignment.get_all_demands())
 
     prev_error = -1
     assignment_vector_to_return = None
+    x_assignment_vector = None
+
+    if od_out_indices is not None:
+        from mpi4py import MPI
+        comm = MPI.COMM_WORLD
+        temp_vector = np.asarray(assignment.vector_assignment())
+        x_assignment_vector = np.zeros(len(temp_vector))
+
+        # First zero out the values corresponding to other subproblems
+        temp_vector[od_out_indices] = 0
+
+        # Combine assignment from all subproblems into ass_vector
+        start_time1 = timeit.default_timer()
+        comm.Allreduce(temp_vector, x_assignment_vector, op=MPI.SUM)
+        elapsed1 = timeit.default_timer() - start_time1
+        if display == 1: print ("Communication took  %s seconds" % elapsed1)
+
+        # Update assignment with the combine assignment vector
+        assignment.set_demand_with_vector(x_assignment_vector)
 
     for i in range(max_iter):
 
@@ -76,8 +112,28 @@ def Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt, od = Non
 
         # Calculating the error
         current_cost_vector = np.asarray(current_path_costs.vector_path_costs())
-        x_assignment_vector = np.asarray(assignment.vector_assignment())
-        y_assignment_vector = np.asarray(y_assignment.vector_assignment())
+        if x_assignment_vector is None: x_assignment_vector = np.asarray(assignment.vector_assignment())
+
+        # When in parallel strategy, the y_assignment_vector has to be combined from all subproblems
+        # If we are doing the parallel strategy, then od_out_indices is not None
+        if od_out_indices is not None:
+            from mpi4py import MPI
+            comm = MPI.COMM_WORLD
+            y_temp_vector = np.asarray(y_assignment.vector_assignment())
+            y_assignment_vector = np.zeros(len(y_temp_vector))
+
+            # First zero out the values corresponding to other subproblems
+            y_temp_vector[od_out_indices] = 0
+
+            # Combine assignment from all subproblems into ass_vector
+            start_time1 = timeit.default_timer()
+            # Combine assignment from all subproblems into ass_vector
+            comm.Allreduce(y_temp_vector, y_assignment_vector, op=MPI.SUM)
+            elapsed1 = timeit.default_timer() - start_time1
+            if display == 1: print ("Communication took  %s seconds" % elapsed1)
+
+        else:
+            y_assignment_vector = np.asarray(y_assignment.vector_assignment())
 
         error = np.abs(np.dot(current_cost_vector, y_assignment_vector - x_assignment_vector)/
                        np.dot(y_assignment_vector,current_cost_vector))
@@ -100,6 +156,7 @@ def Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt, od = Non
 
         x_assignment_vector = x_assignment_vector + s*d_assignment
         assignment.set_demand_with_vector(x_assignment_vector)
+
         #elapsed2 = timeit.default_timer() - start_time2
         #print ("One Iteration took %s seconds" % elapsed2)
         # current_path_costs.print_all()
