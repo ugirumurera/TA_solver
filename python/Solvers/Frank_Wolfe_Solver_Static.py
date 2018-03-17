@@ -1,6 +1,6 @@
 import igraph
 import numpy as np
-from All_or_Nothing_Function import all_or_nothing_beats
+from Solvers.All_or_Nothing_Function import all_or_nothing_beats
 from Model_Manager.Link_Model_Manager import Link_Model_Manager_class
 
 def Frank_Wolfe_Solver(model_manager, past=10, max_iter=1000, eps=1e-8, \

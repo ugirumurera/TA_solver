@@ -1,8 +1,8 @@
 from __future__ import division
 from Data_Types.Demand_Assignment_Class import Demand_Assignment_class
-from Method_Successive_Averages_Solver import Method_of_Successive_Averages_Solver
-from Path_Based_Frank_Wolfe_Solver import all_or_nothing, Path_Based_Frank_Wolfe_Solver
-from Projection_onto_Simplex import Projection_onto_Simplex, Projection_onto_Simplex_old
+from Solvers.Method_Successive_Averages_Solver import Method_of_Successive_Averages_Solver
+from Solvers.Path_Based_Frank_Wolfe_Solver import all_or_nothing, Path_Based_Frank_Wolfe_Solver
+from Solvers.Projection_onto_Simplex import Projection_onto_Simplex, Projection_onto_Simplex_old
 import numpy as np
 import timeit
 from copy import copy

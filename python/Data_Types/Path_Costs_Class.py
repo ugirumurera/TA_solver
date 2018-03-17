@@ -4,6 +4,7 @@ import numpy as np
 from copy import copy, deepcopy
 from collections import OrderedDict
 import matplotlib.pyplot as plt
+import csv
 
 class Path_Costs_class():
     # To initialize the Assignment Array, the constructor has to receive a path_list dictionary,, a list of all commodities and
@@ -18,7 +19,7 @@ class Path_Costs_class():
         self.__path_costs = {}
 
 
-    def get_all_path_cots(self):
+    def get_all_path_costs(self):
         return self.__path_costs
 
     def set_path_list(self, path_list):
@@ -128,7 +129,7 @@ class Path_Costs_class():
         ordered_costs = OrderedDict(sorted(self.__path_costs.items()))
         for key in ordered_costs.keys():
             for k in range(self.__num_time_steps):
-                print "path ", key[0], " commodity ", key[1], " time step ", k, " cost ", self.__path_costs[key][k]
+                print "path: ", key[0], " commodity: ", key[1], " time step: ", k, " cost: ", self.__path_costs[key][k]
 
     #Prints out the travel costs in seconds
     def print_all_in_seconds(self):
@@ -157,6 +158,16 @@ class Path_Costs_class():
             sub_index += 1
 
         plt.show()
+
+    def write_path_info(self, filename):
+        ordered_costs = OrderedDict(sorted(self.__path_costs.items()))
+        csv_file = open(filename, 'wb')
+        writer = csv.writer(csv_file)
+        writer.writerow(["path ", " commodity ", " time step ", " cost "])
+        for key in ordered_costs.keys():
+            for k in range(self.__num_time_steps):
+                writer.writerow([key[0], key[1], k, self.__path_costs[key][k]])
+        csv_file.close()
 
     def set_cost_with_vector(self, cost_vector):
         a, b = 0, self.__num_time_steps -1

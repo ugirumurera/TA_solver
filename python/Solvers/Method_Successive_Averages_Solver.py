@@ -2,7 +2,7 @@
 
 from __future__ import division
 import numpy as np
-from All_or_Nothing_Function import all_or_nothing
+from Solvers.All_or_Nothing_Function import all_or_nothing
 from Data_Types.Demand_Assignment_Class import Demand_Assignment_class
 from Data_Types.Path_Costs_Class import Path_Costs_class
 import timeit
