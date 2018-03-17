@@ -13,15 +13,18 @@ import csv
 from Solvers.Path_Based_Frank_Wolfe_Solver import Path_Based_Frank_Wolfe_Solver
 from Solvers.Extra_Projection_Method_Solver import Extra_Projection_Method_Solver
 
+# Flag that indicates whether we are doing decomposition or not
+decompositio_flag = False
+
 conn = Java_Connection()
 
 if conn.pid is not None:
     sim_dt = 2.0
     T = 3600  # Time horizon of interest
-    sampling_dt = 1800  # Duration of one time_step for the solver
+    sampling_dt = 300  # Duration of one time_step for the solver
 
     this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-    configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'seven_links.xml')
+    configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'scenario_varying_demand_4.xml')
     model_manager = BeATS_Model_Manager_class(configfile, conn.gateway, sim_dt)
 
 
@@ -30,9 +33,10 @@ if conn.pid is not None:
 
         # Algorithm to solve the problem
         solver_algorithm = Extra_Projection_Method_Solver
+        #solver_algorithm = Path_Based_Frank_Wolfe_Solver
 
         scenario_solver = Solver_class(model_manager, solver_algorithm)
-        assignment, assignment_vector = scenario_solver.Solver_function(T, sampling_dt)
+        assignment, assignment_vector = scenario_solver.Solver_function(T, sampling_dt, decompositio_flag)
 
         if assignment is None:
             print "Solver did not run"
@@ -63,13 +67,13 @@ if conn.pid is not None:
 
             csv_file.close()
 
-            print "\nDemand Assignment:"
-            assignment.print_all()
+            #print "\nDemand Assignment:"
+            #assignment.print_all()
 
             path_costs = model_manager.evaluate(assignment, T, initial_state=None)
 
-            print "\nPath costs in secons:"
-            path_costs.print_all()
+            #print "\nPath costs in secons:"
+            #path_costs.print_all()
 
             #Distance to Nash
             print "\n"
@@ -83,6 +87,7 @@ if conn.pid is not None:
             plt.figure(2)
             path_costs.plot_costs()
             '''
+
 
     # kill jvm
     conn.close()

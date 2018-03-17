@@ -4,6 +4,7 @@ from Solvers.Method_Successive_Averages_Solver import Method_of_Successive_Avera
 from Solvers.Path_Based_Frank_Wolfe_Solver import all_or_nothing, Path_Based_Frank_Wolfe_Solver
 from Solvers.Projection_onto_Simplex import Projection_onto_Simplex, Projection_onto_Simplex_old
 import numpy as np
+from Error_Calculation import distance_to_Nash
 import timeit
 from copy import copy
 
@@ -94,6 +95,7 @@ def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,od = None, assi
                       np.dot(new_thetha_assignment_vector,current_cost_vector))
         #error = np.abs(np.dot(1/3600*current_cost_vector, new_thetha_assignment_vector - new_x_k_assignment_vector))
 
+        #error = distance_to_Nash(new_x_k_assignment, current_path_costs, od)
 
         print "EPM iteration: ", i, ", error: ", error
         if error < stopping:

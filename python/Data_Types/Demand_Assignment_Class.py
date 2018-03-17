@@ -495,6 +495,7 @@ class Demand_Assignment_class():
     # Creates a vector out of the demand_assignment values
     def vector_assignment(self):
         a = OrderedDict(sorted(self.__assignment.items()))
+        #a = self.__assignment
 
         if self.__keys_ordering is None:
             self.__keys_ordering = a.keys()
@@ -507,6 +508,7 @@ class Demand_Assignment_class():
         a, b = 0, self.__num_time_steps -1
         # Sort the assignment to ensure same vector every time this function is called
         sorted_demand = OrderedDict(sorted(self.__assignment.items()))
+        #sorted_demand = self.__assignment
 
         for key in sorted_demand.keys():
             if a == b:

@@ -14,6 +14,9 @@ from Solvers.Path_Based_Frank_Wolfe_Solver import Path_Based_Frank_Wolfe_Solver
 
 plt.rcParams.update({'font.size': 17})
 
+# Flag that indicates whether we are doing decomposition or not
+decompositio_flag = False
+
 conn = Java_Connection()
 
 if conn.pid is not None:
@@ -48,7 +51,7 @@ if conn.pid is not None:
         solver_algorithm = Path_Based_Frank_Wolfe_Solver
 
         scenario_solver = Solver_class(model_manager, solver_algorithm)
-        assignment, assignment_vector = scenario_solver.Solver_function(T, sampling_dt)
+        assignment, assignment_vector = scenario_solver.Solver_function(T, sampling_dt, decompositio_flag)
 
         if assignment is None:
             print "Solver did not run"
