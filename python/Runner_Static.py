@@ -6,16 +6,16 @@
 import numpy as np
 from copy import deepcopy
 
-# from Cost_Functions.BPR_Function import BPR_Function_class
-# from Traffic_Models.Static_Model import Static_Model_Class
-from Solvers.Solver_Class import Solver_class
-# from Data_Types.Demand_Assignment_Class import Demand_Assignment_class
+# from Cost_Functions.BPR_Function import BPR_Function_classssignment_class
 # from Data_Types.Link_Costs_Class import Link_Costs_class
 # from py4j.java_gateway import JavaGateway,GatewayParameters
 from Model_Manager.Link_Model_Manager import Link_Model_Manager_class
 from Java_Connection import Java_Connection
 from copy import copy
 import matplotlib.pyplot as plt
+# from Traffic_Models.Static_Model import Static_Model_Class
+from Solvers.Solver_Class import Solver_class
+# from Data_Types.Demand_Assignment_Class import Demand_A
 import os
 import inspect
 import csv
@@ -23,18 +23,21 @@ from Solvers.Path_Based_Frank_Wolfe_Solver import Path_Based_Frank_Wolfe_Solver
 
 plt.rcParams.update({'font.size': 18})
 
-connection = Java_Connection()
+# Flag that indicates whether we are doing decomposition or not
+decompositio_flag = False
+
+connection = Java_Connection(decompositio_flag)
 
 if connection.pid is not None:
 
     # Contains local path to input configfile, for the three_links.xml network
     this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-    configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'scenario_high_100_nodes.xml')
+    configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'scenario_varying_100_nodes.xml')
     coefficients = {}
     T = 3600  # Time horizon of interest
     sim_dt = 0.0  # Duration of one time_step for the traffic model
 
-    sampling_dt = 600     # Duration of time_step for the solver, in this case it is equal to sim_dt
+    sampling_dt = 300     # Duration of time_step for the solver, in this case it is equal to sim_dt
 
     model_manager = Link_Model_Manager_class(configfile, connection.gateway, "static", sim_dt, "bpr", coefficients)
 
@@ -60,14 +63,14 @@ if connection.pid is not None:
         solver_algorithm = Path_Based_Frank_Wolfe_Solver
 
         scenario_solver = Solver_class(model_manager, solver_algorithm)
-        assignment, assignment_vector = scenario_solver.Solver_function(T, sampling_dt,False)
+        assignment, assignment_vector = scenario_solver.Solver_function(T, sampling_dt,decompositio_flag)
 
         if assignment is None:
             print "Solver did not run"
         else:
             #Save assignment into a csv file
             this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-            outputfile = os.path.join(this_folder, os.path.pardir, 'output', 'scenario_high_100_nodes.csv')
+            outputfile = os.path.join(this_folder, os.path.pardir, 'output', 'seven_links.csv')
 
             # We first save in the paramenters of the scenario
             csv_file = open(outputfile, 'wb')
@@ -91,13 +94,13 @@ if connection.pid is not None:
 
             csv_file.close()
 
-            print "\nDemand Assignment:"
-            assignment.print_all()
+            #print "\nDemand Assignment:"
+            #assignment.print_all()
 
             path_costs = model_manager.evaluate(assignment, T, initial_state=None)
 
-            print "\nPath costs in seconds:"
-            path_costs.print_all_in_seconds()
+            #print "\nPath costs in seconds:"
+            #path_costs.print_all_in_seconds()
 
             #Distance to Nash
             print "\n"

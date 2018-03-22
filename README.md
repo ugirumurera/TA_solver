@@ -1,5 +1,6 @@
 # Description #
 This a general software framework for solving traffic assignment problems, both static and dynamic, utilizing the [BeATS API](https://bitbucket.org/gcgomes/beats-sim) to encode traffic scenarios. 
+The included solution algorithms can run in High Performance Computing environments.
 
 # SET UP #
 
