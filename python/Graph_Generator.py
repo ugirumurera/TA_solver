@@ -183,8 +183,8 @@ def write_to_csv(graph, all_paths):
     for o, path in all_paths.iteritems():
         writer.writerows(path)
 
-# write the scenario to an xml file
-def write_to_xml(graph,all_paths):
+# create scenario xml
+def create_xml(graph,all_paths):
 
     xscenario = Element('scenario')
 
@@ -331,90 +331,83 @@ def main():
 
     signalized_nodes = graph.vs.select(indegree_ge=4).indices
 
-    xscenario = write_to_xml(graph,all_paths)
+    xscenario = create_xml(graph,all_paths)
 
-    all_nodes = xscenario.find('network').find('nodes')
-    road_connections = xscenario.find('network').find('roadconnections')
-
-    rc_in = [int(child.get('in_link')) for child in road_connections._children]
-    rc_out = [int(child.get('out_link')) for child in road_connections._children]
-
-    # node_in = map from node id to all in links
-    # node_out = map from node_id to all out links
-
-    # create the actuators
-    xactuators = Element('actuators')
-    xscenario.append(xactuators)
-    # <actuators>
-    #   <actuator id="1" type="signal">
-    #     <actuator_target type="node" id="0"/>
-    #     <signal>
-    #       <phase id="1" roadconnection_ids="12"    yellow_time="3" red_clear_time="2" min_green_time="5"/>
-    #       <phase id="2" roadconnection_ids="4,5"   yellow_time="3" red_clear_time="2" min_green_time="5"/>
-    #     </signal>
-    #   </actuator>
-    # </actuators>
-    for node_id in signalized_nodes:
-
-        xactuator = Element('actuator')
-        xactuators.append(xactuator)
-        xactuator.set('id',node_id)
-        xactuator.set('type','signal')
-
-        xsignal = Element('signal')
-        xactuator.append(xsignal)
-
-        # find this node in the graph
-        # in_links_1 = graph.es.select(_source=node_id)
-        in_links = graph.incident(node_id, mode="out")
-
-        # traverse its incoming links
-        phase_id = 0
-        for in_link in in_links:
-
-            rcs = []
-            # for each link, find the associated road connections
-            #     rcs.add(rc_out.get(in_link))
-
-            # attach a phase to the road connections
-            phase_id += 1
-
-            xphase = Element('phase')
-            xsignal.append(xphase)
-            xphase.set('id',phase_id)
-            xphase.set('roadconnection_ids',rcs)
-            xphase.set('yellow_time',3)
-            xphase.set('red_clear_time',2)
-            xphase.set('min_green_time',5)
-
-        # create a controller
-        xcontroller = Element('controller')
-        xcontrollers.append(xcontroller)
-        xcontroller.set('id',xxx)
-        xcontroller.set('type','sig_pretimed')
-
-        xtarget = Element('target_actuators')
-        xcontroller.append(xtarget)
-        xtarget.set('ids',xxx)
-
-        xschedule = Element('schedule')
-        xcontroller.append(xschedule)
-
-        xscheduleitem = Element('schedule_item')
-        xschedule.append(xscheduleitem)
-        xscheduleitem.set('start_time','20')
-        xscheduleitem.set('cycle','120')
-        xscheduleitem.set('offset','20')
-
-        xstages = Element('stages')
-        xscheduleitem.append(xstages)
-
-        for xxx in xxx:
-            xstage = Element('stage')
-            xstages.append(xstage)
-            xstage.set('order','1')
-            xstage.set('phases','1,5')
-            xstage.set('duration','30')
+    # BELOW IS CODE GABRIEL WAS PUTTING TOGETHER TO CREATE SIGNALS
+    #
+    # all_nodes = xscenario.find('network').find('nodes')
+    # road_connections = xscenario.find('network').find('roadconnections')
+    #
+    # rc_in = [int(child.get('in_link')) for child in road_connections._children]
+    # rc_out = [int(child.get('out_link')) for child in road_connections._children]
+    #
+    # # node_in = map from node id to all in links
+    # # node_out = map from node_id to all out links
+    #
+    # # create the actuators
+    # xactuators = Element('actuators')
+    # xscenario.append(xactuators)
+    # for node_id in signalized_nodes:
+    #
+    #     xactuator = Element('actuator')
+    #     xactuators.append(xactuator)
+    #     xactuator.set('id',node_id)
+    #     xactuator.set('type','signal')
+    #
+    #     xsignal = Element('signal')
+    #     xactuator.append(xsignal)
+    #
+    #     # find this node in the graph
+    #     # in_links_1 = graph.es.select(_source=node_id)
+    #     in_links = graph.incident(node_id, mode="out")
+    #
+    #     # traverse its incoming links
+    #     phase_id = 0
+    #     for in_link in in_links:
+    #
+    #         rcs = []
+    #         # for each link, find the associated road connections
+    #         #     rcs.add(rc_out.get(in_link))
+    #
+    #         # attach a phase to the road connections
+    #         phase_id += 1
+    #
+    #         xphase = Element('phase')
+    #         xsignal.append(xphase)
+    #         xphase.set('id',phase_id)
+    #         xphase.set('roadconnection_ids',rcs)
+    #         xphase.set('yellow_time',3)
+    #         xphase.set('red_clear_time',2)
+    #         xphase.set('min_green_time',5)
+    #
+    #     # create a controller
+    #     xcontroller = Element('controller')
+    #     xcontrollers.append(xcontroller)
+    #     xcontroller.set('id',xxx)
+    #     xcontroller.set('type','sig_pretimed')
+    #
+    #     xtarget = Element('target_actuators')
+    #     xcontroller.append(xtarget)
+    #     xtarget.set('ids',xxx)
+    #
+    #     xschedule = Element('schedule')
+    #     xcontroller.append(xschedule)
+    #
+    #     xscheduleitem = Element('schedule_item')
+    #     xschedule.append(xscheduleitem)
+    #     xscheduleitem.set('start_time','20')
+    #     xscheduleitem.set('cycle','120')
+    #     xscheduleitem.set('offset','20')
+    #
+    #     xstages = Element('stages')
+    #     xscheduleitem.append(xstages)
+    #
+    #     for xxx in xxx:
+    #         xstage = Element('stage')
+    #         xstages.append(xstage)
+    #         xstage.set('order','1')
+    #         xstage.set('phases','1,5')
+    #         xstage.set('duration','30')
 
 
     # write to file ---------------------
