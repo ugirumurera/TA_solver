@@ -20,8 +20,9 @@ from Method_Successive_Averages_Solver import Method_of_Successive_Averages_Solv
 # decomposition subproblem
 #Added od_out_indices to be used in the parallel version on the algorithm
 # od_out_indices are the indices in the assignment vector that is not modified by the current subproblem
+# Timer is used to calculate the time spent in path costs evaluation
 def Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt,  od = None, od_out_indices = None, assignment = None,
-                                  past=10, max_iter=1000, eps=1e-4, q=50, display=1, stop=1e-2):
+                                  past=10, max_iter=1000, eps=1e-4, q=50, display=1, stop=1e-2, timer = None):
     # In this case, x_k is a demand assignment object that maps demand to paths
     # Constructing the x_0, the initial demand assignment, where all the demand for an OD is assigned to one path
     # We first create a list of paths from the traffic_scenario
@@ -74,7 +75,7 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt,  od = None, od_
 
     if assignment is None or np.count_nonzero(init_vector) == 0:
         assignment, x_assignment_vector = Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt, od, od_out_indices,
-                                                                      assignment, max_iter=50, display = display)
+                                                                      assignment, max_iter = 50, display = display, timer = timer)
 
     #If assignment is None, then return from the solver
     if assignment is None:
@@ -89,7 +90,7 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt,  od = None, od_
     for i in range(max_iter):
         # All_or_nothing assignment
         #start_time1 = timeit.default_timer()
-        y_assignment, current_path_costs = all_or_nothing(model_manager, assignment, od, None, T)
+        y_assignment, current_path_costs = all_or_nothing(model_manager, assignment, od, None, T, timer = timer)
         #elapsed1 = timeit.default_timer() - start_time1
         #print ("All_or_nothing took  %s seconds" % elapsed1)
 
@@ -166,7 +167,8 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt,  od = None, od_
 
         # step 5 of Fukushima
         start_time1 = timeit.default_timer()
-        s = line_search(model_manager, assignment, x_assignment_vector, y_assignment, y_assignment_vector, d, 1e-2)
+        s = line_search(model_manager, assignment, x_assignment_vector, y_assignment, y_assignment_vector,
+                        d, 1e-2, timer = timer)
         #s = line_search_original(model_manager, assignment, x_assignment_vector, d)
         elapsed1 = timeit.default_timer() - start_time1
         if display == 1: print ("Line_Search took  %s seconds" % elapsed1)
@@ -237,15 +239,15 @@ def Path_Based_Frank_Wolfe_Solver_Dec(traffic_model, cost_function, assignment, 
 
     return assignment, x_assignment_vector
 
-def line_search(model_manager, x_assignment, x_vector, y_assignment, y_vector, d_vector, eps):
+def line_search(model_manager, x_assignment, x_vector, y_assignment, y_vector, d_vector, eps, timer = None):
     # alfa = 0 corresponds to when assignment is equal to original assignment x_assignment
     sampling_dt = x_assignment.get_dt()
     T = sampling_dt * x_assignment.get_num_time_step()
 
-    g0 = g_function(model_manager, x_assignment, T, d_vector)
+    g0 = g_function(model_manager, x_assignment, T, d_vector, timer = timer)
 
     # alfa = 1 corresponds to when assignment is equal to all_or_nothing assignment y_assignment
-    g1 = g_function(model_manager, y_assignment, T, d_vector)
+    g1 = g_function(model_manager, y_assignment, T, d_vector,timer = timer)
 
     if (g0 > 0 and g1 > 0) or (g0 < 0 and g1 < 0):
         if np.abs(g0) <= np.abs(g1):
@@ -266,7 +268,7 @@ def line_search(model_manager, x_assignment, x_vector, y_assignment, y_vector, d
         m_assignment = Demand_Assignment_class(path_list, commodity_list, num_steps, sampling_dt)
         m_assignment.set_all_demands(x_assignment.get_all_demands())
         m_assignment.set_demand_with_vector(m_vector)
-        g_m = g_function(model_manager, m_assignment, T, d_vector)
+        g_m = g_function(model_manager, m_assignment, T, d_vector,timer = timer)
 
         if (g_m < 0 and np.abs(g_m) > eps and g1 > 0) or (g_m > 0 and np.abs(g_m) > eps and g1 < 0):
             l = copy(m)
@@ -279,9 +281,18 @@ def line_search(model_manager, x_assignment, x_vector, y_assignment, y_vector, d
     return l
 
 
-def g_function(model_manager, assignment, T, d_vector):
+def g_function(model_manager, assignment, T, d_vector, timer = None):
     #y_vector = assignment.vector_assignment()
+
+    start_time1 = timeit.default_timer()
     path_costs = model_manager.evaluate(assignment, T, initial_state=None)
+    elapsed1 = timeit.default_timer() - start_time1
+    timer[0] = timer[0] + elapsed1
+
+    print ("Timer is now  %s seconds" % timer[0])
+
+    if timer is not None: timer[0]= timer[0]+ elapsed1
+
     F_value = path_costs.vector_path_costs()
     #print F_value
     return np.dot(F_value, d_vector)

@@ -3,7 +3,8 @@ from Data_Types.Demand_Assignment_Class import Demand_Assignment_class
 import timeit
 
 # This function determines the all_or_nothing demand assignment by putting all OD demand on the shortest path per OD
-def all_or_nothing(model_manager, assignment, od, initial_state = None, T = None):
+# Timer is used to calculate the time spent in path costs evaluation
+def all_or_nothing(model_manager, assignment, od, initial_state = None, T = None, timer = None):
     sampling_dt = assignment.get_dt()
 
     # Initializing the demand assignment
@@ -11,12 +12,13 @@ def all_or_nothing(model_manager, assignment, od, initial_state = None, T = None
     num_steps = assignment.get_num_time_step()
     path_list = assignment.get_path_list()
 
-    #start_time1 = timeit.default_timer()
+    start_time1 = timeit.default_timer()
 
     path_costs = model_manager.evaluate(assignment,T, initial_state)
     #path_costs.print_all_in_seconds()
-    #elapsed1 = timeit.default_timer() - start_time1
-    #print ("Path cost calculation took  %s seconds" % elapsed1)
+    elapsed1 = timeit.default_timer() - start_time1
+    if timer is not None: timer[0] = timer[0] + elapsed1
+    print ("Timer is now  %s seconds" % timer[0])
 
     # Below we initialize the all_or_nothing assignment
     y_assignment = Demand_Assignment_class(path_list, commodity_list,

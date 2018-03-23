@@ -16,9 +16,10 @@ from copy import copy, deepcopy
 # decomposition subproblem
 # Added od_out_indices to be used in the parallel version on the algorithm
 # od_out_indices are the indices in the assignment vector that is not modified by the current subproblem
+# Timer is used to calculate the time spent in path costs evaluation
 
 def Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt, od = None, od_out_indices = None,
-                                         init_assignment = None, max_iter=1000, display=1, stop=1e-2):
+                                         init_assignment = None, max_iter=1000, display=1, stop=1e-2, timer = None):
 
     # In this case, x_k is a demand assignment object that maps demand to paths
     # Constructing the x_0, the initial demand assignment, where all the demand for an OD is assigned to one path
@@ -62,14 +63,16 @@ def Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt, od = Non
                 demand = np.zeros(num_steps)
                 init_assignment.set_all_demands_on_path_comm(path.getId(), comm_id, demand)
 
-        assignment, start_cost = all_or_nothing(model_manager, init_assignment, od, None, sampling_dt * num_steps)
+        assignment, start_cost = all_or_nothing(model_manager, init_assignment, od, None, sampling_dt * num_steps,
+                                                timer = timer)
 
     # Only call the first all or nothing if the given assignment is empty (all zeros)
     else:
         init_vector = np.asarray(init_assignment.vector_assignment())
 
         if np.count_nonzero(init_vector) == 0:
-            assignment, start_cost = all_or_nothing(model_manager, init_assignment, od, None, sampling_dt*num_steps)
+            assignment, start_cost = all_or_nothing(model_manager, init_assignment, od, None,
+                                                    sampling_dt*num_steps, timer = timer)
         else:
             commodity_list = init_assignment.get_commodity_list()
             num_steps = init_assignment.get_num_time_step()
@@ -104,7 +107,8 @@ def Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt, od = Non
 
         #start_time2 = timeit.default_timer()
         # All_or_nothing assignment
-        y_assignment, current_path_costs = all_or_nothing(model_manager, assignment, od, None, sampling_dt*num_steps)
+        y_assignment, current_path_costs = all_or_nothing(model_manager, assignment, od, None, sampling_dt*num_steps,
+                                                          timer = timer)
 
         #elapsed2 = timeit.default_timer() - start_time2
         #print ("All_or_Nothing took %s seconds" % elapsed2)

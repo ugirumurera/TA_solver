@@ -8,7 +8,7 @@ from Error_Calculation import distance_to_Nash
 import timeit
 from copy import copy
 
-def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,od = None, assignment = None, max_iter=100, display=1, stopping=1e-2):
+def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,od = None, od_out_indices = None, assignment = None, max_iter=100, display=1, stopping=1e-2):
 
     # In this case, x_k is a demand assignment object that maps demand to paths
     # If no subset of od provided, get od from the model manager
@@ -51,7 +51,7 @@ def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,od = None, assi
     '''
 
     # Initialize the algorithm with the solution returned by Method_of_Successive_Averages
-    x_k_assignment, assignment_vector = Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt, od,
+    x_k_assignment, assignment_vector = Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt, od,od_out_indices,
                                                                              assignment, max_iter=50)
 
     # If assignment is None, then return from the solver

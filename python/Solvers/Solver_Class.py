@@ -310,10 +310,16 @@ class Solver_class():
         init_vector = np.zeros(len(init_vector))
         init_assignment.set_demand_with_vector(init_vector)
 
-        display = 1
+        display = 0
         if rank == 0: display = 1
+
+        timer = [0]       #Variable used to time the path costs evaluation
+
         x_assignment, x_vector = solver_function(self.model_manager, T, sampling_dt, od_subset, out_od_indices,
-                                                 init_assignment, display = display)
+                                                 init_assignment, display = display, timer = timer)
+
+        if rank == 0: print "Total Path Evaluation took: ", timer[0]
+
         return x_assignment, x_vector
 
         # This function receives the solution assignment and the corresponding path_costs and returns the distance to Nash

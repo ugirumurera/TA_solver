@@ -32,7 +32,7 @@ if connection.pid is not None:
 
     # Contains local path to input configfile, for the three_links.xml network
     this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-    configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'scenario_varying_100_nodes.xml')
+    configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'scenario_varying_100_nodes_100_ods.xml')
     coefficients = {}
     T = 3600  # Time horizon of interest
     sim_dt = 0.0  # Duration of one time_step for the traffic model
