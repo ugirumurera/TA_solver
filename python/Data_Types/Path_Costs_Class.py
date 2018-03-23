@@ -158,7 +158,7 @@ class Path_Costs_class():
             sub_index += 1
 
         plt.show()
-
+    #hello plz merge
     def write_path_info(self, filename):
         ordered_costs = OrderedDict(sorted(self.__path_costs.items()))
         csv_file = open(filename, 'wb')
