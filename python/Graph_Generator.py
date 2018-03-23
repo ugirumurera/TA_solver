@@ -73,53 +73,41 @@ def generate_graph_and_paths(graph_size, scaling, num_nodes, num_ods, max_length
     graph = Graph.Lattice([graph_size, graph_size], circular=False, directed = True)
 
     # Generate od pairs
-
-    graph.vs["indegree"] = graph.indegree()
-
-    permutations = np.asarray(list(itertools.permutations(range(graph.vcount()), 2)))
-    od_indices = random.sample(range(1, len(permutations)), num_ods)
-    odpairs = permutations[od_indices]
-
-    origins = np.zeros(num_ods)         # Array for origins
-    destinations = np.zeros(num_ods)    # Array for destinations
-    
-    #pairs = list(itertools.combinations(od_indices, 2)
     # For Beats purposes, the origins to be of outdegree 1 and the sinks have to be of outdegree 1
-    # For this reason, we need to add source node and outgoing link to od
+    # For this reason, we choose vertices at the periphery of the grid graph, vertices with indegree < 4
+    graph.vs["indegree"] = graph.indegree()
+    #od_indices = graph.vs.select(indegree_lt = 4).indices
+    #Only periphery nodes can be origin or destinations
+    #num_pairs = len(od_indices)/2)   # Generates the pairs
+
+    #origins = random.sample(od_indices, num_pairs)
+    #origins = random.sample(range(graph.vcount()), num_ods)
+    #destinations = list(set(range(graph.vcount()))-set(origins))[0:num_ods]
+    odpairs = list(itertools.permutations(range(graph.vcount()), 2))[0:num_ods]
+    #pairs = list(itertools.combinations(od_indices, 2)
+    #Adding source node and outgoing link to od
     j = len(graph.vs)   # Starting index of new nodes
-    i = 0
-
-    origin_dic = {}          # Keeps track of which od nodes has been seen already and the source added added
-    dest_dic = {}           # Keep track of which destination node has been seen and the sink node added
-
+    #for i in range(len(origins)):
     for o in odpairs:
-        # add a new node and edge to graph for origin if we have not seen this node as origin yet
-        if o[0] not in origin_dic.keys():
-            graph.add_vertices(1)
-            graph.add_edge(j, o[0])
-            origins[i] = j
-            origin_dic[o[0]] = j
-            j += 1
-        else:
-            origins[i] = origin_dic[o[0]]
+        # add a new node and edge to graph for origin
+        graph.add_vertices(1)
+        #graph.add_edge(j, origins[i])
+        graph.add_edge(j, o[0])
+        #origins[i] = j
+        j += 1
 
-        # add a new node and edge to the graph for destination if this node has not been seen as destinaiton yet
-        if o[1] not in dest_dic.keys():
-            graph.add_vertices(1)
-            graph.add_edge(o[1], j)
-            destinations[i] = j
-            dest_dic[o[1]] = j
-            j += 1
-        else:
-            destinations[i] = dest_dic[o[1]]
+        # add a new node and edge to the graph for destination
+        graph.add_vertices(1)
+        #graph.add_edge(destinations[i], j)
+        graph.add_edge(o[1], j)
+        #destinations[i] = j
+        j += 1
 
-        i += 1
         print "od is ", o
 
     print "Finished Adding All ods, now getting node coordinates with layout"
-
-    #Creating the actual ods
-    ods = zip(origins,destinations)
+    #random.shuffle(pairs)   # shuffles the od pairs to allow for variability
+    #ods = zip(origins,destinations)
 
     # Get node ids and positions
     layout = graph.layout("kk")     # This fixes the coordinates of the nodes
@@ -135,7 +123,8 @@ def generate_graph_and_paths(graph_size, scaling, num_nodes, num_ods, max_length
     print "Moving to getting paths for all ods"
     # Generate the paths between the od pairs
     all_paths = {}
-    for o in ods:
+    #for o in ods:
+    for o in odpairs:
         #Find all paths between origin and destination that have at most max_length edges
         #start_time1 = timeit.default_timer()
         # Each iteration the weight of the shortest path is multiplied by power to allow to
@@ -145,7 +134,7 @@ def generate_graph_and_paths(graph_size, scaling, num_nodes, num_ods, max_length
         factor = 10
         paths = []
         for i in range(paths_per_od):
-            path = graph.get_shortest_paths(int(o[0]), int(o[1]), weights="weight", mode=OUT, output="epath")
+            path = graph.get_shortest_paths(o[0], o[1], weights="weight", mode=OUT, output="epath")
             paths.append(path[0])
 
             #change weight of edges in path in order to find new shortest path
@@ -194,8 +183,8 @@ def write_to_csv(graph, all_paths):
     for o, path in all_paths.iteritems():
         writer.writerows(path)
 
-# write the scenario to an xml file
-def write_to_xml(graph,all_paths):
+# create scenario xml
+def create_xml(graph,all_paths):
 
     xscenario = Element('scenario')
 
@@ -309,7 +298,7 @@ def write_to_xml(graph,all_paths):
         xdemand.set('subnetwork',str(path_id))
         xdemand.set('start_time',"0")
         xdemand.set('dt',"600")
-        xdemand.text = "100,500,100,500,100,500"
+        xdemand.text = "100,600,100,600,100,600"
 
     # commodities ---------------------
     xcommodities = Element('commodities')
@@ -321,29 +310,111 @@ def write_to_xml(graph,all_paths):
     xcommodity.set('name','car')
     xcommodity.set('subnetworks',csv2string(path_ids))
 
-    # write to file ---------------------
-    this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-    configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'scenario_varying_2500_nodes_5000_ods.xml')
-    with open(configfile, 'w') as f:
-        f.write(minidom.parseString(etree.tostring(xscenario)).toprettyxml(indent="\t"))
+    return xscenario
 
 def main():
 
     # user definitions
-    graph_size = 50  # grid size, leads to a grid of graph_size*graph_size nodes
+    graph_size = 10  # grid size, leads to a grid of graph_size*graph_size nodes
     scaling = 1000 # number used to scale the resulting grid graph
     max_length =25  # Maximum number of nodes in paths returned
     paths_per_od = 5    # Number of paths saved per OD
 
     num_nodes = graph_size*graph_size   # Number of nodes in the graph
-    num_ods = num_nodes*2   # Number of od, have to be less that 1/2 number of nodes
+    num_ods = num_nodes/4    # Number of od, have to be less that 1/2 number of nodes
+    #num_ods = 18
 
     graph, all_paths = generate_graph_and_paths(graph_size, scaling, num_nodes, num_ods, max_length, paths_per_od)
 
     print "Now writing to xml file"
     # write_to_csv(graph,all_paths)
 
-    write_to_xml(graph,all_paths)
+    signalized_nodes = graph.vs.select(indegree_ge=4).indices
+
+    xscenario = create_xml(graph,all_paths)
+
+    # BELOW IS CODE GABRIEL WAS PUTTING TOGETHER TO CREATE SIGNALS
+    #
+    # all_nodes = xscenario.find('network').find('nodes')
+    # road_connections = xscenario.find('network').find('roadconnections')
+    #
+    # rc_in = [int(child.get('in_link')) for child in road_connections._children]
+    # rc_out = [int(child.get('out_link')) for child in road_connections._children]
+    #
+    # # node_in = map from node id to all in links
+    # # node_out = map from node_id to all out links
+    #
+    # # create the actuators
+    # xactuators = Element('actuators')
+    # xscenario.append(xactuators)
+    # for node_id in signalized_nodes:
+    #
+    #     xactuator = Element('actuator')
+    #     xactuators.append(xactuator)
+    #     xactuator.set('id',node_id)
+    #     xactuator.set('type','signal')
+    #
+    #     xsignal = Element('signal')
+    #     xactuator.append(xsignal)
+    #
+    #     # find this node in the graph
+    #     # in_links_1 = graph.es.select(_source=node_id)
+    #     in_links = graph.incident(node_id, mode="out")
+    #
+    #     # traverse its incoming links
+    #     phase_id = 0
+    #     for in_link in in_links:
+    #
+    #         rcs = []
+    #         # for each link, find the associated road connections
+    #         #     rcs.add(rc_out.get(in_link))
+    #
+    #         # attach a phase to the road connections
+    #         phase_id += 1
+    #
+    #         xphase = Element('phase')
+    #         xsignal.append(xphase)
+    #         xphase.set('id',phase_id)
+    #         xphase.set('roadconnection_ids',rcs)
+    #         xphase.set('yellow_time',3)
+    #         xphase.set('red_clear_time',2)
+    #         xphase.set('min_green_time',5)
+    #
+    #     # create a controller
+    #     xcontroller = Element('controller')
+    #     xcontrollers.append(xcontroller)
+    #     xcontroller.set('id',xxx)
+    #     xcontroller.set('type','sig_pretimed')
+    #
+    #     xtarget = Element('target_actuators')
+    #     xcontroller.append(xtarget)
+    #     xtarget.set('ids',xxx)
+    #
+    #     xschedule = Element('schedule')
+    #     xcontroller.append(xschedule)
+    #
+    #     xscheduleitem = Element('schedule_item')
+    #     xschedule.append(xscheduleitem)
+    #     xscheduleitem.set('start_time','20')
+    #     xscheduleitem.set('cycle','120')
+    #     xscheduleitem.set('offset','20')
+    #
+    #     xstages = Element('stages')
+    #     xscheduleitem.append(xstages)
+    #
+    #     for xxx in xxx:
+    #         xstage = Element('stage')
+    #         xstages.append(xstage)
+    #         xstage.set('order','1')
+    #         xstage.set('phases','1,5')
+    #         xstage.set('duration','30')
+
+
+    # write to file ---------------------
+    this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+    configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'scenario_varying_2500_nodes.xml')
+    with open(configfile, 'w') as f:
+        f.write(minidom.parseString(etree.tostring(xscenario)).toprettyxml(indent="\t"))
 
     # Plot the resulting graph
     # graph.vs["ID"] = graph.vs.indices
