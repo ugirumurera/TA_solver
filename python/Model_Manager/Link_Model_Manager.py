@@ -1,6 +1,6 @@
 # This is the model manager for link-based models
 
-from Abstract_Model_Manager import Abstract_Model_Manager_class
+from Model_Manager.Abstract_Model_Manager import Abstract_Model_Manager_class
 from Data_Types.Path_Costs_Class import Path_Costs_class
 from Traffic_Models.Static_Model import Static_Model_Class
 from Traffic_Models.MN_Model import MN_Model_Class

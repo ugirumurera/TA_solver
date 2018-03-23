@@ -36,7 +36,7 @@ class BeATS_Model_Manager_class(Abstract_Model_Manager_class):
 
         # request path travel time output
         for path_id in demand_assignment.get_path_list():
-            api.request_path_travel_time(path_id, path_cost_dt)
+            api.request_path_travel_time((long)(path_id), path_cost_dt)
 
         # clear demands in beats
         api.clear_all_demands()
