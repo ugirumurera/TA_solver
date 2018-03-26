@@ -287,9 +287,9 @@ def g_function(model_manager, assignment, T, d_vector, timer = None):
     start_time1 = timeit.default_timer()
     path_costs = model_manager.evaluate(assignment, T, initial_state=None)
     elapsed1 = timeit.default_timer() - start_time1
-    timer[0] = timer[0] + elapsed1
-
-    print ("Timer is now  %s seconds" % timer[0])
+    if timer is not None:
+        timer[0] = timer[0] + elapsed1
+        print ("Timer is now  %s seconds" % timer[0])
 
     if timer is not None: timer[0]= timer[0]+ elapsed1
 

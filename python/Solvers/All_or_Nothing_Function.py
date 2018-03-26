@@ -17,8 +17,9 @@ def all_or_nothing(model_manager, assignment, od, initial_state = None, T = None
     path_costs = model_manager.evaluate(assignment,T, initial_state)
     #path_costs.print_all_in_seconds()
     elapsed1 = timeit.default_timer() - start_time1
-    if timer is not None: timer[0] = timer[0] + elapsed1
-    print ("Timer is now  %s seconds" % timer[0])
+    if timer is not None:
+        timer[0] = timer[0] + elapsed1
+        print ("Timer is now  %s seconds" % timer[0])
 
     # Below we initialize the all_or_nothing assignment
     y_assignment = Demand_Assignment_class(path_list, commodity_list,
