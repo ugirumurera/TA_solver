@@ -5,7 +5,7 @@ from Abstract_Traffic_Model import Abstract_Traffic_Model_class
 from Data_Types.State_Trajectory_Class import State_Trajectory_class
 from Traffic_States.Static_Traffic_State import Static_Traffic_State_class
 import numpy as np
-
+# these are some comments for practice
 
 class Static_Model_Class(Abstract_Traffic_Model_class):
     #Configfile is needed to initialize the model's scenario via beats_api

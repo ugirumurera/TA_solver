@@ -48,7 +48,7 @@ configfile = os.path.join(this_folder,os.path.pardir,'configfiles','seven_links.
 
 coefficients = {0L:[1,0,0,0,1],1L:[1,0,0,0,1],2L:[5,0,0,0,5], 3L:[2,0,0,0,2], 4L:[2,0,0,0,2], 5L:[1,0,0,0,1], 6L:[5,0,0,0,5]}
 
-model_manager = Link_Model_Manager_class(configfile, connection, "static", None, "bpr", coefficients)
+model_manager = Link_Model_Manager_class(configfile, "static", connection, None, "bpr", coefficients)
 
 '''
 port_number = int(port_number)
