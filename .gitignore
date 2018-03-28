@@ -4,3 +4,5 @@ python/*.jar
 *.pyc
 *.jar
 configfiles/*.xml
+output/
+*.bash
