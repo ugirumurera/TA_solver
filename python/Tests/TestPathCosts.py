@@ -21,7 +21,7 @@ class TestPathCost(unittest.TestCase):
         configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'seven_links.xml')
         bpr_coefficients = {0L: [1, 0, 0, 0, 1], 1L: [1, 0, 0, 0, 1], 2L: [5, 0, 0, 0, 5], 3L: [2, 0, 0, 0, 2],
                         4L: [2, 0, 0, 0, 2], 5L: [1, 0, 0, 0, 1], 6L: [5, 0, 0, 0, 5]}
-        cls.model_manager = Link_Model_Manager_class(configfile, cls.connection, "static", None, "bpr", bpr_coefficients)
+        cls.model_manager = Link_Model_Manager_class(configfile, "static", cls.connection, None, "bpr", bpr_coefficients)
         api = cls.model_manager.beats_api
 
         time_period = 1  # Only have one time period for static model

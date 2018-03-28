@@ -39,7 +39,7 @@ if connection.pid is not None:
 
     sampling_dt = 600     # Duration of time_step for the solver, in this case it is equal to sim_dt
 
-    model_manager = Link_Model_Manager_class(configfile, connection.gateway, "static", sim_dt, "bpr", coefficients)
+    model_manager = Link_Model_Manager_class(configfile, "static", connection.gateway, sim_dt, "bpr", coefficients)
 
     #Estimating bpr coefficients with beats
     num_links = model_manager.beats_api.get_num_links()

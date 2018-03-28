@@ -10,11 +10,11 @@ from abc import ABCMeta, abstractmethod
 class Abstract_Model_Manager_class():
     __metaclass__ = ABCMeta
 
-    def __init__(self, configfile, sim_dt, gateway):
+    def __init__(self, configfile, traffic_model_name, sim_dt, gateway):
         self.gateway = gateway
         self.configfile = configfile
         self.beats_api = gateway.entry_point.get_BeATS_API()
-        timestamps = self.beats_api.load(configfile, sim_dt, True)
+        timestamps = self.beats_api.load(configfile, sim_dt, False, traffic_model_name)
         time1 = (timestamps[1] - timestamps[0])/1000
         time2 = (timestamps[2] - timestamps[1])/1000
         print "Load JAXB took: ", time1, " sec"

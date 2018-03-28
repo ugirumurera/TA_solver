@@ -16,7 +16,7 @@ conn = Java_Connection()
 
 this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'seven_links.xml')
-model_manager = BeATS_Model_Manager_class(configfile, conn.gateway, sim_dt=2)
+model_manager = BeATS_Model_Manager_class(configfile, "ctm", conn.gateway, sim_dt=2)
 
 T = 3600  # Time horizon of interest
 sampling_dt = 600  # Duration of one time_step for the solver

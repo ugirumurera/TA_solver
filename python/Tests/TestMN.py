@@ -20,7 +20,7 @@ class TestMN(unittest.TestCase):
         coefficients = {0L: [1, 0, 0, 0, 1], 1L: [1, 0, 0, 0, 1], 2L: [2, 0, 0, 0, 2], 3L: [1, 0, 0, 0, 1],
                         4L: [2, 0, 0, 0, 2], 5L: [1, 0, 0, 0, 1], 6L: [1, 0, 0, 0, 1]}
 
-        cls.model_manager = Link_Model_Manager_class(configfile, cls.conn.gateway, "mn", sim_dt, "bpr", coefficients)
+        cls.model_manager = Link_Model_Manager_class(configfile, "mn", cls.conn.gateway, sim_dt, "bpr", coefficients)
 
     @classmethod
     def tearDownClass(cls):

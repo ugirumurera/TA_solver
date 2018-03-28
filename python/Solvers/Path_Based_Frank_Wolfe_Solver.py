@@ -28,7 +28,8 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt,  od = None, od_
     # We first create a list of paths from the traffic_scenario
 
     # If no subset of od provided, get od from the model manager
-    if od is None: od = model_manager.beats_api.get_od_info()
+    if od is None:
+        od = model_manager.beats_api.get_od_info()
 
     num_steps = int(T/sampling_dt)
 

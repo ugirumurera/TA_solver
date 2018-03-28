@@ -9,8 +9,8 @@ import timeit
 class BeATS_Model_Manager_class(Abstract_Model_Manager_class):
 
     # Constructor receives a Traffic model and cost functions instances
-    def __init__(self, configfile, gateway, sim_dt):
-        Abstract_Model_Manager_class.__init__(self, configfile, sim_dt, gateway)
+    def __init__(self, configfile, traffic_model_name, gateway, sim_dt):
+        Abstract_Model_Manager_class.__init__(self, configfile, traffic_model_name, sim_dt, gateway)
 
     # This overrides the evaluate function in the abstract class. Returns a Path_Cost object of costs on paths
     def evaluate(self, demand_assignment, time_horizon, initial_state=None):

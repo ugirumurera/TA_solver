@@ -25,8 +25,7 @@ if conn.pid is not None:
 
     this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
     configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'scenario_varying_demand_4.xml')
-    model_manager = BeATS_Model_Manager_class(configfile, conn.gateway, sim_dt)
-
+    model_manager = BeATS_Model_Manager_class(configfile, "ctm", conn.gateway, sim_dt)
 
     if(model_manager.is_valid()):
         num_steps = int(T/sampling_dt)
