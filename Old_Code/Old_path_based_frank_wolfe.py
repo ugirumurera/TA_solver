@@ -21,6 +21,42 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, num_steps, dt, past=10, max_ite
                                          num_steps, dt)
 
     start_time1 = timeit.default_timer()
+
+    '''
+    # Initializing the demand assignment
+    commodity_list = list(model_manager.beats_api.get_commodity_ids())
+
+    assignment = Demand_Assignment_class(path_list,commodity_list,
+                                         num_steps, sampling_dt)
+
+
+    start_time1 = timeit.default_timer()
+    # Populating the Demand Assignment, based on the paths associated with ODs
+
+    for o in od:
+        comm_id = o.get_commodity_id()
+
+        demand_api = [item * 3600 for item in o.get_total_demand_vps().getValues()]
+        demand_api = np.asarray(demand_api)
+        demand_size = len(demand_api)
+        demand_dt = o.get_total_demand_vps().getDt()
+
+        # Before assigning the demand, we want to make sure it can be properly distributed given the number of
+        # Time step in our problem
+        if (sampling_dt > demand_dt or demand_dt % sampling_dt > 0) and (demand_size > 1):
+            print "Demand specified in xml cannot not be properly divided among time steps"
+            return
+        #if demand_size > num_steps or num_steps % len(demand_api) != 0:
+            #print "Demand specified in xml cannot not be properly divided among time steps"
+            #return
+
+        for path in o.get_subnetworks():
+            path_list[path.getId()] = path.get_link_ids()
+            demand = np.zeros(num_steps)
+            assignment.set_all_demands_on_path_comm(path.getId(), comm_id, demand)
+
+    '''
+
     # Populating the Demand Assignment, based on the paths associated with ODs
     for o in od:
         count = 0

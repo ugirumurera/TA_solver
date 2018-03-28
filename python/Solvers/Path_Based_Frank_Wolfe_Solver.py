@@ -32,41 +32,6 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt,  od = None, od_
 
     num_steps = int(T/sampling_dt)
 
-    '''
-    # Initializing the demand assignment
-    commodity_list = list(model_manager.beats_api.get_commodity_ids())
-    
-    assignment = Demand_Assignment_class(path_list,commodity_list,
-                                         num_steps, sampling_dt)
-    
-    
-    start_time1 = timeit.default_timer()
-    # Populating the Demand Assignment, based on the paths associated with ODs
-    
-    for o in od:
-        comm_id = o.get_commodity_id()
-
-        demand_api = [item * 3600 for item in o.get_total_demand_vps().getValues()]
-        demand_api = np.asarray(demand_api)
-        demand_size = len(demand_api)
-        demand_dt = o.get_total_demand_vps().getDt()
-
-        # Before assigning the demand, we want to make sure it can be properly distributed given the number of
-        # Time step in our problem
-        if (sampling_dt > demand_dt or demand_dt % sampling_dt > 0) and (demand_size > 1):
-            print "Demand specified in xml cannot not be properly divided among time steps"
-            return
-        #if demand_size > num_steps or num_steps % len(demand_api) != 0:
-            #print "Demand specified in xml cannot not be properly divided among time steps"
-            #return
-
-        for path in o.get_subnetworks():
-            path_list[path.getId()] = path.get_link_ids()
-            demand = np.zeros(num_steps)
-            assignment.set_all_demands_on_path_comm(path.getId(), comm_id, demand)
-
-    '''
-
     init_vector = None
     x_assignment_vector = None
 
@@ -74,7 +39,7 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt,  od = None, od_
         init_vector = np.asarray(assignment.vector_assignment())
 
     if assignment is None or np.count_nonzero(init_vector) == 0:
-        assignment, x_assignment_vector = Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt, od, od_out_indices,
+        assignment, x_assignment_vector= Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt, od, od_out_indices,
                                                                       assignment, max_iter = 50, display = display, timer = timer)
 
     #If assignment is None, then return from the solver
@@ -126,11 +91,12 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt,  od = None, od_
 
         #error = distance_to_Nash(assignment,current_path_costs,od)
 
-        if display == 1: print "FW iteration: ", i, ", error: ", error
-
         if error < stop :
             if display == 1: print "FW Stop with error: ", error
             return assignment, x_assignment_vector
+
+        if display == 1: print "FW iteration: ", i, ", error: ", error
+
         '''
         if i == 0:
             start_time1 = timeit.default_timer()

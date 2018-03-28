@@ -24,7 +24,7 @@ if conn.pid is not None:
     sampling_dt = 300  # Duration of one time_step for the solver
 
     this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-    configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'scenario_varying_demand_4.xml')
+    configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'scenario_varying_100_nodes.xml')
     model_manager = BeATS_Model_Manager_class(configfile, conn.gateway, sim_dt)
 
 

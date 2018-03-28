@@ -16,50 +16,16 @@ def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,od = None, od_o
 
     num_steps = int(T/sampling_dt)
 
-    '''
-    # Initializing the demand assignment
-    commodity_list = list(model_manager.beats_api.get_commodity_ids())
-    x_k_assignment = Demand_Assignment_class(path_list,commodity_list,
-                                         num_steps, sampling_dt)
-
-    # Populating the Demand Assignment, based on the paths associated with ODs
-    for o in od:
-        count = 0
-        comm_id = o.get_commodity_id()
-
-        demand_api = [item * 3600 for item in o.get_total_demand_vps().getValues()]
-        demand_api = np.asarray(demand_api)
-        demand_size = len(demand_api)
-        demand_dt = o.get_total_demand_vps().getDt()
-
-        # Before assigning the demand, we want to make sure it can be properly distributed given the number of
-        # Time step in our problem
-        if (sampling_dt > demand_dt or demand_dt % sampling_dt > 0) and (demand_size > 1):
-            print "Demand specified in xml cannot not be properly divided among time steps"
-            return
-        #if demand_size > num_steps or num_steps % len(demand_api) != 0:
-            #print "Demand specified in xml cannot not be properly divided among time steps"
-            #return
-
-        for path in o.get_subnetworks():
-            path_list[path.getId()] = path.get_link_ids()
-            demand = np.zeros(num_steps)
-            x_k_assignment.set_all_demands_on_path_comm(path.getId(), comm_id, demand)
-
-    # x_interm is the initial solution: Step 0
-    x_k_assignment, start_cost = all_or_nothing(model_manager, x_k_assignment, od, None, sampling_dt*num_steps)
-    '''
-
     # Initialize the algorithm with the solution returned by Method_of_Successive_Averages
-    x_k_assignment, assignment_vector = Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt, od,od_out_indices,
-                                                                             assignment, max_iter=50)
+    x_k_assignment, x_k_assignment_vector = Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt, od,od_out_indices,
+                                                                             assignment, max_iter=20)
 
     # If assignment is None, then return from the solver
     if x_k_assignment is None:
         print "Demand dt is less than sampling dt, or demand not specified properly"
         return None, None
     # tau, sigma and epslon parameters used in the Extra Projection Method
-    tau = 0.5*100000
+    tau = 0.5*10000
     sigma = 0.9
     epslon = 0.025
 
@@ -67,40 +33,28 @@ def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,od = None, od_o
     previous_error = -1
     count = 0
     m = 5
-    x_k_assignment_vector = None
+
+    thetha_assignment, current_cost_vector,thetha_assignment_vector = None,None,None
 
     for i in range(max_iter):
-        # Step 1: Determining Z_k
-        # get coefficients for cost function
-        z_k_assignment,new_tau = project_modified_assignment(model_manager, T, tau, x_k_assignment, od)
-        tau = new_tau
-        # Step 2: Determining x_k=1
-        new_x_k_assignment,new_tau = project_modified_assignment(model_manager, T, tau, z_k_assignment, od)
+        if thetha_assignment is None:
+            # First check if the error is low enough to terminate
+            theta_assignment, current_path_costs = all_or_nothing(model_manager, x_k_assignment, od, None,
+                                                                  sampling_dt * num_steps)
 
-        tau = new_tau
+            #Vectors to be used in error calculation
+            current_cost_vector = np.asarray(current_path_costs.vector_path_costs())
+            thetha_assignment_vector = np.asarray(theta_assignment.vector_assignment())
 
-        # Step 3: Calculating the error
-        # All_or_nothing assignment
-        new_theta_assignment, current_path_costs = all_or_nothing(model_manager, new_x_k_assignment, od, None, sampling_dt*num_steps)
-        theta_assignment, theta_path_costs = all_or_nothing(model_manager, x_k_assignment, od, None, sampling_dt*num_steps)
+        error = np.abs(np.dot(current_cost_vector, thetha_assignment_vector - x_k_assignment_vector)/
+                      np.dot(thetha_assignment_vector,current_cost_vector))
 
-
-        # Calculating the error
-        current_cost_vector = np.asarray(current_path_costs.vector_path_costs())
-        x_k_assignment_vector = np.asarray(x_k_assignment.vector_assignment())
-        new_x_k_assignment_vector = np.asarray(new_x_k_assignment.vector_assignment())
-        new_thetha_assignment_vector = np.asarray(new_theta_assignment.vector_assignment())
-
-        error = np.abs(np.dot(current_cost_vector, new_thetha_assignment_vector - new_x_k_assignment_vector)/
-                      np.dot(new_thetha_assignment_vector,current_cost_vector))
-        #error = np.abs(np.dot(1/3600*current_cost_vector, new_thetha_assignment_vector - new_x_k_assignment_vector))
-
-        #error = distance_to_Nash(new_x_k_assignment, current_path_costs, od)
-
-        print "EPM iteration: ", i, ", error: ", error
         if error < stopping:
-            print "Stop with error: ", error
-            return new_x_k_assignment, x_k_assignment_vector
+            print "EPM Stop with error: ", error
+            return x_k_assignment, x_k_assignment_vector
+
+        # If we did not terminate, print current error
+        print "EPM iteration: ", i, ", error: ", error
 
         #keeping track of the error values seen
         if(previous_error == -1):previous_error = error
@@ -111,20 +65,46 @@ def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,od = None, od_o
 
         if count > m:
             print "Error did not change for the past ", m, " iterations"
-            return new_x_k_assignment, x_k_assignment_vector
+            return x_k_assignment, x_k_assignment_vector
+
+
+        # Step 1: Determining Z_k
+        # get coefficients for cost function
+        z_k_assignment,new_tau = project_modified_assignment(model_manager, T, tau, x_k_assignment, od)
+        tau = new_tau
+        # Step 2: Determining x_k=1
+        new_x_k_assignment,new_tau = project_modified_assignment(model_manager, T, tau, z_k_assignment, od)
+
+        tau = new_tau
+
+        # Check if we need to change tau
+        # All_or_nothing assignment
+        new_theta_assignment, new_path_costs = all_or_nothing(model_manager, new_x_k_assignment, od, None, sampling_dt*num_steps)
+
+        # Getting the vectors
+        new_x_k_assignment_vector = np.asarray(new_x_k_assignment.vector_assignment())
+        new_thetha_assignment_vector = np.asarray(new_theta_assignment.vector_assignment())
 
         # Update tau as needed
-        old_cost_vector = np.asarray(theta_path_costs.vector_path_costs())
-        theta_assignment_vector = np.asarray(theta_assignment.vector_assignment())
-        theta_value = np.dot(old_cost_vector,np.subtract(theta_assignment_vector,x_k_assignment_vector))
-        new_theta_value = np.dot(current_cost_vector,np.subtract(new_thetha_assignment_vector,new_x_k_assignment_vector))
-        mod_theta_assignment = epslon * np.abs(theta_value)
-        if (new_theta_value < theta_value) and \
-                np.abs(np.subtract(new_theta_value,theta_value)) > mod_theta_assignment:
+        old_cost_vector = np.asarray(model_manager.evaluate(x_k_assignment, T,
+                                                            initial_state=None).vector_path_costs())
+        new_cost_vector = np.asarray(model_manager.evaluate(new_x_k_assignment, T,
+                                                            initial_state=None).vector_path_costs())
+        old_theta = np.dot(old_cost_vector,np.subtract(thetha_assignment_vector, x_k_assignment_vector))
+        new_theta = np.dot(new_cost_vector, np.subtract(new_thetha_assignment_vector, new_x_k_assignment_vector))
+        new_theta_value = np.abs(np.subtract(new_theta,old_theta))
+        mod_theta_assignment = epslon * np.abs(old_theta)
+
+        if (new_theta < old_theta) and \
+                new_theta_value > mod_theta_assignment:
             tau = tau * sigma
 
-        # Otherwise, we update x_k_assignment and go back to step 1
+        # Otherwise, we update x_k_assignment and go back to error checking
         x_k_assignment.set_demand_with_vector(new_x_k_assignment_vector)
+
+        thetha_assignment_vector = copy(new_thetha_assignment_vector)
+        x_k_assignment_vector = copy(new_x_k_assignment_vector)
+        current_cost_vector = np.asarray(new_path_costs.vector_path_costs())
 
     return x_k_assignment, x_k_assignment_vector
 
@@ -152,13 +132,6 @@ def project_modified_assignment(model_manager, T, tau, x_interm1, od):
 
             # Get the demand and cost corresponding to the OD
             for path in o.get_subnetworks():
-                '''
-                if od_demand_val is None:
-                od_demand_seq.append(np.array(x_interm1.get_all_demands_on_path_comm(path.getId(),comm_id)))
-                od_cost_seq.append(np.array(path_costs.get_all_costs_on_path_comm(path.getId(),comm_id)))
-                od_keys_seq.append((path.getId(),comm_id))
-                else:
-                '''
                 temp_demand = np.array(x_interm1.get_all_demands_on_path_comm(path.getId(),comm_id))
                 temp_cost = np.array(path_costs.get_all_costs_on_path_comm(path.getId(),comm_id))
                 od_demand_seq.append(temp_demand)

@@ -1,9 +1,9 @@
 # This script initializes a static traffic model, a cost function, and a solver to solve a
 # Static Traffic Assignment Problem using the Frank-Wolfe algorithm
 
-from Cost_Functions.BPR_Function import BPR_Function_class
+from python.Cost_Functions.BPR_Function import BPR_Function_class
 from python.Traffic_Models import Static_Model_Class
-from Solvers.Solver_Class import Solver_class
+from python.Solvers.Solver_Class import Solver_class
 from py4j.java_gateway import JavaGateway,GatewayParameters
 
 from mpi4py import MPI
