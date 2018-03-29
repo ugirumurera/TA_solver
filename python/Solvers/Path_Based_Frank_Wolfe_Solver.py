@@ -22,7 +22,7 @@ from Method_Successive_Averages_Solver import Method_of_Successive_Averages_Solv
 # od_out_indices are the indices in the assignment vector that is not modified by the current subproblem
 # Timer is used to calculate the time spent in path costs evaluation
 def Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt,  od = None, od_out_indices = None, assignment = None,
-                                  past=10, max_iter=1000, eps=1e-4, q=50, display=1, stop=1e-8, timer = None):
+                                  past=10, max_iter=1000, eps=1e-4, q=50, display=0, stop=1e-8, timer = None):
     # In this case, x_k is a demand assignment object that maps demand to paths
     # Constructing the x_0, the initial demand assignment, where all the demand for an OD is assigned to one path
     # We first create a list of paths from the traffic_scenario
