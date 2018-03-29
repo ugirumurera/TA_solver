@@ -98,15 +98,6 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt,  od = None, od_
 
         if display == 1: print "FW iteration: ", i, ", error: ", error
 
-        '''
-        if i == 0:
-            start_time1 = timeit.default_timer()
-
-        if  i == 1:
-            elapsed1 = timeit.default_timer() - start_time1
-            print ("Iteration took took  %s seconds" % elapsed1)
-        '''
-
         past_assignment[:,i%past] = y_assignment_vector
         d_assignment = y_assignment_vector-x_assignment_vector
 

@@ -6,9 +6,6 @@
 import numpy as np
 from copy import deepcopy
 
-# from Cost_Functions.BPR_Function import BPR_Function_classssignment_class
-# from Data_Types.Link_Costs_Class import Link_Costs_class
-# from py4j.java_gateway import JavaGateway,GatewayParameters
 from Model_Manager.Link_Model_Manager import Link_Model_Manager_class
 from Java_Connection import Java_Connection
 from copy import copy
