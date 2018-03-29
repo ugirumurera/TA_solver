@@ -22,7 +22,7 @@ from Method_Successive_Averages_Solver import Method_of_Successive_Averages_Solv
 # od_out_indices are the indices in the assignment vector that is not modified by the current subproblem
 # Timer is used to calculate the time spent in path costs evaluation
 def Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt,  od = None, od_out_indices = None, assignment = None,
-                                  past=10, max_iter=1000, eps=1e-4, q=50, display=1, stop=1e-2, timer = None):
+                                  past=10, max_iter=1000, eps=1e-4, q=50, display=1, stop=1e-8, timer = None):
     # In this case, x_k is a demand assignment object that maps demand to paths
     # Constructing the x_0, the initial demand assignment, where all the demand for an OD is assigned to one path
     # We first create a list of paths from the traffic_scenario
@@ -41,7 +41,7 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt,  od = None, od_
 
     if assignment is None or np.count_nonzero(init_vector) == 0:
         assignment, x_assignment_vector= Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt, od, od_out_indices,
-                                                                      assignment, max_iter = 50, display = display, timer = timer)
+                                                                      assignment, max_iter = 100, display = display, timer = timer)
 
     #If assignment is None, then return from the solver
     if assignment is None:
@@ -138,7 +138,7 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt,  od = None, od_
                         d, 1e-2, timer = timer)
         #s = line_search_original(model_manager, assignment, x_assignment_vector, d)
         elapsed1 = timeit.default_timer() - start_time1
-        if display == 1: print ("Line_Search took  %s seconds" % elapsed1)
+        #if display == 1: print ("Line_Search took  %s seconds" % elapsed1)
 
         if s < eps:
             if display >= 1: print 'FW stop with step_size: {}'.format(s)

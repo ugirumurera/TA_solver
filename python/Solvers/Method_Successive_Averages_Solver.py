@@ -19,7 +19,7 @@ from copy import copy, deepcopy
 # Timer is used to calculate the time spent in path costs evaluation
 
 def Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt, od = None, od_out_indices = None,
-                                         init_assignment = None, max_iter=1000, display=1, stop=1e-2, timer = None):
+                                         init_assignment = None, max_iter=1000, display=1, stop=1e-8, timer = None):
 
     # In this case, x_k is a demand assignment object that maps demand to paths
     # Constructing the x_0, the initial demand assignment, where all the demand for an OD is assigned to one path

@@ -24,14 +24,8 @@ if conn.pid is not None:
     sampling_dt = 300  # Duration of one time_step for the solver
 
     this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-<<<<<<< HEAD
-    configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'scenario_varying_100_nodes.xml')
-    model_manager = BeATS_Model_Manager_class(configfile, conn.gateway, sim_dt)
-
-=======
     configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'scenario_varying_demand_4.xml')
     model_manager = BeATS_Model_Manager_class(configfile, "ctm", conn.gateway, sim_dt)
->>>>>>> gabriel/loadmodel
 
     if(model_manager.is_valid()):
         num_steps = int(T/sampling_dt)
