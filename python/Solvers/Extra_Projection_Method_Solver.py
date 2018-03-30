@@ -11,10 +11,11 @@ from copy import copy
 def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,od = None, od_out_indices = None, assignment = None, max_iter=100, display=1, stopping=1e-2):
 
     # In this case, x_k is a demand assignment object that maps demand to paths
-    # If no subset of od provided, get od from the model manager
-    if od is None: od = model_manager.beats_api.get_od_info()
 
     num_steps = int(T/sampling_dt)
+
+    # If no subset of od provided, get od from the model manager
+    if od is None: od = list(model_manager.get_OD_Matrix(num_steps, sampling_dt))
 
     # Initialize the algorithm with the solution returned by Method_of_Successive_Averages
     x_k_assignment, x_k_assignment_vector = Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt, od,od_out_indices,
@@ -124,19 +125,21 @@ def project_modified_assignment(model_manager, T, tau, x_interm1, od):
             od_demand_seq = list()
             od_cost_seq = list()
             od_keys_seq = list()
-            comm_id = o.get_commodity_id()
+            comm_id = o.get_comm_id()
+
+            path_dict = o.get_path_list()
 
             # Check if the number of paths is greater than 1
-            if len(o.get_subnetworks()) == 1:
+            if len(path_dict.keys()) == 1:
                 break
 
             # Get the demand and cost corresponding to the OD
-            for path in o.get_subnetworks():
-                temp_demand = np.array(x_interm1.get_all_demands_on_path_comm(path.getId(),comm_id))
-                temp_cost = np.array(path_costs.get_all_costs_on_path_comm(path.getId(),comm_id))
+            for path_id in path_dict.keys():
+                temp_demand = np.array(x_interm1.get_all_demands_on_path_comm(path_id,comm_id))
+                temp_cost = np.array(path_costs.get_all_costs_on_path_comm(path_id,comm_id))
                 od_demand_seq.append(temp_demand)
                 od_cost_seq.append(temp_cost)
-                od_keys_seq.append((path.getId(),comm_id))
+                od_keys_seq.append((path_id,comm_id))
 
             #We stack arrays to create matrices
             od_demand_val = np.stack(od_demand_seq)

@@ -33,30 +33,26 @@ def all_or_nothing(model_manager, assignment, od, initial_state = None, T = None
     for o in od:
         count += 1
         min_cost = 0
-        comm_id = o.get_commodity_id()
-
-        demand_api = [item * 3600 for item in o.get_total_demand_vps().getValues()]
-        demand_api = np.asarray(demand_api)
-        demand_size = len(demand_api)
+        comm_id = o.get_comm_id()
+        od_path_list = o.get_path_list()
 
         for i in range(num_steps):
             min_path_id = -1
-            paths_demand = dict()
-            for path in o.get_subnetworks():
-                if min_path_id == -1:
-                    min_path_id = path.getId()
-                    min_cost = path_costs.get_cost_at_path_comm_time(min_path_id,comm_id,i)
-                elif min_cost > path_costs.get_cost_at_path_comm_time(path.getId(),comm_id,i):
-                    min_path_id = path.getId()
-                    min_cost = path_costs.get_cost_at_path_comm_time(min_path_id,comm_id,i)
+            for path_id in od_path_list.keys():
 
-                paths_demand[path.getId()]= 0
+                #Check if the current entry in not zero, make it zero
+                if y_assignment.get_demand_at_path_comm_time(path_id, comm_id, i) > 0:
+                    y_assignment.set_demand_at_path_comm_time(path_id, comm_id, i, 0)
+
+                if min_path_id == -1:
+                    min_path_id = path_id
+                    min_cost = path_costs.get_cost_at_path_comm_time(min_path_id,comm_id,i)
+                elif min_cost > path_costs.get_cost_at_path_comm_time(path_id,comm_id,i):
+                    min_path_id = path_id
+                    min_cost = path_costs.get_cost_at_path_comm_time(min_path_id,comm_id,i)
 
             # Putting all the demand on the minimum cost path
-            # First set to zero all demands on all path for commodity comm_id and time_step i
-            y_assignment.set_all_demands_on_comm_time_step(comm_id, i, paths_demand)
-            index = int(i / (num_steps / demand_size))
-            demand = o.get_total_demand_vps().get_value(index)*3600
+            demand = o.get_demand()[i]
             y_assignment.set_demand_at_path_comm_time(min_path_id, comm_id, i, demand)
 
     #print "All_or_nothing for ", count, " ods"

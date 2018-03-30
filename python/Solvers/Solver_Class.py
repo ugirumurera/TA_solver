@@ -24,28 +24,28 @@ class Solver_class():
 
     #This is the function that actually solves a problem
     #The Dec parameter indicates whether we are going to use decomposition or not
-    def Solver_function(self, T, sampling_dt, Decomposition = False):
-        #The name of algorithm to call is passed as name
-        assignment, assignment_vect = None, None
+    def Solver_function(self, T, sampling_dt, OD_Matrix, Decomposition = False):
+        #Solvers expect a list of ods, so first extract the list of od objects from the OD_Matrix
+        ods = OD_Matrix.get_all_ods().values()
 
         start_time1 = timeit.default_timer()
 
         # Call solver with decompostion, or just call the solver
         if Decomposition:
-            #assignment, assignment_vect = self.decomposed_solver(T, sampling_dt, self.solver_algorithm)
+            #assignment, assignment_vect = self.decomposed_solver(T, sampling_dt, self.solver_algorithm,ods)
 
             # If we want to use the parallel strategy
-            assignment, assignment_vect = self.parallel_solver(T, sampling_dt, self.solver_algorithm)
+            assignment, assignment_vect = self.parallel_solver(T, sampling_dt, self.solver_algorithm, ods)
 
         else:
-            assignment, assignment_vect = self.solver_algorithm(self.model_manager, T, sampling_dt)
+            assignment, assignment_vect = self.solver_algorithm(self.model_manager, T, sampling_dt, ods)
 
         elapsed1 = timeit.default_timer() - start_time1
         print ("\nSolver took  %s seconds" % elapsed1)
         
         return assignment, assignment_vect
 
-    def decomposed_solver(self, T, sampling_dt, solver_function, max_iter=50, stop=1e-2):
+    def decomposed_solver(self, T, sampling_dt, solver_function, ods = None, max_iter=50, stop=1e-2):
         from mpi4py import MPI
 
         # MPI Directives
@@ -53,14 +53,14 @@ class Solver_class():
         rank = comm.Get_rank()
         size = comm.Get_size()
 
-        #rank = 0
-        #size = 2
-
-
         # We first start by initializing an initial solution/ demand assignment
-        od_temp = list(self.model_manager.beats_api.get_od_info())
+        # We first start by initializing an initial solution/ demand assignment
+        if ods == None:
+            num_steps = T/sampling_dt
+            od_temp = list(self.model_manager.get_OD_Matrix(num_steps, sampling_dt))
+        else: od_temp = ods
 
-        od = np.asarray(sorted(od_temp, key=lambda h: (h.get_origin_node_id(), h.get_destination_node_id())))
+        od = np.asarray(sorted(od_temp, key=lambda h: (h.get_origin(), h.get_destination())))
 
         # Determine which subset of od to be addressed by the current process
         n = len(od)
@@ -97,36 +97,20 @@ class Solver_class():
                                              num_steps, sampling_dt)
 
         # We start with an initial Demand assignment with demands all equal to zeros
-        #all_keys = []           # List of all keys in assignment dictionary
-        #current_keys = []       # List of keys for current od assignment
-
         count = 0
         path_index = 0
         for i in range(len(od)):
-            comm_id = od[i].get_commodity_id()
+            comm_id = od[i].get_comm_id()
+            od_path_list = od[i].get_path_list()
+            path_list.update(od_path_list)
 
-            demand_api = [item * 3600 for item in od[i].get_total_demand_vps().getValues()]
-            demand_api = np.asarray(demand_api)
-            demand_size = len(demand_api)
-            demand_dt = od[i].get_total_demand_vps().getDt()
-
-            # Before assigning the demand, we want to make sure it can be properly distributed given the number of
-            # Time step in our problem
-            if (sampling_dt > demand_dt or demand_dt % sampling_dt > 0) and (demand_size > 1):
-                print "Demand specified in xml cannot not be properly divided among time steps"
-                return None, None
-
-            for path in od[i].get_subnetworks():
-                path_id = path.getId()
-                path_list[path_id] = path.get_link_ids()
+            for key in od_path_list.keys():
                 if count >= local_a and count < local_b:
                     demand = np.zeros(num_steps)
-                    #current_keys.append(tuple([path_id,comm_id]))
                 else:
                     demand = np.ones(num_steps)
 
-                init_assignment.set_all_demands_on_path_comm(path.getId(), comm_id, demand)
-                #all_keys.append(tuple([path_id,comm_id]))
+                init_assignment.set_all_demands_on_path_comm(key, comm_id, demand)
                 path_index += 1
 
             #print "rank: ", rank, " ", od[count].get_origin_node_id(), od[count].get_destination_node_id()
@@ -218,7 +202,7 @@ class Solver_class():
     # This function implements the parallel strategy where only the dependent steps among subproblems are shared
     # For the Path_Based_Frank_Wolfe and Method of Successive Averages it only exchanges information after all_or_nothing
     # For Extra_Projection_Method, it is after each projection since each projection is done per od
-    def parallel_solver(self, T, sampling_dt, solver_function, max_iter=50, stop=1e-2):
+    def parallel_solver(self, T, sampling_dt, solver_function, ods = None, max_iter=50, stop=1e-2):
         from mpi4py import MPI
 
         # MPI Directives
@@ -230,9 +214,12 @@ class Solver_class():
         #size = 2
 
         # We first start by initializing an initial solution/ demand assignment
-        od_temp = list(self.model_manager.beats_api.get_od_info())
+        if ods == None:
+            num_steps = T/sampling_dt
+            od_temp = list(self.model_manager.get_OD_Matrix(num_steps, sampling_dt))
+        else: od_temp = ods
 
-        od = np.asarray(sorted(od_temp, key=lambda h: (h.get_origin_node_id(), h.get_destination_node_id())))
+        od = np.asarray(sorted(od_temp, key=lambda h: (h.get_origin(), h.get_destination())))
 
         n = len(od)
 
@@ -266,34 +253,21 @@ class Solver_class():
         commodity_list = list(self.model_manager.beats_api.get_commodity_ids())
         init_assignment = Demand_Assignment_class(path_list, commodity_list,
                                              num_steps, sampling_dt)
-
+        # We start with an initial Demand assignment with demands all equal to zeros
         count = 0
         path_index = 0
         for i in range(len(od)):
-            comm_id = od[i].get_commodity_id()
+            comm_id = od[i].get_comm_id()
+            od_path_list = od[i].get_path_list()
+            path_list.update(od_path_list)
 
-            demand_api = [item * 3600 for item in od[i].get_total_demand_vps().getValues()]
-            demand_api = np.asarray(demand_api)
-            demand_size = len(demand_api)
-            demand_dt = od[i].get_total_demand_vps().getDt()
-
-            # Before assigning the demand, we want to make sure it can be properly distributed given the number of
-            # Time step in our problem
-            if (sampling_dt > demand_dt or demand_dt % sampling_dt > 0) and (demand_size > 1):
-                print "Demand specified in xml cannot not be properly divided among time steps"
-                return None, None
-
-            for path in od[i].get_subnetworks():
-                path_id = path.getId()
-                path_list[path_id] = path.get_link_ids()
+            for key in od_path_list.keys():
                 if count >= local_a and count < local_b:
                     demand = np.zeros(num_steps)
-                    #current_keys.append(tuple([path_id,comm_id]))
                 else:
                     demand = np.ones(num_steps)
 
-                init_assignment.set_all_demands_on_path_comm(path.getId(), comm_id, demand)
-                #all_keys.append(tuple([path_id,comm_id]))
+                init_assignment.set_all_demands_on_path_comm(key, comm_id, demand)
                 path_index += 1
 
             #print "rank: ", rank, " ", od[count].get_origin_node_id(), od[count].get_destination_node_id()
@@ -313,12 +287,12 @@ class Solver_class():
         display = 0
         if rank == 0: display = 1
 
-        timer = [0]       #Variable used to time the path costs evaluation
-
+        timer = None
+        if rank == 0: timer = [0]       #Variable used to time the path costs evaluation just for processor rank 0
         x_assignment, x_vector = solver_function(self.model_manager, T, sampling_dt, od_subset, out_od_indices,
                                                  init_assignment, display = display, timer = timer)
 
-        if rank == 0: print "Total Path Evaluation took: ", timer[0]
+        if rank == 0 and timer is not None: print "Total Path Evaluation took: ", timer[0]
 
         return x_assignment, x_vector
 

@@ -19,16 +19,16 @@ from copy import copy, deepcopy
 # Timer is used to calculate the time spent in path costs evaluation
 
 def Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt, od = None, od_out_indices = None,
-                                         init_assignment = None, max_iter=1000, display=1, stop=1e-8, timer = None):
+                                         init_assignment = None, max_iter=1000, display=1, stop=1e-2, timer = None):
 
     # In this case, x_k is a demand assignment object that maps demand to paths
     # Constructing the x_0, the initial demand assignment, where all the demand for an OD is assigned to one path
 
+    num_steps = int(T/sampling_dt)
+
     # If no subset of od provided, get od from the model manager
     if od is None:
-        od = model_manager.beats_api.get_od_info()
-
-    num_steps = int(T/sampling_dt)
+        od = list(model_manager.get_OD_Matrix(num_steps, sampling_dt))
 
     #comm = MPI.COMM_WORLD
     #rank = comm.Get_rank()
@@ -43,26 +43,12 @@ def Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt, od = Non
 
         # Populating the Demand Assignment, based on the paths associated with ODs
         for o in od:
-            comm_id = o.get_commodity_id()
-
-            demand_api = [item * 3600 for item in o.get_total_demand_vps().getValues()]
-            demand_api = np.asarray(demand_api)
-            demand_size = len(demand_api)
-            demand_dt = o.get_total_demand_vps().getDt()
-
-            # Before assigning the demand, we want to make sure it can be properly distributed given the number of
-            # Time step in our problem
-            if (sampling_dt > demand_dt or demand_dt % sampling_dt > 0) and (demand_size > 1):
-                print "Demand specified in xml cannot not be properly divided among time steps"
-                return None, None, None
-            #if demand_size > num_steps or num_steps % len(demand_api) != 0:
-                #print "Demand specified in xml cannot not be properly divided among time steps"
-                #return
-
-            for path in o.get_subnetworks():
-                path_list[path.getId()] = path.get_link_ids()
+            comm_id = o.get_comm_id()
+            od_path_list = o.get_path_list()
+            path_list.update(od_path_list)
+            for key in od_path_list.keys():
                 demand = np.zeros(num_steps)
-                init_assignment.set_all_demands_on_path_comm(path.getId(), comm_id, demand)
+                init_assignment.set_all_demands_on_path_comm(key, comm_id, demand)
 
         assignment, start_cost = all_or_nothing(model_manager, init_assignment, od, None, sampling_dt * num_steps,
                                                 timer = timer)

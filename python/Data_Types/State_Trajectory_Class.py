@@ -39,8 +39,7 @@ class State_Trajectory_class():
         seen = set(self.__links_list)
         if link_id not in seen:
             self.__links_list.append(link_id)
-            return True
-        return False
+        return None
 
     # Return all the states
     def get_all_states(self):
@@ -50,10 +49,10 @@ class State_Trajectory_class():
     def get_state_on_link_comm_time(self, link_id, comm_id, time_step):
         if link_id not in self.__links_list or comm_id not in self.__commodity_list:
             print("Link id or commodity id not in State_Trajectory object")
-            return False
+            return None
         if time_step < 0 or time_step > (self.__num_time_steps-1):
             print("Error: time period has to be between 0 and ", self.__num_time_steps-1)
-            return False
+            return None
         return self.__state_trajectory[(link_id, comm_id)][time_step]
 
     # Returns all states of a particular link with link_id as a [commodity_id]: [cost_1, cost_2,...]
@@ -61,7 +60,7 @@ class State_Trajectory_class():
     def get_all_states_on_link(self, link_id):
         if link_id not in self.__links_list :
             print("Link id not in State_Trajectory object")
-            return False
+            return None
         comm_dict = {}
         for key in self.__state_trajectory.keys():
             if key[0] == link_id:
@@ -72,7 +71,7 @@ class State_Trajectory_class():
     def get_all_states_on_link_comm(self, link_id, comm_id):
         if link_id not in self.__links_list or comm_id not in self.__commodity_list:
             print("Link id or commodity id not in State_Trajectory object")
-            return False
+            return None
 
         return self.__state_trajectory[(link_id,comm_id)]
 
@@ -81,10 +80,10 @@ class State_Trajectory_class():
     def get_all_states_on_link_time_step(self, link_id, time_step):
         if link_id not in self.__links_list :
             print("Commodity id not in list_costs object")
-            return False
+            return None
         if time_step < 0 or time_step > (self.__num_time_steps - 1):
             print "Error: time period has to be between 0 and ", self.__num_time_steps - 1
-            return False
+            return None
         comm_time_dict = {}
         for key in self.__state_trajectory.keys():
             if key[0] == link_id:
@@ -96,7 +95,7 @@ class State_Trajectory_class():
     def get_all_states_for_commodity(self, comm_id):
         if comm_id not in self.__commodity_list:
             print("Commodity id not in list_costs object")
-            return False
+            return None
 
         link_dict = {}
         for key in self.__state_trajectory.keys():
@@ -109,10 +108,10 @@ class State_Trajectory_class():
     def get_all_states_on_comm_time_step(self, comm_id, time_step):
         if comm_id not in self.__commodity_list:
             print("Link id or commodity id not in list_costs object")
-            return False
+            return None
         if time_step < 0 or time_step > (self.__num_time_steps - 1):
             print("Error: time period has to be between 0 and ", self.__num_time_steps - 1)
-            return False
+            return None
 
         link_time_dict = {}
         for key in self.__state_trajectory.keys():
@@ -124,7 +123,7 @@ class State_Trajectory_class():
     def get_all_states_for_time_step(self, time_step):
         if time_step < 0 or time_step > (self.__num_time_steps - 1):
             print "Error: time period has to be between 0 and ", self.__num_time_steps - 1
-            return False
+            return None
 
         time_dict = {}
         for key in self.__state_trajectory.keys():
@@ -140,7 +139,7 @@ class State_Trajectory_class():
         if (any(len(key) != 2 for key in states.keys()) or
                 any(len(value) != self.__num_time_steps for value in states.values())):
             print("Error: shape of input state does not match shape of State_Trajectory object")
-            return False
+            return None
 
         if any(key[0] not in self.__links_list or key[1] not in self.__commodity_list
                for key in states.keys()):
@@ -149,11 +148,11 @@ class State_Trajectory_class():
         if any(not isinstance(state[i], Abstract_Traffic_State_class) for state in states.values()
                for i in range(self.__num_time_steps)):
             print "Error: states to be assigned not a traffic_state object"
-            return False
+            return None
 
         if any(value[i].is_negative() for value in states.values() for i in range(self.__num_time_steps)):
             print("Error: Negative value in state object")
-            return False
+            return None
 
         self._state_trajectory = deepcopy(states)
 
@@ -161,18 +160,18 @@ class State_Trajectory_class():
     def set_state_on_link_comm_time(self, link_id, comm_id, time_step, state):
         if link_id not in self.__links_list or comm_id not in self.__commodity_list:
             print("Link id or commodity id not in list_costs object")
-            return False
+            return None
         if time_step < 0 or time_step > (self.__num_time_steps - 1):
             print("Error: time period has to be between 0 and ", self.__num_time_steps - 1)
-            return False
+            return None
 
         if not isinstance(state, Abstract_Traffic_State_class):
             print("Error: cost to be assigned not a Traffic State object")
-            return False
+            return None
 
         if state.is_negative():
             print("Error: Negative value in state object")
-            return False
+            return None
         if((link_id,comm_id) in self.__state_trajectory.keys()):
             self.__state_trajectory[(link_id, comm_id)][time_step] = state
         else:
@@ -185,20 +184,20 @@ class State_Trajectory_class():
         if (any( not isinstance(key, ( int, long ))  for key in states.keys()) or
                 any(len(value) != self.__num_time_steps for value in states.values())):
             print("Error: shape of input states does not match shape of state_trajectory object")
-            return False
+            return None
 
         if link_id not in self.__links_list or any(comm_id not in self.__commodity_list for comm_id in states.keys()):
             print("Link id or commodity id not in list_costs object")
-            return False
+            return None
 
         if any(not isinstance(state[i], Abstract_Traffic_State_class) for state in states.values()
                for i in range(self.__num_time_steps)):
             print("Error: state to be assigned not a Traffic state object")
-            return False
+            return None
 
         if any(value[i].is_negative() for value in states.values() for i in range(self.__num_time_steps)):
             print("Error: Negative value in state object")
-            return False
+            return None
 
         for comm_id in states.keys():
             self.__state_trajectory[(link_id, comm_id)] = states[comm_id]
@@ -208,19 +207,19 @@ class State_Trajectory_class():
     def set_all_states_on_link_comm(self, link_id, comm_id, states):
         if link_id not in self.__links_list or comm_id not in self.__commodity_list:
             print("Link id or commodity id not in list_costs object")
-            return False
+            return None
 
         if (len(states) != self.__num_time_steps):
             print("Error: size of state variable does not match state_trajectory array size")
-            return False
+            return None
 
         if any(not isinstance(state, Abstract_Traffic_State_class) for state in states):
             print("Error: state to be assigned not a Traffic state object")
-            return False
+            return None
 
         if (any(state.is_negative() for state in states for i in range(self.__num_time_steps))):
             print("Error: Negative value in Traffic State")
-            return False
+            return None
 
         self.__state_trajectory[(link_id, comm_id)] = states
 
@@ -230,18 +229,18 @@ class State_Trajectory_class():
         if (any(not isinstance(key, (int, long))  for key in states.keys()) or
                 any(not isinstance(value, Abstract_Traffic_State_class) for value in states.values())):
             print("Error: size of demand array does not match state_trajectory array size")
-            return False
+            return None
 
         if link_id not in self.__links_list or any(comm_id not in self.__commodity_list for comm_id in states.keys()):
             print("Link id or commodity id not in list_costs object")
-            return False
+            return None
         if time_step < 0 or time_step > (self.__num_time_steps - 1):
             print("Error: time period has to be between 0 and ", self.__num_time_steps - 1)
-            return False
+            return None
 
         if any(state.is_negative() for state in states.values()):
             print("Error: Negative value in traffic state")
-            return False
+            return None
 
         for comm_id in states.keys():
             if ((link_id, comm_id) in self.__state_trajectory.keys()):
@@ -257,20 +256,20 @@ class State_Trajectory_class():
         if (any(not isinstance(key, ( int, long ))  for key in states.keys()) or
                 any(len(value) != self.__num_time_steps for value in states.values())):
             print("Error: shape of input does not match shape of state_trajectory object")
-            return False
+            return None
 
         if comm_id not in self.__commodity_list or any(link_id not in self.__links_list for link_id in states.keys()):
             print("Link id or commodity id not in list_costs object")
-            return False
+            return None
 
         if any(not isinstance(state[i], Abstract_Traffic_State_class) for state in states.values()
                for i in range(self.__num_time_steps)):
             print("Error: state to be assigned not a Traffic state object")
-            return False
+            return None
 
         if (any(state[i].is_negative() for state in states.values() for i in range(self.__num_time_steps))):
             print("Error: Negative value in Traffic State")
-            return False
+            return None
 
         for link_id in states.keys():
             if ((link_id, comm_id) in self.__state_trajectory.keys()):
@@ -284,19 +283,19 @@ class State_Trajectory_class():
         if (any(not isinstance(key, (int, long))  for key in states.keys()) or
                 any(not isinstance(value, Abstract_Traffic_State_class) for value in states.values())):
             print("Error: shape of input states does not match shape of state_trajectory object")
-            return False
+            return None
 
         if any(link_id not in self.__links_list for link_id in states.keys()) or comm_id not in self.__commodity_list:
             print("Link id or commodity id not in list_costs object")
-            return False
+            return None
 
         if time_step < 0 or time_step > (self.__num_time_steps - 1):
             print "Error: time period has to be between 0 and ", self.__num_time_steps - 1
-            return False
+            return None
 
         if any(value.is_negative() for value in states.values()):
             print("Error: Negative value for state object")
-            return False
+            return None
 
         for link_id in states.keys():
             if ((link_id, comm_id) in self.__state_trajectory.keys()):
@@ -312,20 +311,20 @@ class State_Trajectory_class():
         if (any(len(key) != 2 for key in states.keys()) or
                 any(not isinstance(value, Abstract_Traffic_State_class) for value in states.values())):
             print("Error: shape of input demand does not match shape state_trajectory object")
-            return False
+            return None
 
         if any(key[0] not in self.__links_list or key[1] not in self.__commodity_list
                for key in states.keys()):
             print("Link id or commodity id not in original network")
-            return False
+            return None
 
         if time_step < 0 or time_step > (self.__num_time_steps - 1):
             print "Error: time period has to be between 0 and ", self.__num_time_steps - 1
-            return False
+            return None
 
         if any(value.is_negative() for value in states.values()):
             print("Error: Negative value for demand")
-            return False
+            return None
 
         for key in states.keys():
             if key in self.__state_trajectory.keys():

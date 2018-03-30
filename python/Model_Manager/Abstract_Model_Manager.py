@@ -6,6 +6,7 @@
 
 from __future__ import division
 from abc import ABCMeta, abstractmethod
+from Data_Types.OD_Matrix_Class import OD_Matrix
 
 class Abstract_Model_Manager_class():
     __metaclass__ = ABCMeta
@@ -22,6 +23,14 @@ class Abstract_Model_Manager_class():
 
     def is_valid(self):
         return( self.beats_api is not None) and (self.beats_api.has_scenario())
+
+    def get_OD_Matrix(self, num_steps, sampling_dt):
+        #Create the list of od with OD_Class object
+        od_beats = self.beats_api.get_od_info()
+        ods = OD_Matrix(num_steps,sampling_dt)
+        ods.set_ods_with_beats_ods(od_beats)
+
+        return ods
 
     # Takes in demand per path, returns costs per path
     @abstractmethod
