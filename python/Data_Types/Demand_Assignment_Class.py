@@ -55,6 +55,13 @@ class Demand_Assignment_class():
     def get_keys_ordering(self):
         return self.__keys_ordering
 
+    def get_paths_for_commodity(self,comm_id):
+        paths = {}
+        for key in self.__assignment.keys():
+            if key[1]==comm_id:
+                paths[key[0]] = self.__path_list[key[0]]
+        return paths
+
     # Adds new routes to the Demand_Assignment object using a [path_id]:[link_id_1, link_id_2, ...]
     def add_path(self, route_list):
         self.__assignment.update(route_list)
@@ -108,7 +115,6 @@ class Demand_Assignment_class():
             if key[0] == path_id:
                 path_time_dict[key[1]] = self.__assignment[key][time_step]
         return path_time_dict
-
 
     # Returns all demands assigned for commodity with commodity_id as a (number of paths x number of time steps)
     # dimensional array
