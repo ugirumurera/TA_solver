@@ -81,7 +81,7 @@ if conn.pid is not None:
 
                 #Distance to Nash
                 print "\n"
-                error_percentage = scenario_solver.distance_to_Nash(assignment, path_costs, sampling_dt)
+                error_percentage = scenario_solver.distance_to_Nash(assignment, path_costs, sampling_dt,OD_Matrix)
                 print "%.02f" % error_percentage ,"% vehicles from equilibrium"
 
                 '''

@@ -57,7 +57,7 @@ class Solver_class():
         # We first start by initializing an initial solution/ demand assignment
         if ods == None:
             num_steps = T/sampling_dt
-            od_temp = list(self.model_manager.get_OD_Matrix(num_steps, sampling_dt))
+            od_temp = list(self.model_manager.get_OD_Matrix(num_steps, sampling_dt).get_all_ods().values())
         else: od_temp = ods
 
         od = np.asarray(sorted(od_temp, key=lambda h: (h.get_origin(), h.get_destination())))
