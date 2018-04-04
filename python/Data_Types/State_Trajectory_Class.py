@@ -10,7 +10,7 @@ import collections
 class State_Trajectory_class():
     # The constructor receives a list of link ids (link_list), a list of commodities (commodity_list), the number
     # of time steps, and dt, the duration of one time_step
-    def __init__(self, link_list, commodity_list, num_time_steps,dt):
+    def __init__(self, link_list, commodity_list, num_time_steps=None,dt=None):
         self.__links_list = link_list
         self.__commodity_list = commodity_list
         self.__num_time_steps = num_time_steps
@@ -75,7 +75,6 @@ class State_Trajectory_class():
 
         return self.__state_trajectory[(link_id,comm_id)]
 
-
     #Returns all states of a particular link and time_step as [commodity_id]: [cost_1] dictionary
     def get_all_states_on_link_time_step(self, link_id, time_step):
         if link_id not in self.__links_list :
@@ -90,7 +89,6 @@ class State_Trajectory_class():
                 comm_time_dict[key[1]] = self.__state_trajectory[key][time_step]
         return comm_time_dict
 
-
     # Returns all states of commodity with commodity_id as a [link_id]: [cost_1, cost_2, ...] dictionary
     def get_all_states_for_commodity(self, comm_id):
         if comm_id not in self.__commodity_list:
@@ -102,7 +100,6 @@ class State_Trajectory_class():
             if key[1] == comm_id:
                 link_dict[key[0]] = self.__state_trajectory[key]
         return link_dict
-
 
     # Returns all states of commodity with comm_id and time_step as [link_id]: [cost_1] dictionary
     def get_all_states_on_comm_time_step(self, comm_id, time_step):
@@ -178,7 +175,6 @@ class State_Trajectory_class():
             self.__state_trajectory[(link_id,comm_id)] = [type(state) for k in range(self.__num_time_steps)]
             self.__state_trajectory[(link_id, comm_id)][time_step] = state
 
-
     # Sets all states for a link with link_id with a [comm_id_1]:[state_t0, state_t1,...] dictionary
     def set_all_states_on_link(self, link_id, states):
         if (any( not isinstance(key, ( int, long ))  for key in states.keys()) or
@@ -202,7 +198,6 @@ class State_Trajectory_class():
         for comm_id in states.keys():
             self.__state_trajectory[(link_id, comm_id)] = states[comm_id]
 
-
     #Set all states to a particular link and commodity with an array of size: number of time steps
     def set_all_states_on_link_comm(self, link_id, comm_id, states):
         if link_id not in self.__links_list or comm_id not in self.__commodity_list:
@@ -222,7 +217,6 @@ class State_Trajectory_class():
             return None
 
         self.__state_trajectory[(link_id, comm_id)] = states
-
 
     #Set all states for a particular link and time_step with a [commodity_id]:[state_at_time_step] dictionary
     def set_all_states_on_link_time_step(self, link_id, time_step, states):
@@ -250,7 +244,6 @@ class State_Trajectory_class():
                                                                for k in range(self.__num_time_steps)]
                 self.__state_trajectory[(link_id, comm_id)][time_step] = deepcopy(states[comm_id])
 
-
     # Set all states for commodity with commodity_id a [link_id_1]:[state_t0, cost_t1,...] dictionary
     def set_all_states_for_commodity(self, comm_id, states):
         if (any(not isinstance(key, ( int, long ))  for key in states.keys()) or
@@ -277,7 +270,6 @@ class State_Trajectory_class():
             else:
                 self.__state_trajectory[(link_id, comm_id)] = deepcopy(states[link_id])
 
-
     # Set all states for a particular commodity and time_step with a [link_id_1]:[cost_at_time_step] dictionary
     def set_all_states_on_comm_time_step(self, comm_id, time_step, states):
         if (any(not isinstance(key, (int, long))  for key in states.keys()) or
@@ -303,7 +295,6 @@ class State_Trajectory_class():
             else:
                 self.__state_trajectory[(link_id, comm_id)] = [Abstract_Traffic_State_class for k in range(self.__num_time_steps-1)]
                 self.__state_trajectory[(link_id, comm_id)][time_step] =deepcopy(states[link_id])
-
 
     # Returns all demands assigned for a particular time_step as with a [(link_id,commodity_id)]:[cost_time_step]
     # dictionary

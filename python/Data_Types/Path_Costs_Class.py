@@ -107,9 +107,14 @@ class Path_Costs_class():
 
     #Returns all demands assigned to a particular path and commodity as an array of size: number of time steps
     def get_all_costs_on_path_comm(self, path_id, comm_id):
-        if path_id not in self.__path_list or comm_id not in self.__commodity_list:
+
+        if (path_id,comm_id) not in self.__path_costs.keys():
             print("path id or commodity id not in Demand_Assignment object")
             return False
+
+        # if path_id not in self.__path_list or comm_id not in self.__commodity_list:
+        #     print("path id or commodity id not in Demand_Assignment object")
+        #     return False
         return self.__path_costs[(path_id,comm_id)]
 
     def set_costs_path_commodity(self, path_id, comm_id, cost_list):
