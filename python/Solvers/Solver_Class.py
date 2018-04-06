@@ -24,8 +24,11 @@ class Solver_class():
 
     #This is the function that actually solves a problem
     #The Dec parameter indicates whether we are going to use decomposition or not
-    def Solver_function(self, T, sampling_dt, OD_Matrix, Decomposition = False):
+    def Solver_function(self, T, sampling_dt, OD_Matrix = None, Decomposition = False):
         #Solvers expect a list of ods, so first extract the list of od objects from the OD_Matrix
+        if OD_Matrix is None:
+            num_steps = int(T/sampling_dt)
+            OD_Matrix = self.model_manager.get_OD_Matrix(num_steps, sampling_dt)
         ods = OD_Matrix.get_all_ods().values()
 
         start_time1 = timeit.default_timer()

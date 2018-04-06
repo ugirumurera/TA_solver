@@ -58,12 +58,22 @@ class BeATS_Model_Manager_class(Abstract_Model_Manager_class):
         path_costs = Path_Costs_class(self.num_samp, self.sample_dt)
         path_costs.set_path_list(demand_assignment.get_path_list())
         path_costs.set_comm_list(demand_assignment.get_commodity_list())
+        keys = demand_assignment.get_all_demands().keys()
 
         for data_obj in self.beats_api.get_output_data():
             java_class = str(data_obj.getClass())
             if java_class=='class output.PathTravelTime':
-                cost_list = data_obj.compute_travel_time_for_start_times(start_time, self.sample_dt, self.num_samp)
-                path_costs.set_costs_path_commodity(data_obj.get_path_id(), None, cost_list)
+                cost_list = list(data_obj.compute_travel_time_for_start_times(start_time, self.sample_dt, self.num_samp))
+                # path_costs.set_costs_path_commodity(data_obj.get_path_id(), data_obj.get_commodity_id(), cost_list)
+                path_costs.set_costs_path_keys(data_obj.get_path_id(), keys, cost_list)
+
+
+                '''
+                # this does
+                for all keys in (pathid,commid)
+                    if pathid==given pathid
+                        path_costs.set_costs_path_commodity(pATHID, commid, cost_list)
+                '''
 
         return path_costs
 

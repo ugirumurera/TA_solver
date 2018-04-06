@@ -18,7 +18,7 @@ class Demand_Assignment_class():
         self.__commodity_list = commodity_list
         self.__num_time_steps = num_time_steps
         self.__dt = dt
-        self.__assignment = OrderedDict()
+        self.__assignment = {}
         self.__list_of_links = set()
         self.__keys_ordering = None
 

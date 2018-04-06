@@ -8,7 +8,8 @@ from Error_Calculation import distance_to_Nash
 import timeit
 from copy import copy
 
-def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,od = None, od_out_indices = None, assignment = None, max_iter=100, display=1, stopping=1e-2):
+def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,od = None, od_out_indices = None, assignment = None,
+                                   max_iter=1000, display=1, stopping=1e-6):
 
     # In this case, x_k is a demand assignment object that maps demand to paths
 
@@ -19,14 +20,14 @@ def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,od = None, od_o
 
     # Initialize the algorithm with the solution returned by Method_of_Successive_Averages
     x_k_assignment, x_k_assignment_vector = Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt, od,od_out_indices,
-                                                                             assignment, max_iter=20)
+                                                                             assignment, max_iter= 100)
 
     # If assignment is None, then return from the solver
     if x_k_assignment is None:
         print "Demand dt is less than sampling dt, or demand not specified properly"
         return None, None
     # tau, sigma and epslon parameters used in the Extra Projection Method
-    tau = 0.5*10000
+    tau = 0.05*100
     sigma = 0.9
     epslon = 0.025
 
@@ -52,6 +53,13 @@ def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,od = None, od_o
 
         if error < stopping:
             print "EPM Stop with error: ", error
+            #path_costs = model_manager.evaluate(x_k_assignment, T)
+
+            #path_costs.print_all()
+
+            #print current_cost_vector
+
+            #print "\n"
             return x_k_assignment, x_k_assignment_vector
 
         # If we did not terminate, print current error
@@ -130,8 +138,8 @@ def project_modified_assignment(model_manager, T, tau, x_interm1, od):
             path_dict = o.get_path_list()
 
             # Check if the number of paths is greater than 1
-            if len(path_dict.keys()) == 1:
-                break
+            #if len(path_dict.keys()) == 1:
+            #    break
 
             # Get the demand and cost corresponding to the OD
             for path_id in path_dict.keys():

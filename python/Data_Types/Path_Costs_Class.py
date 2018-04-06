@@ -28,6 +28,12 @@ class Path_Costs_class():
     def set_comm_list(self, comm_list):
         self.__commodity_list = comm_list
 
+    # Setting the path costs given a path id and the keys from the demand assignment
+    def set_costs_path_keys(self, path_id, ass_keys, cost_list):
+        for key in ass_keys:
+            if key[0] == path_id:
+                self.__path_costs[key] = np.asarray(cost_list)
+
     # Receives a Link_Costs_Class and demand_assignment objects and returns a path_costs object containing the travel
     # cost per path, where the path_costs is a [(path_id, commodity_id)] = [cost_1, cost_2,...] dictionary
     def get_path_costs(self, link_costs, demand_assignment, Vectorize = True):
@@ -56,6 +62,18 @@ class Path_Costs_class():
                         self.__path_costs[key][i] = self.__path_costs[key][i] + l_costs[(link_id,key[1])][i]
 
         return self
+
+    # Returns all demands assigned to a particular path with path_id as a [comm_id]: [demand_1, demand_2,...]
+    # dictionary, where each commodity is associated with (1 X num_time_steps) dimensional array
+    def get_all_costs_on_path(self, path_id):
+        if path_id not in self.__path_list :
+            print("path id not in Demand_Assignment object")
+            return False
+        path_dict = {}
+        for key in self.__path_costs.keys():
+            if key[0] == path_id:
+                path_dict[key[1]] = self.__path_costs[key]
+        return path_dict
 
     def mod_get_path_costs(self, link_costs, demand_assignment):
         self.__path_list = demand_assignment.get_path_list()
