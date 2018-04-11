@@ -171,6 +171,13 @@ class Demand_Assignment_class():
 
         return total_trips
 
+    def get_total_trips_over_time(self):
+        total_trips = np.zeros(self.__num_time_steps)
+        for key in self.__assignment.keys():
+            total_trips += (self.__assignment[key])
+
+        return total_trips
+
     # Sets all the demands with an assignment dictionary
     def set_all_demands(self, demands):
         if (any(len(key) != 2 for key in demands.keys()) or

@@ -27,7 +27,7 @@ def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,od = None, od_o
         print "Demand dt is less than sampling dt, or demand not specified properly"
         return None, None
     # tau, sigma and epslon parameters used in the Extra Projection Method
-    tau = 0.05*100
+    tau = 0.05*1000
     sigma = 0.9
     epslon = 0.025
 

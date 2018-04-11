@@ -205,7 +205,7 @@ class Solver_class():
     # This function implements the parallel strategy where only the dependent steps among subproblems are shared
     # For the Path_Based_Frank_Wolfe and Method of Successive Averages it only exchanges information after all_or_nothing
     # For Extra_Projection_Method, it is after each projection since each projection is done per od
-    def parallel_solver(self, T, sampling_dt, solver_function, ods = None, max_iter=50, stop=1e-2):
+    def parallel_solver(self, T, sampling_dt, solver_function, ods = None):
         from mpi4py import MPI
 
         # MPI Directives

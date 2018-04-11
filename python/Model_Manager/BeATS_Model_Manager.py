@@ -12,14 +12,19 @@ from operator import add
 class BeATS_Model_Manager_class(Abstract_Model_Manager_class):
 
     # Constructor receives a Traffic model and cost functions instances
-    def __init__(self, configfile, traffic_model_name, gateway, sim_dt):
+    def __init__(self, configfile, traffic_model_name, gateway, sim_dt, instantaneous = False):
         Abstract_Model_Manager_class.__init__(self, configfile, traffic_model_name, sim_dt, gateway)
 
         self.run_complete = False
         self.sample_dt = np.NaN
         self.num_samp = np.NaN
+        self.instantaneous = instantaneous
+
+    def set_instantaneous(self, flag):
+        self.instantaneous = flag
 
     # This overrides the evaluate function in the abstract class. Returns a Path_Cost object of costs on paths
+    # If instantaneous bool is true, indicates model return instantaneous travel time rather than predicted
     def evaluate(self, demand_assignment, time_horizon, initial_state=None, request_link_data=False):
 
         start_time = 0.0
@@ -38,7 +43,10 @@ class BeATS_Model_Manager_class(Abstract_Model_Manager_class):
             for comm_id in demand_assignment.get_commodity_list():
                 paths = demand_assignment.get_paths_for_commodity(comm_id)
                 for path_id, path_links in paths.iteritems():
-                    self.beats_api.request_links_veh(comm_id,path_links,self.sample_dt)
+                    java_path_array = self.gateway.jvm.java.util.ArrayList()
+                    for p in path_links:
+                        java_path_array.add(long(p))
+                    self.beats_api.request_links_veh(comm_id,java_path_array,self.sample_dt)
 
         # send demand assignment to beats
         for path_comm, demand_list in demand_assignment.get_all_demands().iteritems():
@@ -63,17 +71,13 @@ class BeATS_Model_Manager_class(Abstract_Model_Manager_class):
         for data_obj in self.beats_api.get_output_data():
             java_class = str(data_obj.getClass())
             if java_class=='class output.PathTravelTime':
-                cost_list = list(data_obj.compute_travel_time_for_start_times(start_time, self.sample_dt, self.num_samp))
+                if self.instantaneous:
+                    cost_list = list(
+                        data_obj.compute_instantaneous_travel_times(start_time, self.sample_dt, self.num_samp))
+                else:
+                    cost_list = list(data_obj.compute_predictive_travel_times(start_time, self.sample_dt, self.num_samp))
                 # path_costs.set_costs_path_commodity(data_obj.get_path_id(), data_obj.get_commodity_id(), cost_list)
                 path_costs.set_costs_path_keys(data_obj.get_path_id(), keys, cost_list)
-
-
-                '''
-                # this does
-                for all keys in (pathid,commid)
-                    if pathid==given pathid
-                        path_costs.set_costs_path_commodity(pATHID, commid, cost_list)
-                '''
 
         return path_costs
 
