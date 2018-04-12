@@ -20,14 +20,14 @@ def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,od = None, od_o
 
     # Initialize the algorithm with the solution returned by Method_of_Successive_Averages
     x_k_assignment, x_k_assignment_vector = Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt, od,od_out_indices,
-                                                                             assignment, max_iter= 100)
+                                                                             assignment, max_iter=100, stop=1e-5)
 
     # If assignment is None, then return from the solver
     if x_k_assignment is None:
         print "Demand dt is less than sampling dt, or demand not specified properly"
         return None, None
     # tau, sigma and epslon parameters used in the Extra Projection Method
-    tau = 0.05*1000
+    tau = 0.05*10000
     sigma = 0.9
     epslon = 0.025
 
