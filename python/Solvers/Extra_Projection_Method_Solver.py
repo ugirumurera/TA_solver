@@ -7,6 +7,7 @@ import numpy as np
 from Error_Calculation import distance_to_Nash
 import timeit
 from copy import copy
+import math
 
 def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,od = None, od_out_indices = None, assignment = None,
                                    max_iter=1000, display=1, stopping=1e-6):
@@ -27,7 +28,7 @@ def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,od = None, od_o
         print "Demand dt is less than sampling dt, or demand not specified properly"
         return None, None
     # tau, sigma and epslon parameters used in the Extra Projection Method
-    tau = 0.05*1000
+    tau = 0.05*10000
     sigma = 0.9
     epslon = 0.025
 
@@ -160,6 +161,9 @@ def project_modified_assignment(model_manager, T, tau, x_interm1, od):
             for n in range(num_steps):
                 #od_projected_val[:, n] = Projection_onto_Simplex(od_temp[:, n], sum(od_demand_val[:, n]))
                 projected_values = Projection_onto_Simplex(od_temp[:, n], sum(od_demand_val[:, n]))
+
+                if  math.isnan(projected_values[0]):
+                    print "I returned nan"
 
                 if projected_values is not None:
                     od_projected_val[:, n] = copy(projected_values)

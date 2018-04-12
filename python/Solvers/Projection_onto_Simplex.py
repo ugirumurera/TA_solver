@@ -6,6 +6,14 @@ from copy import copy
 
 def Projection_onto_Simplex(vector_to_project, a):
 
+    if len(vector_to_project) == 1:
+        vector_to_return = np.zeros(1)
+        vector_to_return[0] = a
+        return vector_to_return
+
+    if a == 0:
+        return np.zeros(len(vector_to_project))
+
     # a determines the simplex: all vectors (u1, u2, ..., un) in simplex meet the property sum(u1, u2,..., un) = a
     # Step 1: set vector v and find constant rou
     vect_size = len(vector_to_project)
