@@ -97,46 +97,24 @@ def distance_to_Nash_Over_time_demand(sol_assignment, path_costs, sampling_dt, O
 
     return error_percentage
 
-def distance_to_Nash_Over_time_cost(sol_assignment, path_costs, sampling_dt, OD_Matrix):
-    num_steps = sol_assignment.get_num_time_step()
+def distance_to_Nash_Over_time_cost(sol_path_costs, optimal_path_costs):
+    num_steps = sol_path_costs.get_num_time_step()
 
-    od = OD_Matrix.get_all_ods().values()
     dist_to_Nash = np.zeros(num_steps)
 
-    # For each OD, we are going to move its demand to the shortest path at current iteration
-    for o in od:
-        min_cost = 0
-        comm_id = o.get_comm_id()
-        od_path_list = o.get_path_list()
+    sol_pcosts = sol_path_costs.get_all_path_costs()
+    opt_pcosts = optimal_path_costs.get_all_path_costs()
 
-        for i in range(num_steps):
-            num_paths = len(od_path_list.keys())
-            min_path_id = -1
-            cost_on_paths = np.zeros(num_paths)
-            demand_on_paths = np.zeros(num_paths)
-            j = 0   # index in cost_on_paths and demand_on_paths arrays
+    for key in sol_pcosts.keys():
+        result = sol_pcosts[key] - opt_pcosts[key]
+        dist_to_Nash += np.abs(sol_pcosts[key] - opt_pcosts[key])
 
-            for path_id in od_path_list.keys():
-                if min_path_id == -1:
-                    min_path_id = path_id
-                    min_cost = path_costs.get_cost_at_path_comm_time(min_path_id, comm_id, i)
-                elif min_cost > path_costs.get_cost_at_path_comm_time(path_id, comm_id, i):
-                    min_path_id = path_id
-                    min_cost = path_costs.get_cost_at_path_comm_time(min_path_id, comm_id, i)
+    return dist_to_Nash
 
-                # Collecting the costs and demands on paths for od o
-                cost_on_paths[j] = path_costs.get_cost_at_path_comm_time(path_id, comm_id, i)
-                demand_on_paths[j] = sol_assignment.get_demand_at_path_comm_time(path_id, comm_id, i)
-                j += 1
+def distance_to_Nash_link_states(sol_state_trajectory, optimal_state_trajectory, num_steps):
+    dist_to_Nash = np.zeros(num_steps)
 
-            # Adding the excess travel cost to the distance from Nash
-            min_costs = np.ones(len(cost_on_paths))*min_cost
+    for key in sol_state_trajectory.keys():
+        dist_to_Nash += np.abs(np.asarray(sol_state_trajectory[key]) - np.asarray(optimal_state_trajectory[key]))
 
-            results = np.abs((cost_on_paths-min_costs))
-            dist_to_Nash[i] += sum((results))
-
-    error_percentage = dist_to_Nash
-
-    return error_percentage
-
-#def distance_to_Nash_link_states(sol_state_trajectory, optimal_state_trajectory):
+    return dist_to_Nash
