@@ -18,6 +18,8 @@ class Path_Costs_class():
         self.__dt = dt
         self.__path_costs = {}
 
+    def get_num_time_step(self):
+        return self.__num_time_steps
 
     def get_all_path_costs(self):
         return self.__path_costs
