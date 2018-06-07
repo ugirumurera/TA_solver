@@ -8,12 +8,12 @@ from copy import deepcopy
 
 # from Cost_Functions.BPR_Function import BPR_Function_class
 # from Traffic_Models.Static_Model import Static_Model_Class
-from Solvers.Solver_Class import Solver_class
+from python.Solvers.Solver_Class import Solver_class
 # from Data_Types.Demand_Assignment_Class import Demand_Assignment_class
 # from Data_Types.Link_Costs_Class import Link_Costs_class
 # from py4j.java_gateway import JavaGateway,GatewayParameters
-from Model_Manager.Link_Model_Manager import Link_Model_Manager_class
-from Java_Connection import Java_Connection
+from python.Model_Manager.Link_Model_Manager import Link_Model_Manager_class
+from python.Java_Connection import Java_Connection
 from copy import copy
 import matplotlib.pyplot as plt
 import os

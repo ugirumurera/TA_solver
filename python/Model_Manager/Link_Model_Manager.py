@@ -31,26 +31,26 @@ class Link_Model_Manager_class(Abstract_Model_Manager_class):
             return
 
     # This overides the evaluate function in the abstract class. Returns a Path_Cost object of costs on paths
-    def evaluate(self, demand_assignments, T = None, initial_state = None):
-        vect = True #indicates whether we use vector based functions or not
-        #start_time1 = timeit.default_timer()
+    def evaluate(self, demand_assignments, T = None, initial_state = None,vect = True):
+         # vect variable indicates whether we use vector based functions or not
+        start_time1 = timeit.default_timer()
         # Run_Model returns a State_Trajectory object, which contains state of each link
         link_states = self.traffic_model.Run_Model(demand_assignments, initial_state, T, Vectorize = vect)
-        #elapsed1 = timeit.default_timer() - start_time1
-        #print ("Link_States Generation:  %s seconds" % elapsed1)
+        elapsed1 = timeit.default_timer() - start_time1
+        print ("Link_States Generation:  %s seconds" % elapsed1)
 
-        #start_time1 = timeit.default_timer()
+        start_time1 = timeit.default_timer()
         # evaluate_Cost_Function returns a link_Costs object, which contains the costs per links
         link_costs = self.cost_function.evaluate_Cost_Function(link_states, Vectorize = vect)
-        #elapsed1 = timeit.default_timer() - start_time1
-        #print ("Link_Costs generation:  %s seconds" % elapsed1)
+        elapsed1 = timeit.default_timer() - start_time1
+        print ("Link_Costs generation:  %s seconds" % elapsed1)
 
-        #start_time1 = timeit.default_timer()
+        start_time1 = timeit.default_timer()
         # Getting the paths' costs
         path_costs = Path_Costs_class(demand_assignments.get_num_time_step(), demand_assignments.get_dt())
         path_costs.get_path_costs(link_costs, demand_assignments, Vectorize= vect)
-        #elapsed1 = timeit.default_timer() - start_time1
-        #print ("Path_costs generation:  %s seconds" % elapsed1)
+        elapsed1 = timeit.default_timer() - start_time1
+        print ("Path_costs generation:  %s seconds" % elapsed1)
 
         #path_costs.print_all()
 

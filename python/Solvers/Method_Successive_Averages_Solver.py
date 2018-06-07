@@ -5,7 +5,7 @@ import numpy as np
 from Solvers.All_or_Nothing_Function import all_or_nothing
 from Data_Types.Demand_Assignment_Class import Demand_Assignment_class
 from Data_Types.Path_Costs_Class import Path_Costs_class
-from Error_Calculation import distance_to_Nash
+from Error_Distance_to_Nash_Calculation import distance_to_Nash
 import timeit
 
 from copy import copy, deepcopy
@@ -19,7 +19,7 @@ from copy import copy, deepcopy
 # Timer is used to calculate the time spent in path costs evaluation
 
 def Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt, od = None, od_out_indices = None,
-                                         init_assignment = None, max_iter=1000, display=1, stop=1e-8, timer = None):
+                                         init_assignment = None, max_iter=1000, display=1, stop=1e-2, timer = None):
 
     # In this case, x_k is a demand assignment object that maps demand to paths
     # Constructing the x_0, the initial demand assignment, where all the demand for an OD is assigned to one path
@@ -29,9 +29,6 @@ def Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt, od = Non
     # If no subset of od provided, get od from the model manager
     if od is None:
         od = list(model_manager.get_OD_Matrix(num_steps, sampling_dt))
-
-    #comm = MPI.COMM_WORLD
-    #rank = comm.Get_rank()
 
     # Initializing the demand assignment only if the assignment variable is None
     if init_assignment is None:

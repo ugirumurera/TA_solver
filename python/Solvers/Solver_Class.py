@@ -46,7 +46,7 @@ class Solver_class():
         elapsed1 = timeit.default_timer() - start_time1
         print ("\nSolver took  %s seconds" % elapsed1)
         
-        return assignment, assignment_vect
+        return assignment, elapsed1
 
     def decomposed_solver(self, T, sampling_dt, solver_function, ods = None, max_iter=50, stop=1e-2):
         from mpi4py import MPI

@@ -11,14 +11,16 @@ class OD_Pair():
 
     #To initialize the Assignment Array, the constructor has to receive a path_list dictionary, list of commodity ,
     # commdity_list, ids number of time steps in the period considered and dt the duration of one time step for the demand profile
-    def __init__(self, origin = None, destination=None,comm_id = None, num_time_steps= None, demand = None):
+    def __init__(self, origin = None, destination=None,num_time_steps= None,comm_id = None, demand = None,path_list = None):
         # path_list saves a dictionary of the form [path_id]:[link_id, ...] of lists of link_ids that forms each path
         self.__origin = origin
         self.__destination = destination
-        self.__path_list = {}
+        if path_list is None: self.__path_list = {}
         self.__comm_id = comm_id
         if num_time_steps is not None:
-            self.__demand = np.zeros(num_time_steps)
+            if demand is not None and len(demand) == num_time_steps:
+                self.__demand = demand
+            else: self.__demand = np.zeros(num_time_steps)
         else: self.__demand = None
 
     def get_path_list(self):
@@ -107,11 +109,42 @@ class OD_Pair():
             return None
 
         self.__demand = np.zeros(num_steps)
-        for i in range(num_steps):
-            index = int(i / (num_steps / demand_size))
-            demand = od.get_total_demand_vps().get_value(index) * 3600
-            self.__demand[i] = demand
 
+        if demand_size == num_steps:
+            self.__demand = copy(demand_api)
+        else:
+            for i in range(num_steps):
+                index = int(i / (num_steps / demand_size))
+                #demand = od.get_total_demand_vps().get_value(index) * 3600
+                self.__demand[i] = demand_api[index]
+
+    def set_od_with_Beats_timestep(self, od, num_steps, dt, timestep):
+        self.__origin = od.get_origin_node_id()
+        self.__destination = od.get_destination_node_id()
+        self.__comm_id = od.get_commodity_id()
+
+        #Setting the path_list for the od
+        for path in od.get_subnetworks():
+            self.__path_list[path.getId()] = list(path.get_link_ids())
+
+        demand_api = [item * 3600 for item in od.get_total_demand_vps().getValues()]
+        demand_api = np.asarray(demand_api)
+        demand_size = len(demand_api)
+        demand_dt = od.get_total_demand_vps().getDt()
+
+        # Before assigning the demand, we want to make sure it can be properly distributed given the number of
+        # Time step in our problem
+        if (dt > demand_dt or demand_dt % dt > 0) and (demand_size > 1):
+            print "Demand specified in xml cannot not be properly divided among time steps"
+            return None
+
+        self.__demand = np.zeros(1)
+
+        if demand_size == num_steps:
+            self.__demand[0] = od.get_total_demand_vps().get_value(timestep) * 3600
+        else:
+            index = int((timestep) / (num_steps / demand_size))
+            self.__demand[0] = od.get_total_demand_vps().get_value(index) * 3600
 
     def print_od_data(self):
         print "origin: ", self.__origin, " , destination: ", self.__destination, " commodity: ",\

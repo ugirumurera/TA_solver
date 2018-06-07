@@ -26,8 +26,15 @@ class OD_Matrix():
     def get_od(self, origin, destination):
         return self.__ods[(origin, destination)]
 
+    def add_od(self, od_pair):
+        if isinstance(od_pair, OD_Pair):
+            self.__ods[od_pair.get_origin(), od_pair.get_destination()] = od_pair
+
+
     def set_ods_with_beats_ods(self, ods):
+        count = 0
         for od in ods:
+            #print count
             origin = od.get_origin_node_id()
             dest = od.get_destination_node_id()
             temp_od = OD_Pair()
@@ -36,6 +43,22 @@ class OD_Matrix():
                 print "Missing or Incorrect od info; Could not initialize od dictionary"
                 return None
             self.__ods[(origin,dest)] = temp_od
+            count += 1
+
+    #Creates an od with just one time step of demand as specified by timestep
+    def set_ods_with_beats_ods_timestep(self, ods, timestep):
+        #count = 0
+        for od in ods:
+            #print count
+            origin = od.get_origin_node_id()
+            dest = od.get_destination_node_id()
+            temp_od = OD_Pair()
+            temp_od.set_od_with_Beats_timestep(od, self.__num_time_steps, self.__dt, timestep)
+            if temp_od == None:
+                print "Missing or Incorrect od info; Could not initialize od dictionary"
+                return None
+            self.__ods[(origin,dest)] = temp_od
+            #count += 1
 
     # Sets all states with an state_trajectory dictionary
     def set_all_ods(self, ods):

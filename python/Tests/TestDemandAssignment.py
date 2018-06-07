@@ -3,6 +3,12 @@ import unittest
 import numpy as np
 import os
 import inspect
+import sys
+
+this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+data_types_path = os.path.join(this_folder, os.path.pardir, 'Data_Types')
+sys.path.insert(0, data_types_path)
+
 from Java_Connection import Java_Connection
 from Model_Manager.Link_Model_Manager import Link_Model_Manager_class
 from Data_Types.Demand_Assignment_Class import Demand_Assignment_class

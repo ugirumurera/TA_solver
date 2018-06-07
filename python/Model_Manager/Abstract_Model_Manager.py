@@ -32,6 +32,14 @@ class Abstract_Model_Manager_class():
 
         return ods
 
+    def get_OD_Matrix_timestep(self, num_steps, sampling_dt, timestep):
+        #Create the list of od with OD_Class object
+        od_beats = self.beats_api.get_od_info()
+        ods = OD_Matrix(num_steps,sampling_dt)
+        ods.set_ods_with_beats_ods_timestep(od_beats,timestep)
+
+        return ods
+
     # Takes in demand per path, returns costs per path
     @abstractmethod
     def evaluate(self,demand_assignments, T, initial_state ):

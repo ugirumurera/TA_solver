@@ -4,13 +4,13 @@ from Solvers.Method_Successive_Averages_Solver import Method_of_Successive_Avera
 from Solvers.Path_Based_Frank_Wolfe_Solver import all_or_nothing, Path_Based_Frank_Wolfe_Solver
 from Solvers.Projection_onto_Simplex import Projection_onto_Simplex, Projection_onto_Simplex_old
 import numpy as np
-from Error_Calculation import distance_to_Nash
+from Error_Distance_to_Nash_Calculation import distance_to_Nash
 import timeit
 from copy import copy
 import math
 
 def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,od = None, od_out_indices = None, assignment = None,
-                                   max_iter=1000, display=1, stopping=1e-6):
+                                   max_iter=1000, display=1, stopping=1e-2):
 
     # In this case, x_k is a demand assignment object that maps demand to paths
 
@@ -28,7 +28,7 @@ def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,od = None, od_o
         print "Demand dt is less than sampling dt, or demand not specified properly"
         return None, None
     # tau, sigma and epslon parameters used in the Extra Projection Method
-    tau = 0.05*10000
+    tau = 0.05*100
     sigma = 0.9
     epslon = 0.025
 
