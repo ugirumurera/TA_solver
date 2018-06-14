@@ -23,7 +23,7 @@ if connection.pid is not None:
 
     # Contains local path to input configfile, for the three_links.xml network
     this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-    scenario_name = 'scenario_varying_2500_nodes_2500_ods'   #Scenario name
+    scenario_name = 'scenario_varying_100_nodes'   #Scenario name
     configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', scenario_name+'.xml')
 
     print "Loading data for: ",scenario_name
