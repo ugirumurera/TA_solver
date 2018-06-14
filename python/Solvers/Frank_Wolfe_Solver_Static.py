@@ -3,6 +3,7 @@ import igraph
 import numpy as np
 from Solvers.All_or_Nothing_Function import all_or_nothing_beats
 from Model_Manager.Link_Model_Manager import Link_Model_Manager_class
+import timeit
 
 def Frank_Wolfe_Solver(model_manager, od, time_step = 1, past=10, max_iter=1000, eps=1e-8, \
     q=100, display=1, stop=1e-2):
@@ -90,17 +91,17 @@ def Frank_Wolfe_Solver(model_manager, od, time_step = 1, past=10, max_iter=1000,
 
     return f
 
-def Frank_Wolfe_Solver_with_Pickle_Objects(graph_object, OD_Matrix,cost_function, num_links, time_step = None, decompostion_flag = False, past=10, max_iter=1000, eps=1e-8, \
-    q=50, display=1, stop=1e-2):
+def Frank_Wolfe_Solver_with_Pickle_Objects(graph_object, od,cost_function, num_links, time_step = None,
+                                           decompostion_flag = False, display=1, past=10, max_iter=1000, eps=1e-8, \
+    q=50, stop=1e-2):
 
     assert past <= q, "'q' must be bigger or equal to 'past'"
     #Construct igraph object
     #Constructing a dictionary for demand: origin: ([destination],[demand])
     #od = construct_od(traffic_scenario.beats_api.get_od_info())
-    if OD_Matrix is None:
+    if od is None:
         print "No od pairs provide"
         return None
-    od = OD_Matrix.get_all_ods().values()
 
     f = np.zeros(num_links, dtype="float64")  # initial flow assignment is null
     fs = np.zeros((num_links, past), dtype="float64")  # to keep track of the past q
@@ -120,8 +121,9 @@ def Frank_Wolfe_Solver_with_Pickle_Objects(graph_object, OD_Matrix,cost_function
             else:
                 print 'iteration: {}, error: {}'.format(i+1, error)
 
+        start_time1 = timeit.default_timer()
         # construct weighted graph with latest flow assignment
-        L, grad = search_direction(f, cost_function, graph_object, od, time_step)
+        L, grad = search_direction(f, cost_function, graph_object, od, time_step, decompostion_flag)
 
         fs[:,i%past] = L
         w = L - f
@@ -161,6 +163,9 @@ def Frank_Wolfe_Solver_with_Pickle_Objects(graph_object, OD_Matrix,cost_function
             f = f + 2. * w/(i+2.)
             #step = 1 / (i + 1)
             #f = f+step*w
+
+        elapsed1 = timeit.default_timer() - start_time1
+        if display >= 1: print ("\nIteration", i+1," took  %s seconds" % elapsed1)
 
     return f
 
@@ -245,13 +250,13 @@ def Frank_Wolfe_Solver_Decomposition(traffic_scenario, cost_function, od_subset,
 
     return f
 
-def search_direction(flow, Cost_Function, graph_object, od, time_step=None):
+def search_direction(flow, Cost_Function, graph_object, od, time_step=None, decomposition_flag=False):
     # computes the Frank-Wolfe step
     # g is just a canvas containing the link information and to be updated with
     # the most recent edge costs
     grad =  Cost_Function.evaluate_Cost_Function_FW(flow)
     graph_object.es["weight"] = grad.tolist()
-    L = all_or_nothing_beats(graph_object, od, time_step)
+    L = all_or_nothing_beats(graph_object, od, time_step, decomposition_flag)
     return L, grad
 
 def line_search(f, res=10):

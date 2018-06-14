@@ -63,7 +63,7 @@ def all_or_nothing(model_manager, assignment, od, initial_state = None, T = None
     #y_assignment.print_all()
     return y_assignment,path_costs
 
-def all_or_nothing_beats(graph, od, time_step=None):
+def all_or_nothing_beats(graph, od, time_step=None, decomposition_flag = False):
     '''
     We are given an igraph object 'g' with od in the format {from: ([to], [rate])}
     do all_or_nothing assignment
@@ -80,5 +80,18 @@ def all_or_nothing_beats(graph, od, time_step=None):
                 L[inds] = L[inds] + o.get_demand()
             else:
                 L[inds] = L[inds] + o.get_demand()[time_step]
+
+    if decomposition_flag:
+        from mpi4py import MPI
+        comm = MPI.COMM_WORLD
+        rank = comm.Get_rank()
+        L_f = np.zeros(len(L))  # final flow that is sent
+
+        start_time1 = timeit.default_timer()
+        comm.Allreduce(L, L_f, op=MPI.SUM)
+        elapsed1 = timeit.default_timer() - start_time1
+        if rank == 0: print ("\nComm Reduce took  %s seconds" % elapsed1)
+        L = L_f
+
 
     return L

@@ -19,6 +19,8 @@ import inspect
 import csv
 from Solvers.Path_Based_Frank_Wolfe_Solver import Path_Based_Frank_Wolfe_Solver
 from Solvers.Frank_Wolfe_Solver_Static import Frank_Wolfe_Solver, Frank_Wolfe_Solver_with_Pickle_Objects
+import math
+import sys
 
 
 # Function to save the output data
@@ -36,11 +38,8 @@ def main():
     parser = argparse.ArgumentParser(description='Timestep in Demand profile')
     parser.add_argument("timestep", type=int, help="Time step in the Demand profile")
 
-    args = parser.parse_args()
-
     # We assume that timestep is between 0 and num_steps
-
-    print "Running Static UE for timestep:", args.timestep
+    args = parser.parse_args()
 
     T = 3600  # Time horizon of interest
 
@@ -57,7 +56,7 @@ def main():
     # Indicates whether we are going to use parallelism or not
     decompositio_flag = False
 
-    scenario_name = 'scenario_varying_100_nodes'  # Scenario name
+    scenario_name = 'MetroManila_unfiltered'  # Scenario name
 
     # File where to save the pickled objects
     inputfile = os.path.join(this_folder, os.path.pardir, 'output',
@@ -79,19 +78,61 @@ def main():
 
     start_time1 = timeit.default_timer()
 
-    flow = solver_algorithm(graph_object,OD_Matrix,cost_function,num_links, args.timestep, decompositio_flag)
+    #this is to be done if decompostion_flag is true
+    od_subset = None
+    od_temp = OD_Matrix.get_all_ods().values()
+    od = np.asarray(sorted(od_temp, key=lambda h: (h.get_origin(), h.get_destination())))
+    display = 1
+    if decompositio_flag:
+        from mpi4py import MPI
+
+        # MPI Directives
+        comm = MPI.COMM_WORLD
+        rank = comm.Get_rank()
+        size = comm.Get_size()
+
+        if rank > 0: display = 0
+
+        n = len(od)
+
+        if n < size and rank >= size:
+            print "Number of ods is smaller than number of process. This process will not run solver"
+            sys.exit()
+
+        local_n_c = math.ceil(float(n) / size)  # local step but ceiled
+        local_n = n / size
+        remainder = n % size
+
+        if (rank < remainder):
+            local_a = math.ceil(rank * local_n_c)
+            local_b = math.ceil(min(local_a + local_n_c, n))
+            local_n = local_n_c
+        else:
+            local_a = math.ceil((remainder) * local_n_c + (rank - remainder) * local_n)
+            local_b = math.ceil(min(local_a + local_n, n))
+
+        # The set of ods to use for the particular subproblem
+        print "Solving for od's ", local_a, " through ", local_b - 1
+        od_subset = od[int(local_a):int(local_b)]
+        od = od_subset
+
+
+    if display > 0: print "Running Static UE for timestep:", args.timestep
+
+    flow = solver_algorithm(graph_object,od,cost_function,num_links, args.timestep, decompositio_flag, display)
 
     elapsed1 = timeit.default_timer() - start_time1
-    print ("\nSolver took  %s seconds" % elapsed1)
+    if display == 1: print ("\nSolver took  %s seconds" % elapsed1)
 
     #Save resulting flow and graph object
     # File where to save the pickled objects
-    outputfile = os.path.join(this_folder, os.path.pardir, 'output',
+    if display == 1:
+        outputfile = os.path.join(this_folder, os.path.pardir, 'output',
                               scenario_name + 'output_flow_time_' + str(args.timestep) + '.pickle')
 
-    # We are going to pickle the model manager, te OD_Matrix and the BPR coefficients
-    with open(outputfile, "wb") as f:
-        pickle.dump(flow,f)
+        # We are going to pickle the model manager, te OD_Matrix and the BPR coefficients
+        with open(outputfile, "wb") as f:
+            pickle.dump(flow,f)
 
     # connection = Java_Connection(decompositio_flag)
     #
