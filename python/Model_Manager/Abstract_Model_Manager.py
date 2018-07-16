@@ -15,7 +15,10 @@ class Abstract_Model_Manager_class():
         self.gateway = gateway
         self.configfile = configfile
         self.beats_api = gateway.entry_point.get_BeATS_API()
-        timestamps = self.beats_api.load(configfile, sim_dt, False, traffic_model_name)
+        if traffic_model_name == 'static':
+            timestamps = self.beats_api.load_for_static_traffic_assignment(configfile)
+        else:
+            timestamps = self.beats_api.load(configfile, sim_dt, False, traffic_model_name)
         time1 = (timestamps[1] - timestamps[0])/1000
         time2 = (timestamps[2] - timestamps[1])/1000
         print "Load JAXB took: ", time1, " sec"

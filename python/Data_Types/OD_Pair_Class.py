@@ -97,6 +97,7 @@ class OD_Pair():
         for path in od.get_subnetworks():
             self.__path_list[path.getId()] = list(path.get_link_ids())
 
+        x = od.get_total_demand_vps()
         demand_api = [item * 3600 for item in od.get_total_demand_vps().getValues()]
         demand_api = np.asarray(demand_api)
         demand_size = len(demand_api)

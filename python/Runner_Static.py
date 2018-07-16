@@ -54,6 +54,8 @@ if connection.pid is not None:
     num_links = model_manager.beats_api.get_num_links()
     avg_travel_time = np.zeros(num_links)
 
+    num_nodes = model_manager.beats_api.get_num_nodes()
+
     num_coeff = 5
 
     for i in range(num_links):
