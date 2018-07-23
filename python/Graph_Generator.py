@@ -10,7 +10,7 @@ import random
 import inspect
 import timeit
 import numpy as np
-
+import random
 def csv2string(data):
     si = StringIO.StringIO()
     cw = csv.writer(si)
@@ -74,36 +74,40 @@ def generate_graph_and_paths(graph_size, scaling, num_nodes, num_ods, max_length
 
     # Generate od pairs
     # For Beats purposes, the origins to be of outdegree 1 and the sinks have to be of outdegree 1
-    # For this reason, we choose vertices at the periphery of the grid graph, vertices with indegree < 4
     graph.vs["indegree"] = graph.indegree()
-    #od_indices = graph.vs.select(indegree_lt = 4).indices
-    #Only periphery nodes can be origin or destinations
-    #num_pairs = len(od_indices)/2)   # Generates the pairs
+    graph.vs["outdegree"] = graph.outdegree()
 
-    #origins = random.sample(od_indices, num_pairs)
-    #origins = random.sample(range(graph.vcount()), num_ods)
-    #destinations = list(set(range(graph.vcount()))-set(origins))[0:num_ods]
-    odpairs = list(itertools.permutations(range(graph.vcount()), 2))[0:num_ods]
-    #pairs = list(itertools.combinations(od_indices, 2)
+    origins = np.zeros(num_ods, dtype=int)
+    destinations = np.zeros(num_ods, dtype=int)
+
+    odpairs = random.sample(list(itertools.permutations(range(graph.vcount()), 2)), num_ods)
+
     #Adding source node and outgoing link to od
+    seen_o = {}   # Keeps track of seen origins so we do not put mutiple source link on the same node
+    seen_d = {}   # Keeps track of seen destination to avoid multiple sink links
     j = len(graph.vs)   # Starting index of new nodes
+    k = 0
     #for i in range(len(origins)):
     for o in odpairs:
         # add a new node and edge to graph for origin
-        graph.add_vertices(1)
-        #graph.add_edge(j, origins[i])
-        graph.add_edge(j, o[0])
-        #origins[i] = j
-        j += 1
+        if o[0] not in seen_o.keys():
+            graph.add_vertices(1)
+            graph.add_edge(j, o[0])
+            seen_o[o[0]] = int(j)
+            j += 1
 
-        # add a new node and edge to the graph for destination
-        graph.add_vertices(1)
-        #graph.add_edge(destinations[i], j)
-        graph.add_edge(o[1], j)
-        #destinations[i] = j
-        j += 1
+        origins[k] = seen_o[o[0]]
 
-        print "od is ", o
+        if o[1] not in seen_d.keys():
+            # add a new node and edge to the graph for destination
+            graph.add_vertices(1)
+            graph.add_edge(o[1], j)
+            seen_d[o[1]] = j
+            j += 1
+
+        destinations[k] = seen_d[o[1]]
+
+        k += 1
 
     print "Finished Adding All ods, now getting node coordinates with layout"
     #random.shuffle(pairs)   # shuffles the od pairs to allow for variability
@@ -116,15 +120,14 @@ def generate_graph_and_paths(graph_size, scaling, num_nodes, num_ods, max_length
     coordinates = layout.coords    # Coordinates of the nodes
     graph.vs["Coordinates"] = coordinates
     graph.vs["indices"] = graph.vs.indices
-    #graph.vs["label"] = graph.vs["indices"]
+    graph.vs["label"] = graph.vs["indices"]
     print(graph.ecount()) #printing the number of edges
-    #plot(graph, layout=layout)
+    plot(graph, layout=layout)
 
     print "Moving to getting paths for all ods"
     # Generate the paths between the od pairs
     all_paths = {}
-    #for o in ods:
-    for o in odpairs:
+    for j in range(len(odpairs)):
         #Find all paths between origin and destination that have at most max_length edges
         #start_time1 = timeit.default_timer()
         # Each iteration the weight of the shortest path is multiplied by power to allow to
@@ -133,26 +136,26 @@ def generate_graph_and_paths(graph_size, scaling, num_nodes, num_ods, max_length
         graph.es["weight"] = np.ones(graph.ecount())
         factor = 10
         paths = []
+
+        print "Finding paths for od ", origins[j], " and dest ", destinations[j]
+
         for i in range(paths_per_od):
-            path = graph.get_shortest_paths(o[0], o[1], weights="weight", mode=OUT, output="epath")
-            paths.append(path[0])
+            #Returns a list of edges going from origin[j] to destination[j]
+            path = graph.get_shortest_paths(origins[j], destinations[j], weights="weight", mode=OUT, output="epath")
 
-            #change weight of edges in path in order to find new shortest path
-            size_of_path = len(path[0])
-            new_weights = np.multiply(factor**(i+1),np.ones(size_of_path))
-            graph.es[path[0]]["weight"] = new_weights
-        #elapsed1 = timeit.default_timer() - start_time1
+            added = False
+            k = 0
+            while(~added and k < len(path)):
+                if path[k] not in paths:
+                    paths.append(path[k])
+                    added = True
+                    #change weight of edges in path in order to find new shortest path
+                    size_of_path = len(path[0])
+                    new_weights = np.multiply(factor**(i+1),np.ones(size_of_path))
+                    graph.es[path[0]]["weight"] = new_weights
+                k +=1
 
-        #If we could not get paths_per_od paths between the od, double the max_length value
-        #if len(paths) < paths_per_od:
-            #paths = find_all_paths_len(graph,o[0],o[1],maxlen=max_length*2)
-
-        #Sort paths by length so that the shortest are first
-        #paths.sort(key=len)
-        print "Finding paths for od ", o[0], " and dest ", o[1]
-        #new_paths = translate_paths(graph, paths[0:paths_per_od])
-
-        all_paths[o] = paths
+        all_paths[(origins[j],destinations[j])] = paths
 
     return graph, all_paths
 
@@ -298,7 +301,7 @@ def create_xml(graph,all_paths):
         xdemand.set('subnetwork',str(path_id))
         xdemand.set('start_time',"0")
         xdemand.set('dt',"600")
-        xdemand.text = "100,600,100,600,100,600"
+        xdemand.text = "100"
 
     # commodities ---------------------
     xcommodities = Element('commodities')
@@ -315,14 +318,13 @@ def create_xml(graph,all_paths):
 def main():
 
     # user definitions
-    graph_size = 10  # grid size, leads to a grid of graph_size*graph_size nodes
-    scaling = 1000 # number used to scale the resulting grid graph
+    graph_size = 5  # grid size, leads to a grid of graph_size*graph_size nodes
+    scaling = 100 # number used to scale the resulting grid graph
     max_length =25  # Maximum number of nodes in paths returned
     paths_per_od = 5    # Number of paths saved per OD
 
     num_nodes = graph_size*graph_size   # Number of nodes in the graph
-    num_ods = num_nodes/4    # Number of od, have to be less that 1/2 number of nodes
-    #num_ods = 18
+    num_ods = num_nodes/2   # Number of od, have to be less that 1/2 number of nodes
 
     graph, all_paths = generate_graph_and_paths(graph_size, scaling, num_nodes, num_ods, max_length, paths_per_od)
 
@@ -412,7 +414,9 @@ def main():
 
     # write to file ---------------------
     this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-    configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'scenario_varying_2500_nodes.xml')
+    name = 'scenario_'+str(graph_size * graph_size) + '_nodes.xml'
+    print("Saving to xml: ", name)
+    configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', name)
     with open(configfile, 'w') as f:
         f.write(minidom.parseString(etree.tostring(xscenario)).toprettyxml(indent="\t"))
 
