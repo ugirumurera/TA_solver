@@ -40,13 +40,13 @@ if connection.pid is not None:
 
     # Contains local path to input configfile, for the three_links.xml network
     this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-    scenario_name = 'MetroManila_unfiltered'   #Scenario name
+    scenario_name = 'scenario'   #Scenario name
     configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', scenario_name+'.xml')
     coefficients = {}
     T = 3600  # Time horizon of interest
     sim_dt = 0.0  # Duration of one time_step for the traffic model
 
-    sampling_dt = 600     # Duration of time_step for the solver, in this case it is equal to sim_dt
+    sampling_dt = 3600     # Duration of time_step for the solver, in this case it is equal to sim_dt
 
     model_manager = Link_Model_Manager_class(configfile, "static", connection.gateway, sim_dt, "bpr", coefficients)
 

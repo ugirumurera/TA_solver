@@ -225,7 +225,7 @@ def create_xml(graph,source_links):
 def main():
 
     # user definitions
-    graph_size = 100  # grid size, leads to a grid of graph_size*graph_size nodes
+    graph_size = 50  # grid size, leads to a grid of graph_size*graph_size nodes
     scaling = 100 # number used to scale the resulting grid graph
 
     num_nodes = graph_size*graph_size   # Number of nodes in the graph
