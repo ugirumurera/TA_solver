@@ -120,7 +120,7 @@ def generate_graph_and_paths(graph_size, scaling, num_nodes, num_ods, max_length
     coordinates = layout.coords    # Coordinates of the nodes
     graph.vs["Coordinates"] = coordinates
     graph.vs["indices"] = graph.vs.indices
-    graph.vs["label"] = graph.vs["indices"]
+    #graph.vs["label"] = graph.vs["indices"]
     print(graph.ecount()) #printing the number of edges
     plot(graph, layout=layout)
 
@@ -318,7 +318,7 @@ def create_xml(graph,all_paths):
 def main():
 
     # user definitions
-    graph_size = 5  # grid size, leads to a grid of graph_size*graph_size nodes
+    graph_size = 5 # grid size, leads to a grid of graph_size*graph_size nodes
     scaling = 100 # number used to scale the resulting grid graph
     max_length =25  # Maximum number of nodes in paths returned
     paths_per_od = 5    # Number of paths saved per OD

@@ -21,9 +21,25 @@ def csv2string(data):
     return si.getvalue().strip('\r\n')
 
 
-def generate_source_links(graph_size, scaling, num_sources, num_sinks):
+def generate_source_links(num_nodes, scaling, num_sources, num_sinks):
 
-    graph = Graph.Lattice([graph_size, graph_size], circular=False, mutual= True, directed = True)
+    e = 2.5    # 1/2*empirical average degree of road networks
+
+    #graph = Graph.Lattice([graph_size, graph_size], nei=1,circular=False, mutual= False, directed = True)
+    prob = e/(num_nodes-1)         #p probability to generate random graph based on Erdos-Ranyi method
+    num_edges = int(e*num_nodes/2)
+    graph = Graph.Erdos_Renyi(num_nodes,m=num_edges,directed=True)
+
+    #in case the graph has disconnected components, connect them to the main component
+    v_cluster = graph.components(mode=WEAK)
+    cluster_sizes = map(lambda x: x.vcount(),v_cluster.subgraphs())    #get the size of connected component
+    main_comp_index = cluster_sizes.index(max(cluster_sizes))           # index of largest connected component
+
+    graph = v_cluster.subgraph(main_comp_index)     #Ignore the smaller components and just go with the largest component
+
+
+    act_avg_degree = graph.ecount()*2/graph.vcount()    #The actual average degree of the created graph
+    print "Average degree of created graph is: ", act_avg_degree
 
     # Generate od pairs
     # For Beats purposes, the origins to be of outdegree 1 and the sinks have to be of outdegree 1
@@ -31,9 +47,21 @@ def generate_source_links(graph_size, scaling, num_sources, num_sinks):
     graph.vs["indegree"] = graph.indegree()
     graph.vs["outdegree"] = graph.outdegree()
 
+    #In order to ensure connectivity, source nodes have to be from indices that have at least one outgoing link
+    source_indices = graph.vs.select(_outdegree_gt=0).indices
+    #For the sink nodes, we have to make sure that all nodes without outgoing link have a sink
+    sink_nodes = graph.vs.select(_outdegree_le=0).indices
+    #sink_indices = graph.vs.select(_outdegree_le=1).indices
 
-    source_nodes = random.sample(range(graph.vcount()), num_sources)
-    sink_nodes = random.sample(range(graph.vcount()), num_sinks)
+    if len(sink_nodes) < num_sinks:
+    #     sink_nodes = sink_indices + random.sample(sink_indices,num_sinks-len(sink_nodes))
+    # else:
+        more_indices = num_sinks-len(sink_nodes)
+        more_sinks = random.sample(range(graph.vcount()), more_indices)
+        sink_nodes = sink_nodes + more_sinks
+
+    source_nodes = random.sample(source_indices, num_sources)
+
     source_links = np.zeros(num_sources, dtype=int)
 
     #Adding source node and outgoing link to od
@@ -57,7 +85,7 @@ def generate_source_links(graph_size, scaling, num_sources, num_sinks):
     print "Finished Adding All ods, now getting node coordinates with layout"
 
     # Get node ids and positions
-    layout = graph.layout("kk")     # This fixes the coordinates of the nodes
+    layout = graph.layout("auto")     # This fixes the coordinates of the nodes
     layout.scale(scaling)
 
     coordinates = layout.coords    # Coordinates of the nodes
@@ -69,7 +97,7 @@ def generate_source_links(graph_size, scaling, num_sources, num_sinks):
     print "Number of sources: ", num_sources
     print "Numver of sinks: ", num_sinks
 
-    #plot(graph, layout=layout)
+    plot(graph, layout=layout)
 
     return graph, source_links
 
@@ -225,14 +253,13 @@ def create_xml(graph,source_links):
 def main():
 
     # user definitions
-    graph_size = 50  # grid size, leads to a grid of graph_size*graph_size nodes
-    scaling = 100 # number used to scale the resulting grid graph
+    num_nodes = 100  # grid size, leads to a grid of graph_size*graph_size nodes
+    scaling = 10 # number used to scale the resulting grid graph
 
-    num_nodes = graph_size*graph_size   # Number of nodes in the graph
     num_sources = int(num_nodes/4)   # Number of od, have to be less that 1/2 number of nodes
     num_sinks = int(num_sources/5)
 
-    graph, source_links = generate_source_links(graph_size, scaling, num_sources, num_sinks)
+    graph, source_links = generate_source_links(num_nodes, scaling, num_sources, num_sinks)
 
     print "Now writing to xml file"
 
@@ -240,9 +267,9 @@ def main():
 
 
     this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-    name = 'split_ratio_scenario_'+str(graph_size * graph_size) + '_nodes.xml'
+    name = 'split_ratio_scenario_'+str(num_nodes) + '_nodes.xml'
     print "Saving to xml: ", name
-    configfile = os.path.join(this_folder, os.path.pardir, 'configfiles\\Split_Ratio', name)
+    configfile = os.path.join(this_folder, os.path.pardir, 'configfiles/Split_Ratio', name)
     with open(configfile, 'w') as f:
         f.write(minidom.parseString(etree.tostring(xscenario)).toprettyxml(indent="\t"))
 
