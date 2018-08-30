@@ -253,7 +253,7 @@ def create_xml(graph,source_links):
 def main():
 
     # user definitions
-    num_nodes = 100  # grid size, leads to a grid of graph_size*graph_size nodes
+    num_nodes = 100  # Number of nodes for graph
     scaling = 10 # number used to scale the resulting grid graph
 
     num_sources = int(num_nodes/4)   # Number of od, have to be less that 1/2 number of nodes
@@ -264,7 +264,6 @@ def main():
     print "Now writing to xml file"
 
     xscenario = create_xml(graph,source_links)
-
 
     this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
     name = 'split_ratio_scenario_'+str(num_nodes) + '_nodes.xml'
