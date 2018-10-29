@@ -68,7 +68,7 @@ Below is a diagram of the assumed data flow. The algorithms team (lead by Juliet
 
 The data classes depicted in the figure are described below. 
 
-![Picture2.png](https://bitbucket.org/repo/5q9q4pE/images/2822392912-Picture2.png)
+![Picture2.png](https://github.com/ugirumurera/TA_solver/blob/master/Data_Classes.png)
 
 The generic SOLVER works in a loop in which it generates candidate demand assignments, and expects to be given the corresponding network cost trajectory (`trajectory' here means trajectory in time). This loop continues until an equilibrium demand assignment is reached. 
 
