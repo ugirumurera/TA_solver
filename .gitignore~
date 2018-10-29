@@ -9,4 +9,3 @@ configfiles/Grid_Graphs/*
 configfile/Split_Ratio/*
 output/
 *.bash
-configfiles/seven_links_*
