@@ -4,5 +4,8 @@ python/*.jar
 *.pyc
 *.jar
 configfiles/*.xml
+configfiles/chicago/*.xml
+configfiles/Grid_Graphs/*.xml
+configfile/Split_Ratio/*.xml
 output/
 *.bash

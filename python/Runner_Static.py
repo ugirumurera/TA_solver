@@ -40,7 +40,7 @@ if connection.pid is not None:
 
     # Contains local path to input configfile, for the three_links.xml network
     this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-    scenario_name = 'scenario'   #Scenario name
+    scenario_name = 'seven_links'   #Scenario name
     configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', scenario_name+'.xml')
     coefficients = {}
     T = 3600  # Time horizon of interest

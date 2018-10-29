@@ -1,0 +1,100 @@
+<?xml version="1.0" ?>
+<scenario>
+	<commodities>
+		<commodity id="1" name="global" pathfull="false"/>
+	</commodities>
+	<network>
+		<nodes>
+			<node id="0" x="-69.6414408919" y="79.9106216986"/>
+			<node id="1" x="-39.2973784392" y="48.9273028497"/>
+			<node id="2" x="-76.5781946258" y="-59.7751519426"/>
+			<node id="3" x="-83.8214619435" y="48.7620275027"/>
+			<node id="4" x="-7.48247210664" y="-17.0074060191"/>
+			<node id="5" x="-1.72763894365" y="19.1729416253"/>
+			<node id="6" x="-79.9879914484" y="-20.3786483875"/>
+			<node id="7" x="-44.4435850287" y="18.5579304402"/>
+			<node id="8" x="1.77771051289" y="47.8122816976"/>
+			<node id="9" x="-118.498077087" y="-17.6200836407"/>
+			<node id="10" x="32.7912887027" y="69.496338634"/>
+			<node id="11" x="14.5134508225" y="-50.2708387671"/>
+		</nodes>
+		<links>
+			<link end_node_id="1" full_lanes="1" id="0" length="100" roadparam="0" start_node_id="0"/>
+			<link end_node_id="5" full_lanes="1" id="1" length="100" roadparam="0" start_node_id="1"/>
+			<link end_node_id="7" full_lanes="1" id="2" length="100" roadparam="0" start_node_id="1"/>
+			<link end_node_id="6" full_lanes="1" id="3" length="100" roadparam="0" start_node_id="2"/>
+			<link end_node_id="0" full_lanes="1" id="4" length="100" roadparam="0" start_node_id="3"/>
+			<link end_node_id="4" full_lanes="1" id="5" length="100" roadparam="0" start_node_id="5"/>
+			<link end_node_id="8" full_lanes="1" id="6" length="100" roadparam="0" start_node_id="5"/>
+			<link end_node_id="7" full_lanes="1" id="7" length="100" roadparam="0" start_node_id="6"/>
+			<link end_node_id="1" full_lanes="1" id="8" length="100" roadparam="0" start_node_id="7"/>
+			<link end_node_id="3" full_lanes="1" id="9" length="100" roadparam="0" start_node_id="7"/>
+			<link end_node_id="4" full_lanes="1" id="10" length="100" roadparam="0" start_node_id="7"/>
+			<link end_node_id="7" full_lanes="1" id="11" length="100" roadparam="0" start_node_id="8"/>
+			<link end_node_id="6" full_lanes="1" id="12" length="100" roadparam="0" start_node_id="9"/>
+			<link end_node_id="8" full_lanes="1" id="13" length="100" roadparam="0" start_node_id="10"/>
+			<link end_node_id="11" full_lanes="1" id="14" length="100" roadparam="0" start_node_id="4"/>
+		</links>
+		<roadparams>
+			<roadparam capacity="2000" id="0" jam_density="100" name="Standard link" speed="60"/>
+		</roadparams>
+		<roadconnections>
+			<roadconnection id="0" in_link="4" in_link_lanes="1#1" out_link="0" out_link_lanes="1#1"/>
+			<roadconnection id="1" in_link="0" in_link_lanes="1#1" out_link="1" out_link_lanes="1#1"/>
+			<roadconnection id="2" in_link="0" in_link_lanes="1#1" out_link="2" out_link_lanes="1#1"/>
+			<roadconnection id="3" in_link="8" in_link_lanes="1#1" out_link="1" out_link_lanes="1#1"/>
+			<roadconnection id="4" in_link="8" in_link_lanes="1#1" out_link="2" out_link_lanes="1#1"/>
+			<roadconnection id="5" in_link="9" in_link_lanes="1#1" out_link="4" out_link_lanes="1#1"/>
+			<roadconnection id="6" in_link="5" in_link_lanes="1#1" out_link="14" out_link_lanes="1#1"/>
+			<roadconnection id="7" in_link="10" in_link_lanes="1#1" out_link="14" out_link_lanes="1#1"/>
+			<roadconnection id="8" in_link="1" in_link_lanes="1#1" out_link="5" out_link_lanes="1#1"/>
+			<roadconnection id="9" in_link="1" in_link_lanes="1#1" out_link="6" out_link_lanes="1#1"/>
+			<roadconnection id="10" in_link="3" in_link_lanes="1#1" out_link="7" out_link_lanes="1#1"/>
+			<roadconnection id="11" in_link="12" in_link_lanes="1#1" out_link="7" out_link_lanes="1#1"/>
+			<roadconnection id="12" in_link="2" in_link_lanes="1#1" out_link="8" out_link_lanes="1#1"/>
+			<roadconnection id="13" in_link="2" in_link_lanes="1#1" out_link="9" out_link_lanes="1#1"/>
+			<roadconnection id="14" in_link="2" in_link_lanes="1#1" out_link="10" out_link_lanes="1#1"/>
+			<roadconnection id="15" in_link="7" in_link_lanes="1#1" out_link="8" out_link_lanes="1#1"/>
+			<roadconnection id="16" in_link="7" in_link_lanes="1#1" out_link="9" out_link_lanes="1#1"/>
+			<roadconnection id="17" in_link="7" in_link_lanes="1#1" out_link="10" out_link_lanes="1#1"/>
+			<roadconnection id="18" in_link="11" in_link_lanes="1#1" out_link="8" out_link_lanes="1#1"/>
+			<roadconnection id="19" in_link="11" in_link_lanes="1#1" out_link="9" out_link_lanes="1#1"/>
+			<roadconnection id="20" in_link="11" in_link_lanes="1#1" out_link="10" out_link_lanes="1#1"/>
+			<roadconnection id="21" in_link="6" in_link_lanes="1#1" out_link="11" out_link_lanes="1#1"/>
+			<roadconnection id="22" in_link="13" in_link_lanes="1#1" out_link="11" out_link_lanes="1#1"/>
+		</roadconnections>
+	</network>
+	<demands>
+		<demand commodity_id="1" dt="600" link_id="12" start_time="0">100</demand>
+		<demand commodity_id="1" dt="600" link_id="13" start_time="0">100</demand>
+	</demands>
+	<splits>
+		<split_node commodity_id="1" link_in="0" node_id="1">
+			<split link_out="1">0.5</split>
+			<split link_out="2">0.5</split>
+		</split_node>
+		<split_node commodity_id="1" link_in="8" node_id="1">
+			<split link_out="1">0.5</split>
+			<split link_out="2">0.5</split>
+		</split_node>
+		<split_node commodity_id="1" link_in="1" node_id="5">
+			<split link_out="5">0.5</split>
+			<split link_out="6">0.5</split>
+		</split_node>
+		<split_node commodity_id="1" link_in="2" node_id="7">
+			<split link_out="8">0.333333333333</split>
+			<split link_out="9">0.333333333333</split>
+			<split link_out="10">0.333333333333</split>
+		</split_node>
+		<split_node commodity_id="1" link_in="7" node_id="7">
+			<split link_out="8">0.333333333333</split>
+			<split link_out="9">0.333333333333</split>
+			<split link_out="10">0.333333333333</split>
+		</split_node>
+		<split_node commodity_id="1" link_in="11" node_id="7">
+			<split link_out="8">0.333333333333</split>
+			<split link_out="9">0.333333333333</split>
+			<split link_out="10">0.333333333333</split>
+		</split_node>
+	</splits>
+</scenario>
