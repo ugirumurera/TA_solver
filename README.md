@@ -63,7 +63,7 @@ To use the system, you must implement three things:
 
 Below is a diagram of the assumed data flow. The algorithms team (lead by Juliette) is in charge of the SOLVER, which includes numerical methods for convex optimization problems and variational inequalities, running in the HPC environment. 
 
-![Picture1.png](https://bitbucket.org/repo/5q9q4pE/images/1708996569-Picture1.png)
+![Picture1.png](https://github.com/ugirumurera/TA_solver/blob/master/Software_Architecture.png)
 
 
 The data classes depicted in the figure are described below. 
