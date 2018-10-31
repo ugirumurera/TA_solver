@@ -9,7 +9,7 @@ The included solution algorithms can run in High Performance Computing environme
 
 **Step 2.** Install Python on your system if not already installed. Code was developed with Python 2.7.
 
-** Step 3.** Install Python-igraph library. This library is necessary to validate the installation. The installation test solves a small static traffic assignment problem using the Frank-Wolfe algorithm.
+**Step 3.** Install Python-igraph library. This library is necessary to validate the installation. The installation test solves a small static traffic assignment problem using the Frank-Wolfe algorithm.
 
 * On Windows: Download [the appropriate cp27 Python-igraph](http://www.lfd.uci.edu/~gohlke/pythonlibs/#python-igraph) for your system and run the command 
 
@@ -22,14 +22,14 @@ python -m pip install location_of_wheel
 
 * On Linux/MacOS: Follow [these instructions](http://igraph.org/python/#pyinstallosx)
 
-** Step 4.** Install [Py4J](https://www.py4j.org/install.html) to establish a connection between Python and Java code.
+**Step 4.** Install [Py4J](https://www.py4j.org/install.html) to establish a connection between Python and Java code.
 
 
-** Step 5. ** Install [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git).
+**Step 5.** Install [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git).
 
-** Step 6 ** Set up SSH for Bitbucket. This is optional but it allows you to establish secure connections to Bitbucket without providing your username/password every time. Follow these [instructions](https://confluence.atlassian.com/bitbucket/set-up-ssh-for-git-728138079.html)
+**Step 6.** Set up SSH for Bitbucket. This is optional but it allows you to establish secure connections to Bitbucket without providing your username/password every time. Follow these [instructions](https://confluence.atlassian.com/bitbucket/set-up-ssh-for-git-728138079.html)
 
-** Step 7.** Fork the ta_solver repository and clone it to your computer.
+**Step 7.** Fork the ta_solver repository and clone it to your computer.
 
 **Step 8.** Send an email to Gabriel Gomes (gomes@path.berkeley.edu) requesting access to the BeATS Dropbox folder. Please include your Dropbox user name. This folder contains a jar file named py4jbeats-1.0-SNAPSHOT-jar-with-dependencies.jar. This file includes the BeATS API and a utility called py4j which establishes a connection between Python and Java. You should have Dropbox sync this folder with your computer so that you always have the latest version of the BeATS API. If this is not possible (e.g. your Dropbox account is full), then ask and we can send you the jar file by email. This is not ideal, since you will not stay up to date with changes to the API. 
 
