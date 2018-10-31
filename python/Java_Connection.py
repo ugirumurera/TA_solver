@@ -65,6 +65,7 @@ class Java_Connection():
         if self.pid == 0:
             self.pid = os.getpid()
             retcode = call(['java', '-jar', jar_file_name, port_number])
+            print retcode
             sys.exit()
 
         # Here we wait for 0.5 sec to allow the java server to start

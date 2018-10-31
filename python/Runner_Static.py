@@ -6,8 +6,6 @@
 
 import numpy as np
 import pickle
-from copy import deepcopy
-import sys
 
 from Model_Manager.Link_Model_Manager import Link_Model_Manager_class
 from Java_Connection import Java_Connection
@@ -16,7 +14,6 @@ import matplotlib.pyplot as plt
 from Solvers.Solver_Class import Solver_class
 import os
 import inspect
-import csv
 from Solvers.Path_Based_Frank_Wolfe_Solver import Path_Based_Frank_Wolfe_Solver
 
 plt.rcParams.update({'font.size': 18})
@@ -44,7 +41,7 @@ if connection.pid is not None:
     configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', scenario_name+'.xml')
     coefficients = {}
     T = 3600  # Time horizon of interest
-    sim_dt = 0.0  # Duration of one time_step for the traffic model
+    sim_dt = 0.1  # Duration of one time_step for the traffic model
 
     sampling_dt = 3600     # Duration of time_step for the solver, in this case it is equal to sim_dt
 

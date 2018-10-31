@@ -90,7 +90,7 @@ def generate_source_links(graph_size, scaling, num_sources, num_sinks, grid):
     print "Finished Adding All ods, now getting node coordinates with layout"
 
     # Get node ids and positions
-    layout = graph.layout("auto")     # This fixes the coordinates of the nodes
+    layout = graph.layout("kk")     # This fixes the coordinates of the nodes
     layout.scale(scaling)
 
     coordinates = layout.coords    # Coordinates of the nodes
@@ -268,12 +268,12 @@ def main():
 
     if not grid:
         # user definitions
-        num_nodes = 100  # Number of nodes for graph
+        num_nodes = 25  # Number of nodes for graph
         graph_size = num_nodes
 
     else:
         # user definitions
-        graph_size = 500  # grid size, leads to a grid of graph_size*graph_size nodes
+        graph_size = 250  # grid size, leads to a grid of graph_size*graph_size nodes
         num_nodes = graph_size * graph_size
 
     scaling = 100  # number used to scale the resulting grid graph
