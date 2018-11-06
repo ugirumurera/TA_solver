@@ -273,7 +273,7 @@ def main():
 
     else:
         # user definitions
-        graph_size = 250  # grid size, leads to a grid of graph_size*graph_size nodes
+        graph_size = 50  # grid size, leads to a grid of graph_size*graph_size nodes
         num_nodes = graph_size * graph_size
 
     scaling = 100  # number used to scale the resulting grid graph
