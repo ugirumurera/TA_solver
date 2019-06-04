@@ -9,10 +9,10 @@ The included solution algorithms can run in High Performance Computing environme
 
 **Step 2.** Install Python and conda on your system if not already installed. Code was developed with Python 2.7.
 
-**Step 3.** Create a conda environment from the yml file: 
+**Step 3.** Create a conda environment from the yml file. Run the code in the TA_solver conda environment. 
 ```
 conda env create -f environment.yml
-Activate environment by: source activate Reg_Mobility
+Activate environment by: source activate TA_solver
 
 ```
 
