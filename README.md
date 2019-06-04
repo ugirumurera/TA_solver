@@ -12,12 +12,11 @@ The included solution algorithms can run in High Performance Computing environme
 **Step 3.** Create a conda environment from the yml file: 
 ```
 conda env create -f environment.yml
-Activate environment by: source activate Reg_Mobility.
+Activate environment by: source activate Reg_Mobility
 
 ```
 
-You might need to install Python-igraph library separately in conda environment.This library is nece\
-ssary to validate the installation. The installation test solves a small static traffic assignment problem using the Frank-Wolfe algorithm.
+You might need to install Python-igraph library separately in conda environment.This library is necessary to validate the installation. The installation test solves a small static traffic assignment problem using the Frank-Wolfe algorithm.
 * On Windows: Download [the appropriate cp27 Python-igraph](http://www.lfd.uci.edu/~gohlke/pythonlibs/#python-igraph) for your system and run the command 
 
 ```
