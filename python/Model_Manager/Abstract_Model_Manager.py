@@ -6,7 +6,7 @@
 
 from __future__ import division
 from abc import ABCMeta, abstractmethod
-from Data_Types.OD_Matrix_Class import OD_Matrix
+from ..Data_Types.OD_Matrix_Class import OD_Matrix
 
 class Abstract_Model_Manager_class():
     __metaclass__ = ABCMeta

@@ -7,11 +7,15 @@ The included solution algorithms can run in High Performance Computing environme
 **Step 1.** Install the [JAVA 8](http://www.oracle.com/technetwork/java/javase/downloads/index.html) JDK on your computer.
 [This](https://www.java.com/en/download/help/version_manual.xml) will show you how to check your current version of JAVA.
 
-**Step 2.** Install Python on your system if not already installed. Code was developed with Python 2.7.
+**Step 2.** Install Python and conda on your system if not already installed. Code was developed with Python 2.7.
 
-**Step 3.** Install Python-igraph library. This library is necessary to validate the installation. The installation test solves a small static traffic assignment problem using the Frank-Wolfe algorithm.
+**Step 3.** Create a conda environment from the yml file: 
+```
+conda env create -f environment.yml
+Activate environment by: source activate Reg_Mobility.
 
-* On Windows: Download [the appropriate cp27 Python-igraph](http://www.lfd.uci.edu/~gohlke/pythonlibs/#python-igraph) for your system and run the command 
+```
+* On Windows: You might need to install Python-igraph library separately in conda environment. This library is necessary to validate the installation. The installation test solves a small static traffic assignment problem using the Frank-Wolfe algorithm. Download [the appropriate cp27 Python-igraph](http://www.lfd.uci.edu/~gohlke/pythonlibs/#python-igraph) for your system and run the command 
 
 ```
 #!python

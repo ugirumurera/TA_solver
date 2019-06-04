@@ -2,9 +2,9 @@
 # The algorithm solves quadratic subproblems in each iteration, for which we use the Path_Based_Frank_Wolfe Algorithm
 
 from __future__ import division
-from Data_Types.Demand_Assignment_Class import Demand_Assignment_class
-from Data_Types.Path_Costs_Class import Path_Costs_class
-from Solvers.Path_Based_Frank_Wolfe_Solver import all_or_nothing, Path_Based_Frank_Wolfe_Solver
+from ..Data_Types.Demand_Assignment_Class import Demand_Assignment_class
+from ..Data_Types.Path_Costs_Class import Path_Costs_class
+from ..Solvers.Path_Based_Frank_Wolfe_Solver import all_or_nothing, Path_Based_Frank_Wolfe_Solver
 from copy import copy, deepcopy
 import numpy as np
 import timeit

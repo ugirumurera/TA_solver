@@ -4,7 +4,7 @@
 
 from __future__ import division
 from Abstract_Cost_Function import Abstract_Cost_Function
-from Data_Types.Link_Costs_Class import Link_Costs_class
+from ..Data_Types.Link_Costs_Class import Link_Costs_class
 from copy import copy
 import numpy as np
 

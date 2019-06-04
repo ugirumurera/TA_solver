@@ -1,9 +1,9 @@
 #Static Traffic Model, assuming the demand is fixed
 
 from __future__ import division
-from Traffic_Models.Abstract_Traffic_Model import Abstract_Traffic_Model_class
-from Data_Types.State_Trajectory_Class import State_Trajectory_class
-from Traffic_States.MN_Traffic_State import MN_Traffic_State_class
+from ..Traffic_Models.Abstract_Traffic_Model import Abstract_Traffic_Model_class
+from ..Data_Types.State_Trajectory_Class import State_Trajectory_class
+from ..Traffic_States.MN_Traffic_State import MN_Traffic_State_class
 import numpy as np
 
 class MN_Model_Class(Abstract_Traffic_Model_class):

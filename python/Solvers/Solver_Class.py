@@ -3,11 +3,11 @@
 #or a variational inequality problem
 
 from __future__ import division
-from Frank_Wolfe_Solver_Static import Frank_Wolfe_Solver
+# from Frank_Wolfe_Solver_Static import Frank_Wolfe_Solver
 from Path_Based_Frank_Wolfe_Solver import Path_Based_Frank_Wolfe_Solver
 from Method_Successive_Averages_Solver import Method_of_Successive_Averages_Solver
 from Modified_Projection_Method_Solver import Modified_Projection_Method_Solver
-from Data_Types.Demand_Assignment_Class import Demand_Assignment_class
+from ..Data_Types.Demand_Assignment_Class import Demand_Assignment_class
 from All_or_Nothing_Function import all_or_nothing
 from Extra_Projection_Method_Solver import Extra_Projection_Method_Solver
 from Path_Based_Frank_Wolfe_Solver import all_or_nothing
