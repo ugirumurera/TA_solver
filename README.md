@@ -15,7 +15,10 @@ conda env create -f environment.yml
 Activate environment by: source activate Reg_Mobility.
 
 ```
-* On Windows: You might need to install Python-igraph library separately in conda environment. This library is necessary to validate the installation. The installation test solves a small static traffic assignment problem using the Frank-Wolfe algorithm. Download [the appropriate cp27 Python-igraph](http://www.lfd.uci.edu/~gohlke/pythonlibs/#python-igraph) for your system and run the command 
+
+You might need to install Python-igraph library separately in conda environment.This library is nece\
+ssary to validate the installation. The installation test solves a small static traffic assignment problem using the Frank-Wolfe algorithm.
+* On Windows: Download [the appropriate cp27 Python-igraph](http://www.lfd.uci.edu/~gohlke/pythonlibs/#python-igraph) for your system and run the command 
 
 ```
 #!python
