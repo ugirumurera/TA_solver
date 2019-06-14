@@ -1,8 +1,8 @@
 # This is the model manager for link-based models
 from __future__ import division
 from Abstract_Model_Manager import Abstract_Model_Manager_class
-from Data_Types.Path_Costs_Class import Path_Costs_class
-from Data_Types.State_Trajectory_Class import State_Trajectory_class
+from ..Data_Types.Path_Costs_Class import Path_Costs_class
+from ..Data_Types.State_Trajectory_Class import State_Trajectory_class
 
 from copy import copy, deepcopy
 import numpy as np
@@ -36,7 +36,7 @@ class BeATS_Model_Manager_class(Abstract_Model_Manager_class):
 
         # request path travel time output
         for path_id in demand_assignment.get_path_list():
-            self.beats_api.request_path_travel_time(path_id, self.sample_dt)
+            self.otm_api.request_path_travel_time(path_id, self.sample_dt)
 
         # request link vehicles output
         if request_link_data:
@@ -46,7 +46,7 @@ class BeATS_Model_Manager_class(Abstract_Model_Manager_class):
                     java_path_array = self.gateway.jvm.java.util.ArrayList()
                     for p in path_links:
                         java_path_array.add(long(p))
-                    self.beats_api.request_links_veh(comm_id,java_path_array,self.sample_dt)
+                    self.otm_api.request_links_veh(comm_id, java_path_array, self.sample_dt)
 
         # send demand assignment to beats
         for path_comm, demand_list in demand_assignment.get_all_demands().iteritems():
@@ -55,11 +55,11 @@ class BeATS_Model_Manager_class(Abstract_Model_Manager_class):
             java_array = self.gateway.jvm.java.util.ArrayList()
             for d in demand_list:
                 java_array.add(float(d))
-            self.beats_api.set_demand_on_path_in_vph(path_id, comm_id, start_time, self.sample_dt, java_array)
+            self.otm_api.set_demand_on_path_in_vph(path_id, comm_id, start_time, self.sample_dt, java_array)
 
         # run BeATS
-        self.beats_api.set_random_seed(1)      #Initialize the random seed
-        self.beats_api.run(float(start_time), float(time_horizon))
+        self.otm_api.set_random_seed(1)      #Initialize the random seed
+        self.otm_api.run(float(start_time), float(time_horizon))
         self.run_complete = True
 
         # extract the path costs
@@ -68,7 +68,7 @@ class BeATS_Model_Manager_class(Abstract_Model_Manager_class):
         path_costs.set_comm_list(demand_assignment.get_commodity_list())
         keys = demand_assignment.get_all_demands().keys()
 
-        for data_obj in self.beats_api.get_output_data():
+        for data_obj in self.otm_api.get_output_data():
             java_class = str(data_obj.getClass())
             if java_class=='class output.PathTravelTime':
                 if self.instantaneous:
@@ -82,8 +82,8 @@ class BeATS_Model_Manager_class(Abstract_Model_Manager_class):
         return path_costs
 
     def reset(self):
-        self.beats_api.clear_output_requests()
-        self.beats_api.clear_all_demands()
+        self.otm_api.clear_output_requests()
+        self.otm_api.clear_all_demands()
         self.run_complete = False
 
     def get_state_trajectory(self):
@@ -92,10 +92,10 @@ class BeATS_Model_Manager_class(Abstract_Model_Manager_class):
             print('Please run the simulation first.')
             return None
 
-        link_list = self.beats_api.get_link_ids()
+        link_list = self.otm_api.get_link_ids()
         state_traj = {link_id: np.zeros(self.num_samp) for link_id in link_list}
 
-        for data_obj in self.beats_api.get_output_data():
+        for data_obj in self.otm_api.get_output_data():
             java_class = str(data_obj.getClass())
             if java_class=='class output.LinkVehicles':
                 for link_id in data_obj.get_link_ids():

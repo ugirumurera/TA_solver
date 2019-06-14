@@ -23,11 +23,11 @@ sampling_dt = 1200  # Duration of one time_step for the solver
 
 if(model_manager.is_valid()):
     path_list = dict()
-    od = model_manager.beats_api.get_od_info()
+    od = model_manager.otm_api.get_od_info()
     num_steps = int(T / sampling_dt)
 
     # Initializing the demand assignment
-    commodity_list = list(model_manager.beats_api.get_commodity_ids())
+    commodity_list = list(model_manager.otm_api.get_commodity_ids())
     assignment = Demand_Assignment_class(path_list,commodity_list,
                                          num_steps, sampling_dt)
 
@@ -44,7 +44,7 @@ if(model_manager.is_valid()):
             path_list[path.getId()] = path.get_link_ids()
 
             demand_api = [item * 3600 for item in
-                          model_manager.beats_api.get_demand_with_ids("pathfull", path.getId(), comm_id).getProfile().getValues()]
+                          model_manager.otm_api.get_demand_with_ids("pathfull", path.getId(), comm_id).getProfile().getValues()]
             demand_api = np.asarray(demand_api)
             demand_size = len(demand_api)
             demand_dt = o.get_total_demand_vps().getDt()

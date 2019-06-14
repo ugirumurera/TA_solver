@@ -42,14 +42,14 @@ if connection.pid is not None:
     model_manager = Link_Model_Manager_class(configfile, "static", connection.gateway, sim_dt, "bpr", coefficients)
 
     #Estimating bpr coefficients with beats
-    num_links = model_manager.beats_api.get_num_links()
+    num_links = model_manager.otm_api.get_num_links()
     avg_travel_time = np.zeros(num_links)
 
     num_coeff = 5
 
     for i in range(num_links):
-        fft= (model_manager.beats_api.get_link_with_id(long(i)).getFull_length() \
-          / model_manager.beats_api.get_link_with_id(long(i)).get_ffspeed_mps())/3600
+        fft= (model_manager.otm_api.get_link_with_id(long(i)).getFull_length() \
+              / model_manager.otm_api.get_link_with_id(long(i)).get_ffspeed_mps()) / 3600
         coefficients[long(i)] = np.zeros(num_coeff)
         coefficients[i][0] = copy(fft)
         coefficients[i][4] = copy(fft*0.15)

@@ -28,11 +28,13 @@ class Java_Connection():
 
         self.port_number = str(port_num)
 
+        jar_name = 'otm-py4j-1.0-SNAPSHOT-jar-with-dependencies.jar'
+
         this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-        jar_file_name = os.path.join(this_folder, 'py4jbeats-1.0-SNAPSHOT-jar-with-dependencies.jar')
+        jar_file_name = os.path.join(this_folder, jar_name)
 
         #First check if the file exists indeed:
-        if os.path.isfile('py4jbeats-1.0-SNAPSHOT-jar-with-dependencies.jar'):
+        if os.path.isfile(jar_file_name):
 
             if platform.system() == "Windows":
                 self.openWindows(jar_file_name, self.port_number)
@@ -66,6 +68,7 @@ class Java_Connection():
             self.pid = os.getpid()
             retcode = call(['java', '-jar', jar_file_name, port_number])
             print retcode
+            # time.sleep(1)
             sys.exit()
 
         # Here we wait for 0.5 sec to allow the java server to start

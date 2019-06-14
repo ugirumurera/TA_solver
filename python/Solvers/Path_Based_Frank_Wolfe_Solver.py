@@ -8,9 +8,8 @@
 
 from __future__ import division
 
-from ..Data_Types.Demand_Assignment_Class import Demand_Assignment_class
-from ..Data_Types.Path_Costs_Class import Path_Costs_class
-from Error_Distance_to_Nash_Calculation import distance_to_Nash
+from python.Data_Types.Demand_Assignment_Class import Demand_Assignment_class
+
 from copy import copy
 import numpy as np
 import timeit

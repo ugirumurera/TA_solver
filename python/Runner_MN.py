@@ -32,13 +32,13 @@ if conn.pid is not None:
     model_manager = Link_Model_Manager_class(configfile, "mn", conn.gateway, sim_dt, "bpr", coefficients)
 
     #Estimating bpr coefficients with beats
-    num_links = model_manager.beats_api.get_num_links()
+    num_links = model_manager.otm_api.get_num_links()
     avg_travel_time = np.zeros(num_links)
     num_coeff = 5
 
     for i in range(num_links):
-        fft= (model_manager.beats_api.get_link_with_id(long(i)).getFull_length() \
-                         / model_manager.beats_api.get_link_with_id(long(i)).get_ffspeed_mps())/3600
+        fft= (model_manager.otm_api.get_link_with_id(long(i)).getFull_length() \
+              / model_manager.otm_api.get_link_with_id(long(i)).get_ffspeed_mps()) / 3600
         coefficients[long(i)] = np.zeros(num_coeff)
         coefficients[i][0] = copy(fft)
         coefficients[i][4] = copy(fft*0.15)
@@ -71,7 +71,7 @@ if conn.pid is not None:
                 writer = csv.writer(csv_file)
                 # Saving the model type
                 writer.writerow(['model type:','BeATS'])
-                od = model_manager.beats_api.get_od_info()
+                od = model_manager.otm_api.get_od_info()
                 demand_api = [item * 3600 for item in od[0].get_total_demand_vps().getValues()]
                 od_dt = od[0].get_total_demand_vps().getDt()
                 if od_dt is None:

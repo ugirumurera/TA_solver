@@ -1,10 +1,10 @@
 # This is the model manager for link-based models
 
-from ..Model_Manager.Abstract_Model_Manager import Abstract_Model_Manager_class
-from ..Data_Types.Path_Costs_Class import Path_Costs_class
-from ..Traffic_Models.Static_Model import Static_Model_Class
-from ..Traffic_Models.MN_Model import MN_Model_Class
-from ..Cost_Functions.BPR_Function import BPR_Function_class
+from Abstract_Model_Manager import Abstract_Model_Manager_class
+from python.Data_Types.Path_Costs_Class import Path_Costs_class
+from python.Traffic_Models.Static_Model import Static_Model_Class
+from python.Traffic_Models.MN_Model import MN_Model_Class
+from python.Cost_Functions.BPR_Function import BPR_Function_class
 import numpy as np
 import timeit
 
@@ -15,10 +15,10 @@ class Link_Model_Manager_class(Abstract_Model_Manager_class):
 
         # create the traffic model
         if traffic_model_name == "static":
-            self.traffic_model = Static_Model_Class(self.beats_api)
+            self.traffic_model = Static_Model_Class(self.otm_api)
 
         elif traffic_model_name == "mn":
-            self.traffic_model = MN_Model_Class(self.beats_api, gateway)
+            self.traffic_model = MN_Model_Class(self.otm_api, gateway)
         else:
             print("Bad traffic_model_name")
             return

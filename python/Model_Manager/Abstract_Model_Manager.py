@@ -6,7 +6,8 @@
 
 from __future__ import division
 from abc import ABCMeta, abstractmethod
-from ..Data_Types.OD_Matrix_Class import OD_Matrix
+from python.Data_Types.OD_Matrix_Class import OD_Matrix
+import os
 
 class Abstract_Model_Manager_class():
     __metaclass__ = ABCMeta
@@ -14,22 +15,23 @@ class Abstract_Model_Manager_class():
     def __init__(self, configfile, traffic_model_name, sim_dt, gateway):
         self.gateway = gateway
         self.configfile = configfile
-        self.beats_api = gateway.entry_point.get_BeATS_API()
+        self.otm_api = gateway.entry_point.get_OTM_API()
+
         if traffic_model_name == 'static':
-            timestamps = self.beats_api.load_for_static_traffic_assignment(configfile)
+            timestamps = self.otm_api.load_for_static_traffic_assignment(configfile)
         else:
-            timestamps = self.beats_api.load(configfile, sim_dt, False, traffic_model_name)
+            timestamps = self.otm_api.load(configfile, sim_dt, False, traffic_model_name)
         time1 = (timestamps[1] - timestamps[0])/1000
         time2 = (timestamps[2] - timestamps[1])/1000
         print "Load JAXB took: ", time1, " sec"
         print "Create Scenario took: ", time2, " sec"
 
     def is_valid(self):
-        return( self.beats_api is not None) and (self.beats_api.has_scenario())
+        return (self.otm_api is not None) and (self.otm_api.has_scenario())
 
     def get_OD_Matrix(self, num_steps, sampling_dt):
         #Create the list of od with OD_Class object
-        od_beats = self.beats_api.get_od_info()
+        od_beats = self.otm_api.get_od_info()
         ods = OD_Matrix(num_steps,sampling_dt)
         ods.set_ods_with_beats_ods(od_beats)
 
@@ -37,7 +39,7 @@ class Abstract_Model_Manager_class():
 
     def get_OD_Matrix_timestep(self, num_steps, sampling_dt, timestep):
         #Create the list of od with OD_Class object
-        od_beats = self.beats_api.get_od_info()
+        od_beats = self.otm_api.get_od_info()
         ods = OD_Matrix(num_steps,sampling_dt)
         ods.set_ods_with_beats_ods_timestep(od_beats,timestep)
 

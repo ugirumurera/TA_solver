@@ -57,7 +57,7 @@ if conn.pid is not None:
                 writer = csv.writer(csv_file)
                 # Saving the model type
                 writer.writerow(['model type:','BeATS'])
-                od = model_manager.beats_api.get_od_info()
+                od = model_manager.otm_api.get_od_info()
                 demand_api = [item * 3600 for item in od[0].get_total_demand_vps().getValues()]
                 od_dt = od[0].get_total_demand_vps().getDt()
                 if od_dt is None:
