@@ -6,9 +6,9 @@
 import numpy as np
 from copy import deepcopy
 
-from python.Solvers.Solver_Class import Solver_class
-from python.Model_Manager.Link_Model_Manager import Link_Model_Manager_class
-from python.Java_Connection import Java_Connection
+from Solvers.Solver_Class import Solver_class
+from Model_Manager.Link_Model_Manager import Link_Model_Manager_class
+from Java_Connection import Java_Connection
 from copy import copy
 import matplotlib.pyplot as plt
 import os
@@ -23,7 +23,7 @@ if connection.pid is not None:
 
     # Contains local path to input configfile, for the three_links.xml network
     this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-    configfile = os.path.join(this_folder, os.path.pardir, os.path.pardir,'configfiles', 'seven_links.xml')
+    configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'seven_links.xml')
 
     coefficients = {}
     T = 3600  # Time horizon of interest

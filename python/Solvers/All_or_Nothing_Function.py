@@ -1,5 +1,5 @@
 import numpy as np
-from ..Data_Types.Demand_Assignment_Class import Demand_Assignment_class
+from Data_Types.Demand_Assignment_Class import Demand_Assignment_class
 import timeit
 
 # This function determines the all_or_nothing demand assignment by putting all OD demand on the shortest path per OD

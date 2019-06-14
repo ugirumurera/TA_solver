@@ -2,8 +2,8 @@
 
 from __future__ import division
 from Abstract_Traffic_Model import Abstract_Traffic_Model_class
-from ..Data_Types.State_Trajectory_Class import State_Trajectory_class
-from ..Traffic_States.Static_Traffic_State import Static_Traffic_State_class
+from Data_Types.State_Trajectory_Class import State_Trajectory_class
+from Traffic_States.Static_Traffic_State import Static_Traffic_State_class
 import numpy as np
 # these are some comments for practice
 

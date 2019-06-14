@@ -8,7 +8,7 @@
 
 from __future__ import division
 
-from python.Data_Types.Demand_Assignment_Class import Demand_Assignment_class
+from Data_Types.Demand_Assignment_Class import Demand_Assignment_class
 
 from copy import copy
 import numpy as np

@@ -3,7 +3,7 @@
 # dimensional array of traffic state objects per (link, commodity) pair.
 # a traffic state can include flow, number of vehicles (density), and queue
 
-from ..Traffic_States.Abstract_Traffic_State import Abstract_Traffic_State_class
+from Traffic_States.Abstract_Traffic_State import Abstract_Traffic_State_class
 from copy import deepcopy
 import collections
 
