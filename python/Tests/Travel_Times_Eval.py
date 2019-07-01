@@ -2,7 +2,7 @@
 from __future__ import division
 import os
 import inspect
-from python.Model_Manager.BeATS_Model_Manager import BeATS_Model_Manager_class
+from python.Model_Manager.OTM_Model_Manager import OTM_Model_Manager_class
 from python.Java_Connection import Java_Connection
 from python.Solvers.Solver_Class import Solver_class
 from python.Data_Types.Demand_Assignment_Class import Demand_Assignment_class
@@ -16,7 +16,7 @@ conn = Java_Connection()
 
 this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'seven_links.xml')
-model_manager = BeATS_Model_Manager_class(configfile, "ctm", conn.gateway, sim_dt=5.0)
+model_manager = OTM_Model_Manager_class(configfile, "ctm", conn.gateway, sim_dt=5.0)
 
 T = 3600  # Time horizon of interest
 sampling_dt = 1200  # Duration of one time_step for the solver

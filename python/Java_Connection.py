@@ -1,4 +1,5 @@
 from subprocess import call
+import subprocess
 import os
 import subprocess
 import signal
@@ -7,6 +8,7 @@ import time
 import sys
 import inspect
 from py4j.java_gateway import JavaGateway, GatewayParameters
+import socket
 
 
 class Java_Connection():
@@ -24,7 +26,7 @@ class Java_Connection():
         else: rank = 0
 
         #Port Number
-        port_num = 25335 + rank
+        port_num = 25333 + rank
 
         self.port_number = str(port_num)
 
@@ -61,6 +63,21 @@ class Java_Connection():
             sys.exit()
 
     def openLinux(self, jar_file_name, port_number):
+        # First close process listening on $port_number
+        # pid_num = subprocess.check_output('lsof -n -i:'+ port_number + ' | grep LISTEN | awk \'{print $2}\'',shell=True)
+        # ret = subprocess.call(['kill', '-9', pid_num])
+        # try:
+        #     print "Starting java process"
+        #     self.process = subprocess.Popen(['java', '-jar', jar_file_name, port_number],
+        #                                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        #     self.pid = self.process.pid
+        #     time.sleep(1)
+        # except subprocess.CalledProcessError:
+        #     print("caught exception")
+        #     sys.exit()
+        # x = subprocess.call('ps -ef |  grep jar_file_name', shell=True,stdout=subprocess.PIPE)
+        # print x.communicate()[0]
+        subprocess.call('for pid in $(ps -ef | grep otm-py4j-1.0-SNAPSHOT | awk \'{print $2}\' ); do kill -9 $pid; done', shell= True)
 
         self.pid = os.fork()
 
@@ -68,7 +85,7 @@ class Java_Connection():
             self.pid = os.getpid()
             retcode = call(['java', '-jar', jar_file_name, port_number])
             print retcode
-            # time.sleep(1)
+            time.sleep(1)
             sys.exit()
 
         # Here we wait for 0.5 sec to allow the java server to start
@@ -76,7 +93,6 @@ class Java_Connection():
 
     def close(self):
         if platform.system() == "Windows":
-            #self.process.terminate()
             os.kill(self.process.pid, signal.CTRL_C_EVENT)
         elif platform.system() in ["Linux", "Darwin"]:
             os.kill(0, signal.SIGTERM)

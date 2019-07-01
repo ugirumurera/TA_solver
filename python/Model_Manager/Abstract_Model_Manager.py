@@ -19,12 +19,12 @@ class Abstract_Model_Manager_class():
 
         if traffic_model_name == 'static':
             timestamps = self.otm_api.load_for_static_traffic_assignment(configfile)
+            time1 = (timestamps[1] - timestamps[0])/1000
+            time2 = (timestamps[2] - timestamps[1])/1000
+            print "Load JAXB took: ", time1, " sec"
+            print "Create Scenario took: ", time2, " sec"
         else:
-            timestamps = self.otm_api.load(configfile, sim_dt, False, traffic_model_name)
-        time1 = (timestamps[1] - timestamps[0])/1000
-        time2 = (timestamps[2] - timestamps[1])/1000
-        print "Load JAXB took: ", time1, " sec"
-        print "Create Scenario took: ", time2, " sec"
+            timestamps = self.otm_api.load(configfile)
 
     def is_valid(self):
         return (self.otm_api is not None) and (self.otm_api.has_scenario())

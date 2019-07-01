@@ -40,8 +40,9 @@ if connection.pid is not None:
     num_coeff = 5
 
     for i in range(num_links):
-        fft= (model_manager.otm_api.get_link_with_id(long(i)).getFull_length() \
-              / model_manager.otm_api.get_link_with_id(long(i)).get_ffspeed_mps()) / 3600
+        link_info = model_manager.otm_api.get_link_with_id(long(i))
+        fft= (link_info.getFull_length() /1000
+              / link_info.get_ffspeed_kph())
         coefficients[long(i)] = np.zeros(num_coeff)
         coefficients[i][0] = copy(fft)
         coefficients[i][4] = copy(fft*0.15)
@@ -51,7 +52,7 @@ if connection.pid is not None:
     if model_manager.is_valid():
         num_steps = T/sampling_dt
 
-        scenario_solver = Solver_class(model_manager)
+        scenario_solver = Solver_class(model_manager,)
         assignment, assignment_vector = scenario_solver.Solver_function(T, sampling_dt, "FW")
 
         if assignment is None:

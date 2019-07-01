@@ -29,7 +29,7 @@ def save_ouput_to_picle(outputfile, assignment, path_costs, run_time, error):
         pickle.dump(error, f)
 
 # Flag that indicates whether we are doing decomposition or not
-decompositio_flag = False
+decompositio_flag = True
 
 connection = Java_Connection(decompositio_flag)
 
@@ -43,7 +43,7 @@ if connection.pid is not None:
     T = 3600  # Time horizon of interest
     sim_dt = 0.1  # Duration of one time_step for the traffic model
 
-    sampling_dt = 3600     # Duration of time_step for the solver, in this case it is equal to sim_dt
+    sampling_dt = 1200     # Duration of time_step for the solver, in this case it is equal to sim_dt
 
     model_manager = Link_Model_Manager_class(configfile, "static", connection.gateway, sim_dt, "bpr", coefficients)
 
@@ -56,11 +56,12 @@ if connection.pid is not None:
     num_coeff = 5
 
     for i in range(num_links):
-        fft= (model_manager.otm_api.get_link_with_id(long(i)).getFull_length() \
-              / model_manager.otm_api.get_link_with_id(long(i)).get_ffspeed_mps()) / 3600
+        link_info = model_manager.otm_api.get_link_with_id(long(i))
+        fft = (link_info.getFull_length() / 1000
+               / link_info.get_ffspeed_kph())
         coefficients[long(i)] = np.zeros(num_coeff)
         coefficients[i][0] = copy(fft)
-        coefficients[i][4] = copy(fft*0.15)
+        coefficients[i][4] = copy(fft * 0.15)
 
 
     # If scenario.beast_api is none, it means the configfile provided was not valid for the particular traffic model type
@@ -82,8 +83,8 @@ if connection.pid is not None:
                 print "Solver did not run"
             else:
                 # Save assignment into a pickle file
-                this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-                outputfile = os.path.join(this_folder, os.path.pardir, 'output', scenario_name+'.picle')
+                # this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+                # outputfile = os.path.join(this_folder, os.path.pardir, 'output', scenario_name+'.picle')
 
                 path_costs = model_manager.evaluate(assignment, T, initial_state=None)
 
@@ -96,23 +97,23 @@ if connection.pid is not None:
                 #assignment.print_all()
 
 
-                if decompositio_flag:
-                    from mpi4py import MPI
-
-                    # MPI Directives
-                    comm = MPI.COMM_WORLD
-                    rank = comm.Get_rank()
-
-                    if rank == 0:
-                        print "I am rank ", rank, " going to save output"
-                        save_ouput_to_picle(outputfile, assignment, path_costs, solver_algorithm, error_percentage)
-                        # kill jvm
-                        connection.close()
-
-                else:
-                    save_ouput_to_picle(outputfile,assignment,path_costs,solver_algorithm, error_percentage)
-                    # kill jvm
-                    connection.close()
+                # if decompositio_flag:
+                #     from mpi4py import MPI
+                #
+                #     # MPI Directives
+                #     comm = MPI.COMM_WORLD
+                #     rank = comm.Get_rank()
+                #
+                #     if rank == 0:
+                #         print "I am rank ", rank, " going to save output"
+                #         save_ouput_to_picle(outputfile, assignment, path_costs, solver_algorithm, error_percentage)
+                #         # kill jvm
+                #         connection.close()
+                #
+                # else:
+                #     save_ouput_to_picle(outputfile,assignment,path_costs,solver_algorithm, error_percentage)
+                #     # kill jvm
+                #     connection.close()
 
                 '''
                 with open(outputfile, "rb") as f:

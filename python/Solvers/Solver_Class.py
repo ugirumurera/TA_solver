@@ -18,7 +18,7 @@ import csv
 from copy import copy
 
 class Solver_class():
-    def __init__(self, model_manager, solver_algorithm):
+    def __init__(self, model_manager, solver_algorithm = None):
         self.model_manager = model_manager
         self.solver_algorithm = solver_algorithm
 
@@ -253,7 +253,7 @@ class Solver_class():
 
         num_steps = int(T / sampling_dt)
         path_list = dict()
-        commodity_list = list(self.model_manager.beats_api.get_commodity_ids())
+        commodity_list = list(self.model_manager.otm_api.get_commodity_ids())
         init_assignment = Demand_Assignment_class(path_list, commodity_list,
                                              num_steps, sampling_dt)
         # We start with an initial Demand assignment with demands all equal to zeros

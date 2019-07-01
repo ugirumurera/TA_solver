@@ -268,12 +268,12 @@ def main():
 
     if not grid:
         # user definitions
-        num_nodes = 25  # Number of nodes for graph
+        num_nodes = 5  # Number of nodes for graph
         graph_size = num_nodes
 
     else:
         # user definitions
-        graph_size = 50  # grid size, leads to a grid of graph_size*graph_size nodes
+        graph_size = 2  # grid size, leads to a grid of graph_size*graph_size nodes
         num_nodes = graph_size * graph_size
 
     scaling = 100  # number used to scale the resulting grid graph

@@ -1,7 +1,7 @@
 from __future__ import division
 import os
 import inspect
-from Model_Manager.BeATS_Model_Manager import BeATS_Model_Manager_class
+from Model_Manager.OTM_Model_Manager import OTM_Model_Manager_class
 from Java_Connection import Java_Connection
 from Solvers.Solver_Class import Solver_class
 from Data_Types.Demand_Assignment_Class import Demand_Assignment_class
@@ -20,15 +20,15 @@ conn = Java_Connection()
 
 if conn.pid is not None:
     sim_dt = 2.0
-    T = 3600  # Time horizon of interest
-    sampling_dt = 300  # Duration of one time_step for the solver
+    T = 1800  # Time horizon of interest
+    sampling_dt = 900  # Duration of one time_step for the solver
 
     this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-    scenario_name = 'scenario'  # Scenario name
+    scenario_name = 'seven_links'  # Scenario name
     configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', scenario_name+'.xml')
 
     instantaneous = True      # Indicates whether we are doing ctm predictive (True) or instantaneous (False)
-    model_manager = BeATS_Model_Manager_class(configfile, "ctm", conn.gateway, sim_dt)
+    model_manager = OTM_Model_Manager_class(configfile, "ctm", conn.gateway, sim_dt)
 
     if(model_manager.is_valid()):
         num_steps = int(T/sampling_dt)

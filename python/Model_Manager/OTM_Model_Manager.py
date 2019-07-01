@@ -1,15 +1,13 @@
 # This is the model manager for link-based models
 from __future__ import division
 from Abstract_Model_Manager import Abstract_Model_Manager_class
-from ..Data_Types.Path_Costs_Class import Path_Costs_class
-from ..Data_Types.State_Trajectory_Class import State_Trajectory_class
+from Data_Types.Path_Costs_Class import Path_Costs_class
 
-from copy import copy, deepcopy
 import numpy as np
 import timeit
 from operator import add
 
-class BeATS_Model_Manager_class(Abstract_Model_Manager_class):
+class OTM_Model_Manager_class(Abstract_Model_Manager_class):
 
     # Constructor receives a Traffic model and cost functions instances
     def __init__(self, configfile, traffic_model_name, gateway, sim_dt, instantaneous = False):
@@ -57,7 +55,7 @@ class BeATS_Model_Manager_class(Abstract_Model_Manager_class):
                 java_array.add(float(d))
             self.otm_api.set_demand_on_path_in_vph(path_id, comm_id, start_time, self.sample_dt, java_array)
 
-        # run BeATS
+        # run OTM
         self.otm_api.set_random_seed(1)      #Initialize the random seed
         self.otm_api.run(float(start_time), float(time_horizon))
         self.run_complete = True
@@ -70,11 +68,12 @@ class BeATS_Model_Manager_class(Abstract_Model_Manager_class):
 
         for data_obj in self.otm_api.get_output_data():
             java_class = str(data_obj.getClass())
-            if java_class=='class output.PathTravelTime':
+            if java_class=='class output.PathTravelTimeWriter':
                 if self.instantaneous:
                     cost_list = list(
                         data_obj.compute_instantaneous_travel_times(start_time, self.sample_dt, self.num_samp))
                 else:
+                    # Error returns nan's for now
                     cost_list = list(data_obj.compute_predictive_travel_times(start_time, self.sample_dt, self.num_samp))
                 # path_costs.set_costs_path_commodity(data_obj.get_path_id(), data_obj.get_commodity_id(), cost_list)
                 path_costs.set_costs_path_keys(data_obj.get_path_id(), keys, cost_list)

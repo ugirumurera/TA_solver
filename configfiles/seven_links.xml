@@ -6,6 +6,12 @@
 		<commodity id="1" name="bla" pathfull="true" subnetworks="1,2,3"/>
 	</commodities>
 
+	<models>
+		<model type="ctm" name="myctm" is_default="true">
+			<model_params sim_dt="2" max_cell_length="100"/>
+		</model>
+	</models>
+
 	<network>
 
 		<nodes>

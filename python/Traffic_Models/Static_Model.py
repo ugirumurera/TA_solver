@@ -45,7 +45,7 @@ class Static_Model_Class(Abstract_Traffic_Model_class):
                 path = list(demand_assignments.get_path_with_id(key[0]))
 
                 # Get the capacity of links in path
-                capacities = [self.beats_api.get_link_with_id(link_id).get_capacity_vps() * 3600 for link_id in path]
+                capacities = [self.beats_api.get_link_with_id(link_id).get_capacity_vphpl() for link_id in path]
 
                 # Get indices of links in the path
                 # link_indices = [list_of_link_ids.index(l) for l in path]

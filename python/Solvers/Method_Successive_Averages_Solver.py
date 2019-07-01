@@ -34,7 +34,7 @@ def Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt, od = Non
     if init_assignment is None:
         # We first create a list of paths from the traffic_scenario
         path_list = dict()
-        commodity_list = list(model_manager.beats_api.get_commodity_ids())
+        commodity_list = list(model_manager.otm_api.get_commodity_ids())
         init_assignment = Demand_Assignment_class(path_list,commodity_list,
                                          num_steps, sampling_dt)
 
