@@ -112,8 +112,7 @@ if connection.pid is not None:
                 #
                 # else:
                 #     save_ouput_to_picle(outputfile,assignment,path_costs,solver_algorithm, error_percentage)
-                #     # kill jvm
-                #     connection.close()
+                    # kill jvm
 
                 '''
                 with open(outputfile, "rb") as f:
@@ -122,7 +121,7 @@ if connection.pid is not None:
                     run_time = pickle.load(f)
                     error = pickle.load(f)
                 '''
-
+                # connection.close()
 
                 # print "\nPath costs in seconds:"
                 #path_costs.print_all_in_seconds()

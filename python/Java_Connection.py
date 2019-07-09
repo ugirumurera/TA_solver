@@ -28,6 +28,8 @@ class Java_Connection():
         #Port Number
         port_num = 25333 + rank
 
+        print "port number is:", port_num
+
         self.port_number = str(port_num)
 
         jar_name = 'otm-py4j-1.0-SNAPSHOT-jar-with-dependencies.jar'
@@ -83,7 +85,7 @@ class Java_Connection():
 
         if self.pid == 0:
             self.pid = os.getpid()
-            retcode = call(['java', '-jar', jar_file_name, port_number])
+            retcode = call(['java', '-jar',jar_file_name, '-port', port_number])
             print retcode
             time.sleep(1)
             sys.exit()

@@ -43,8 +43,16 @@ class Solver_class():
         else:
             assignment, assignment_vect = self.solver_algorithm(self.model_manager, T, sampling_dt, ods)
 
+        if Decomposition:
+            from mpi4py import MPI
+
+            comm = MPI.COMM_WORLD
+            rank = comm.Get_rank()
+        else:
+            rank = 0
+
         elapsed1 = timeit.default_timer() - start_time1
-        print ("\nSolver took  %s seconds" % elapsed1)
+        if rank ==0: print ("\nSolver took  %s seconds" % elapsed1)
         
         return assignment, elapsed1
 
@@ -292,10 +300,13 @@ class Solver_class():
 
         timer = None
         if rank == 0: timer = [0]       #Variable used to time the path costs evaluation just for processor rank 0
-        x_assignment, x_vector = solver_function(self.model_manager, T, sampling_dt, od_subset, out_od_indices,
-                                                 init_assignment, display = display, timer = timer)
+        # x_assignment, x_vector = solver_function(self.model_manager, T, sampling_dt, od_subset, out_od_indices,
+        #                                          init_assignment, display = display, timer = timer)
 
-        if rank == 0 and timer is not None: print "Total Path Evaluation took: ", timer[0]
+        x_assignment, x_vector = solver_function(self.model_manager, T, sampling_dt, od_subset, out_od_indices,
+                                                 init_assignment, display=display)
+
+        # if rank == 0 and timer is not None: print "Total Path Evaluation took: ", timer[0]
 
         return x_assignment, x_vector
 

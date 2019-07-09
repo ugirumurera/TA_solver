@@ -74,9 +74,11 @@ class OTM_Model_Manager_class(Abstract_Model_Manager_class):
                         data_obj.compute_instantaneous_travel_times(start_time, self.sample_dt, self.num_samp))
                 else:
                     # Error returns nan's for now
-                    cost_list = list(data_obj.compute_predictive_travel_times(start_time, self.sample_dt, self.num_samp))
+                    # cost_list = list(data_obj.compute_predictive_travel_times(start_time, self.sample_dt, self.num_samp))
+                    cost_list = list(data_obj.get_travel_times_sec())
+                    del cost_list[0]
                 # path_costs.set_costs_path_commodity(data_obj.get_path_id(), data_obj.get_commodity_id(), cost_list)
-                path_costs.set_costs_path_keys(data_obj.get_path_id(), keys, cost_list)
+                path_costs.set_costs_path_keys(data_obj.get_subnetwork_id(), keys, cost_list)
 
         return path_costs
 

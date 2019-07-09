@@ -6,11 +6,11 @@ from Solvers.Projection_onto_Simplex import Projection_onto_Simplex, Projection_
 import numpy as np
 from Error_Distance_to_Nash_Calculation import distance_to_Nash
 import timeit
-from copy import copy
+from copy import copy,deepcopy
 import math
 
 def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,od = None, od_out_indices = None, assignment = None,
-                                   max_iter=1000, display=1, stopping=1e-2):
+                                   max_iter=100, display=1, stopping=1e-2):
 
     # In this case, x_k is a demand assignment object that maps demand to paths
 
@@ -21,7 +21,7 @@ def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,od = None, od_o
 
     # Initialize the algorithm with the solution returned by Method_of_Successive_Averages
     x_k_assignment, x_k_assignment_vector = Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt, od,od_out_indices,
-                                                                             assignment, max_iter= 100)
+                                                                             assignment, 100, display)
 
     # If assignment is None, then return from the solver
     if x_k_assignment is None:
@@ -39,21 +39,44 @@ def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,od = None, od_o
 
     thetha_assignment, current_cost_vector,thetha_assignment_vector = None,None,None
 
+    # Keeping truck of solution that led to least error
+    min_sol, min_vec= None,None
+    min_error = -1
+
     for i in range(max_iter):
         if thetha_assignment is None:
             # First check if the error is low enough to terminate
             theta_assignment, current_path_costs = all_or_nothing(model_manager, x_k_assignment, od, None,
                                                                   sampling_dt * num_steps)
+            if od_out_indices is not None:
+                from mpi4py import MPI
+                comm = MPI.COMM_WORLD
+                theta_temp_vector = np.asarray(theta_assignment.vector_assignment())
+                thetha_assignment_vector = np.zeros(len(theta_temp_vector))
+
+                # First zero out the values corresponding to other subproblems
+                theta_temp_vector[od_out_indices] = 0
+
+                # Combine assignment from all subproblems into ass_vector
+                start_time1 = timeit.default_timer()
+
+                comm.Allreduce(theta_temp_vector, thetha_assignment_vector, op=MPI.SUM)
+
+                # elapsed1 = timeit.default_timer() - start_time1
+                # if display == 1: print ("Communication took  %s seconds" % elapsed1)
+            else:
+                thetha_assignment_vector = np.asarray(theta_assignment.vector_assignment())
 
             #Vectors to be used in error calculation
             current_cost_vector = np.asarray(current_path_costs.vector_path_costs())
-            thetha_assignment_vector = np.asarray(theta_assignment.vector_assignment())
+
+
 
         error = np.abs(np.dot(current_cost_vector, thetha_assignment_vector - x_k_assignment_vector)/
                       np.dot(thetha_assignment_vector,current_cost_vector))
 
         if error < stopping:
-            print "EPM Stop with error: ", error
+            if display ==1: print "EPM Stop with error: ", error
             #path_costs = model_manager.evaluate(x_k_assignment, T)
 
             #path_costs.print_all()
@@ -64,36 +87,68 @@ def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,od = None, od_o
             return x_k_assignment, x_k_assignment_vector
 
         # If we did not terminate, print current error
-        print "EPM iteration: ", i, ", error: ", error
+        if display == 1: print "EPM iteration: ", i, ", error: ", error
 
         #keeping track of the error values seen
-        if(previous_error == -1):previous_error = error
+        if(previous_error == -1):
+            previous_error = error
+            min_sol = deepcopy(x_k_assignment)
+            min_vec = copy(x_k_assignment_vector)
+            min_error = error
         elif(previous_error == error): count += 1
         else:
             previous_error = error
             count = 1
 
+        if min_error > error:
+            min_sol = deepcopy(x_k_assignment)
+            min_vec = copy(x_k_assignment_vector)
+            min_error = error
+
         if count > m:
-            print "Error did not change for the past ", m, " iterations"
-            return x_k_assignment, x_k_assignment_vector
+            if display == 1: print "Error did not change for the past ", m, " iterations"
+            if display == 1: print "min error: ", min_error
+            # return x_k_assignment, x_k_assignment_vector
+            return min_sol,min_vec
 
 
         # Step 1: Determining Z_k
         # get coefficients for cost function
         z_k_assignment,new_tau = project_modified_assignment(model_manager, T, tau, x_k_assignment, od)
         tau = new_tau
+
         # Step 2: Determining x_k=1
         new_x_k_assignment,new_tau = project_modified_assignment(model_manager, T, tau, z_k_assignment, od)
-
         tau = new_tau
 
         # Check if we need to change tau
         # All_or_nothing assignment
         new_theta_assignment, new_path_costs = all_or_nothing(model_manager, new_x_k_assignment, od, None, sampling_dt*num_steps)
 
-        # Getting the vectors
-        new_x_k_assignment_vector = np.asarray(new_x_k_assignment.vector_assignment())
-        new_thetha_assignment_vector = np.asarray(new_theta_assignment.vector_assignment())
+        # combine new_x_k_assignment_vection and new_thethat_assignment_vector when in parallel
+
+        if od_out_indices is not None:
+            from mpi4py import MPI
+            comm = MPI.COMM_WORLD
+            new_theta_temp_vector = np.asarray(new_theta_assignment.vector_assignment())
+            new_x_k_temp_vector = np.asarray(new_x_k_assignment.vector_assignment())
+
+            new_thetha_assignment_vector = np.zeros(len(new_theta_temp_vector))
+            new_x_k_assignment_vector = np.zeros(len(new_x_k_temp_vector))
+
+            # First zero out the values corresponding to other subproblems
+            new_theta_temp_vector[od_out_indices] = 0
+            new_x_k_temp_vector[od_out_indices] = 0
+
+            # Combine assignment from all subproblems into ass_vector
+            start_time1 = timeit.default_timer()
+
+            comm.Allreduce(new_theta_temp_vector, new_thetha_assignment_vector, op=MPI.SUM)
+            comm.Allreduce(new_x_k_temp_vector, new_x_k_assignment_vector, op=MPI.SUM)
+        else:
+            # Getting the vectors
+            new_x_k_assignment_vector = np.asarray(new_x_k_assignment.vector_assignment())
+            new_thetha_assignment_vector = np.asarray(new_theta_assignment.vector_assignment())
 
         # Update tau as needed
         old_cost_vector = np.asarray(model_manager.evaluate(x_k_assignment, T,
@@ -116,7 +171,8 @@ def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,od = None, od_o
         x_k_assignment_vector = copy(new_x_k_assignment_vector)
         current_cost_vector = np.asarray(new_path_costs.vector_path_costs())
 
-    return x_k_assignment, x_k_assignment_vector
+    # return x_k_assignment, x_k_assignment_vector
+    return min_sol, min_vec
 
 # Projecting the modified assignment into a simplex
 def project_modified_assignment(model_manager, T, tau, x_interm1, od):

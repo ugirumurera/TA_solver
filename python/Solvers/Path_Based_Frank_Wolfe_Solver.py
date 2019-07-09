@@ -61,9 +61,6 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt,  od = None, od_
         #elapsed1 = timeit.default_timer() - start_time1
         #print ("All_or_nothing took  %s seconds" % elapsed1)
 
-        # Calculating the error
-        current_cost_vector = np.asarray(current_path_costs.vector_path_costs())
-
         if x_assignment_vector is None: x_assignment_vector = np.asarray(assignment.vector_assignment())
 
         # When in parallel strategy, the y_assignment_vector has to be combined from all subproblems
@@ -87,6 +84,9 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt,  od = None, od_
 
         else:
             y_assignment_vector = np.asarray(y_assignment.vector_assignment())
+
+        # Calculating the error
+        current_cost_vector = np.asarray(current_path_costs.vector_path_costs())
 
         error = np.abs(np.dot(current_cost_vector, y_assignment_vector - x_assignment_vector) /
                        np.dot(y_assignment_vector, current_cost_vector))

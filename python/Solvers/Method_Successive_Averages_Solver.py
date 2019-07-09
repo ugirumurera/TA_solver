@@ -100,6 +100,7 @@ def Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt, od = Non
 
         # Calculating the error
         current_cost_vector = np.asarray(current_path_costs.vector_path_costs())
+
         if x_assignment_vector is None: x_assignment_vector = np.asarray(assignment.vector_assignment())
 
         # When in parallel strategy, the y_assignment_vector has to be combined from all subproblems
@@ -118,7 +119,7 @@ def Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt, od = Non
             # Combine assignment from all subproblems into ass_vector
             comm.Allreduce(y_temp_vector, y_assignment_vector, op=MPI.SUM)
             elapsed1 = timeit.default_timer() - start_time1
-            if display == 1: print ("Communication took  %s seconds" % elapsed1)
+            # if display == 1: print ("Communication took  %s seconds" % elapsed1)
 
         else:
             y_assignment_vector = np.asarray(y_assignment.vector_assignment())

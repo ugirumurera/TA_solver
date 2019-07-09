@@ -14,14 +14,14 @@ from Solvers.Path_Based_Frank_Wolfe_Solver import Path_Based_Frank_Wolfe_Solver
 from Solvers.Extra_Projection_Method_Solver import Extra_Projection_Method_Solver
 
 # Flag that indicates whether we are doing decomposition or not
-decompositio_flag = False
+decomposition_flag = True
 
-conn = Java_Connection()
+conn = Java_Connection(decomposition_flag)
 
 if conn.pid is not None:
     sim_dt = 2.0
     T = 1800  # Time horizon of interest
-    sampling_dt = 900  # Duration of one time_step for the solver
+    sampling_dt = 100  # Duration of one time_step for the solver
 
     this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
     scenario_name = 'seven_links'  # Scenario name
@@ -43,7 +43,7 @@ if conn.pid is not None:
             #solver_algorithm = Path_Based_Frank_Wolfe_Solver
 
             scenario_solver = Solver_class(model_manager, solver_algorithm)
-            assignment, solver_run_time = scenario_solver.Solver_function(T, sampling_dt, OD_Matrix, decompositio_flag)
+            assignment, solver_run_time = scenario_solver.Solver_function(T, sampling_dt, OD_Matrix, decomposition_flag)
 
             if assignment is None:
                 print "Solver did not run"
@@ -52,27 +52,27 @@ if conn.pid is not None:
                 this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
                 outputfile = os.path.join(this_folder, os.path.pardir, 'output', scenario_name+'.csv')
 
-                # We first save in the paramenters of the scenario
-                csv_file = open(outputfile, 'wb')
-                writer = csv.writer(csv_file)
-                # Saving the model type
-                writer.writerow(['model type:','BeATS'])
-                od = model_manager.otm_api.get_od_info()
-                demand_api = [item * 3600 for item in od[0].get_total_demand_vps().getValues()]
-                od_dt = od[0].get_total_demand_vps().getDt()
-                if od_dt is None:
-                    od_dt = sampling_dt
-
-                # Saving the demand per od and time horizon value
-                writer.writerow(['demand dt (s)', 'od demand (vh)','T (s)'])
-                writer.writerow([od_dt,demand_api,T])
-
-                writer.writerow(['(path ID, commodity ID)', 'array of demand (vh) per dt on path'])
-                # Now we save the assignment values to csv file
-                for key, value in assignment.get_all_demands().items():
-                    writer.writerow([key, value])
-
-                csv_file.close()
+                # # We first save in the paramenters of the scenario
+                # csv_file = open(outputfile, 'wb')
+                # writer = csv.writer(csv_file)
+                # # Saving the model type
+                # writer.writerow(['model type:','BeATS'])
+                # od = model_manager.otm_api.get_od_info()
+                # demand_api = [item * 3600 for item in od[0].get_total_demand_vps().getValues()]
+                # od_dt = od[0].get_total_demand_vps().getDt()
+                # if od_dt is None:
+                #     od_dt = sampling_dt
+                #
+                # # Saving the demand per od and time horizon value
+                # writer.writerow(['demand dt (s)', 'od demand (vh)','T (s)'])
+                # writer.writerow([od_dt,demand_api,T])
+                #
+                # writer.writerow(['(path ID, commodity ID)', 'array of demand (vh) per dt on path'])
+                # # Now we save the assignment values to csv file
+                # for key, value in assignment.get_all_demands().items():
+                #     writer.writerow([key, value])
+                #
+                # csv_file.close()
 
                 #print "\nDemand Assignment:"
                 #assignment.print_all()
@@ -81,11 +81,20 @@ if conn.pid is not None:
 
                 #print "\nPath costs in secons:"
                 #path_costs.print_all()
+                if decomposition_flag:
+                    from mpi4py import MPI
+
+                    comm = MPI.COMM_WORLD
+                    rank = comm.Get_rank()
+                else:
+                    rank = 0
 
                 #Distance to Nash
-                print "\n"
                 error_percentage = scenario_solver.distance_to_Nash(assignment, path_costs, sampling_dt,OD_Matrix)
-                print "%.02f" % error_percentage ,"% vehicles from equilibrium"
+                print "get here rank: ", rank
+                if rank == 0:
+                    print "\n"
+                    print "%.02f" % error_percentage ,"% vehicles from equilibrium"
 
                 '''
                 plt.figure(1)
