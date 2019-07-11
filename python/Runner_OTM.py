@@ -105,4 +105,4 @@ if conn.pid is not None:
 
 
                 # kill jvm
-                conn.close()
+                #conn.close()
