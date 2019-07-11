@@ -82,7 +82,6 @@ def Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt, od = Non
         start_time1 = timeit.default_timer()
         comm.Allreduce(temp_vector, x_assignment_vector, op=MPI.SUM)
         elapsed1 = timeit.default_timer() - start_time1
-        if display == 1: print ("Communication took  %s seconds" % elapsed1)
 
         # Update assignment with the combine assignment vector
         assignment.set_demand_with_vector(x_assignment_vector)
@@ -119,7 +118,7 @@ def Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt, od = Non
             # Combine assignment from all subproblems into ass_vector
             comm.Allreduce(y_temp_vector, y_assignment_vector, op=MPI.SUM)
             elapsed1 = timeit.default_timer() - start_time1
-            # if display == 1: print ("Communication took  %s seconds" % elapsed1)
+            if display == 1: print ("Communication took  %s seconds" % elapsed1)
 
         else:
             y_assignment_vector = np.asarray(y_assignment.vector_assignment())

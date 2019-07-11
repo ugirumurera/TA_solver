@@ -219,7 +219,7 @@ def project_modified_assignment(model_manager, T, tau, x_interm1, od):
                 projected_values = Projection_onto_Simplex(od_temp[:, n], sum(od_demand_val[:, n]))
 
                 if  math.isnan(projected_values[0]):
-                    print "I returned nan"
+                    print "Projection returned nan"
 
                 if projected_values is not None:
                     od_projected_val[:, n] = copy(projected_values)
