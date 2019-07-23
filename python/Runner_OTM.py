@@ -24,7 +24,7 @@ if conn.pid is not None:
     sampling_dt = 100  # Duration of one time_step for the solver
 
     this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-    scenario_name = 'seven_links'  # Scenario name
+    scenario_name = 'scenario_25_nodes'  # Scenario name
     configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', scenario_name+'.xml')
 
     instantaneous = True      # Indicates whether we are doing ctm predictive (True) or instantaneous (False)

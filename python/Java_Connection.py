@@ -65,20 +65,6 @@ class Java_Connection():
             sys.exit()
 
     def openLinux(self, jar_file_name, port_number):
-        # First close process listening on $port_number
-        # pid_num = subprocess.check_output('lsof -n -i:'+ port_number + ' | grep LISTEN | awk \'{print $2}\'',shell=True)
-        # ret = subprocess.call(['kill', '-9', pid_num])
-        # try:
-        #     print "Starting java process"
-        #     self.process = subprocess.Popen(['java', '-jar', jar_file_name, port_number],
-        #                                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        #     self.pid = self.process.pid
-        #     time.sleep(1)
-        # except subprocess.CalledProcessError:
-        #     print("caught exception")
-        #     sys.exit()
-        # x = subprocess.call('ps -ef |  grep jar_file_name', shell=True,stdout=subprocess.PIPE)
-        # print x.communicate()[0]
         subprocess.call('for pid in $(ps -ef | grep otm-py4j-1.0-SNAPSHOT | awk \'{print $2}\' ); do kill -9 $pid; done', shell= True)
 
         self.pid = os.fork()

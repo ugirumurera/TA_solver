@@ -38,7 +38,8 @@ class Solver_class():
             #assignment, assignment_vect = self.decomposed_solver(T, sampling_dt, self.solver_algorithm,ods)
 
             # If we want to use the parallel strategy
-            assignment, assignment_vect = self.parallel_solver(T, sampling_dt, self.solver_algorithm, ods)
+            # assignment, assignment_vect = self.parallel_solver(T, sampling_dt, self.solver_algorithm, ods)
+            assignment, assignment_vect = self.decomposed_solver(T, sampling_dt, self.solver_algorithm, ods)
 
         else:
             assignment, assignment_vect = self.solver_algorithm(self.model_manager, T, sampling_dt, ods)
@@ -64,7 +65,6 @@ class Solver_class():
         rank = comm.Get_rank()
         size = comm.Get_size()
 
-        # We first start by initializing an initial solution/ demand assignment
         # We first start by initializing an initial solution/ demand assignment
         if ods == None:
             num_steps = T/sampling_dt
@@ -93,17 +93,12 @@ class Solver_class():
             local_b = math.ceil(min(local_a + local_n, n))
 
         # The set of ods to use for the particular subproblem
-        print "Solving for od's ", local_a, " through ", local_b - 1
+        print "rank :", rank, " solving for od's ", local_a, " through ", local_b - 1
         od_subset = od[int(local_a):int(local_b)]
-
-        #Want to save the solutions obtained per iteration on each processor
-        #outputfile = 'Dec_output' + str(rank) + '.csv'
-        #csv_file = open(outputfile, 'wb')
-        #writer = csv.writer(csv_file)
 
         num_steps = int(T / sampling_dt)
         path_list = dict()
-        commodity_list = list(self.model_manager.beats_api.get_commodity_ids())
+        commodity_list = list(self.model_manager.otm_api.get_commodity_ids())
         init_assignment = Demand_Assignment_class(path_list, commodity_list,
                                              num_steps, sampling_dt)
 
@@ -141,7 +136,7 @@ class Solver_class():
         #print "Initializing indices too ", elapsed1
 
         # Initial solution with all_or_nothing assignment
-        #assignment, path_costs = all_or_nothing(self.model_manager, assignment, od, None, sampling_dt * num_steps)
+        init_assignment, path_costs = all_or_nothing(self.model_manager, init_assignment, od, None, sampling_dt * num_steps)
         x_k_vector = np.zeros(len(prev_vector))
 
         prev_vector = np.asarray(init_assignment.vector_assignment())
@@ -160,6 +155,8 @@ class Solver_class():
             elapsed1 = timeit.default_timer() - start_time1
             #print "Decomposition Iteration took ", elapsed1
 
+            # if rank==0: print "rank ", rank, " prev sol vec: ", x_i_vector
+
             # First zero out all elements in results not corresponding to current odsubset
             x_i_vector[out_od_indices] = 0
 
@@ -174,6 +171,8 @@ class Solver_class():
             elapsed1 = timeit.default_timer() - start_time1
             #print "Communication took ", elapsed1
 
+            # if rank==0: print "rank ", rank, " comb sol vec: ", x_k_vector
+
             #writer.writerow(x_k_vector)
             # print x_k_vector[od_indices]
 
@@ -184,13 +183,28 @@ class Solver_class():
             # z_k_vector = np.asarray(z_k_assignment.vector_assignment())
             # z_k_cost_vector = np.asarray(z_k_path_costs.vector_path_costs())
 
-            error = np.linalg.norm(x_k_vector - prev_vector, 1)
+            prev_error = -1
+            count = 0
+            rep = 5
+
+            error = round(np.linalg.norm(x_k_vector - prev_vector, 1),4)
             # error = np.abs(np.dot(z_k_cost_vector,  z_k_vector- x_k_vector) /
             # np.dot(z_k_vector, z_k_cost_vector))
 
-            if error < stop:
+            # keeping track of the error values seen
+            if (prev_error == -1):
+                prev_error = error
+            elif (prev_error == error):
+                count += 1
+                if rank == 0: print "count is now ", count
+            else:
+                prev_error = error
+                count = 1
+
+            if error < stop or count >= rep:
                 if rank == 0:
-                    print "Stop with error: ", error
+                    if count >=rep: print "error did not change ", count, " iterations"
+                    print "Decomposition stop with error: ", error
                 #csv_file.close()
                 init_assignment.set_demand_with_vector(x_k_vector)
                 return init_assignment, x_k_vector

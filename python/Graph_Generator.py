@@ -11,6 +11,9 @@ import inspect
 import timeit
 import numpy as np
 import random
+from igraph import plot
+
+
 def csv2string(data):
     si = StringIO.StringIO()
     cw = csv.writer(si)
@@ -18,18 +21,18 @@ def csv2string(data):
     return si.getvalue().strip('\r\n')
 
 #Function used to determine all paths between ods
-def find_all_paths(graph, start, end):
-    def find_all_paths_aux(adjlist, start, end, path):
-        path = path + [start]
-        if start == end:
-            return [path]
-        paths = []
-        for node in adjlist[start] - set(path):
-            paths.extend(find_all_paths_aux(adjlist, node, end, path))
-        return paths
-
-    adjlist = [set(graph.neighbors(node)) for node in xrange(graph.vcount())]
-    return find_all_paths_aux(adjlist, start, end, [])
+# def find_all_paths(graph, start, end):
+#     def find_all_paths_aux(adjlist, start, end, path):
+#         path = path + [start]
+#         if start == end:
+#             return [path]
+#         paths = []
+#         for node in adjlist[start] - set(path):
+#             paths.extend(find_all_paths_aux(adjlist, node, end, path))
+#         return paths
+#
+#     adjlist = [set(graph.nimport matplotlib.pyplot as plteighbors(node)) for node in xrange(graph.vcount())]
+#     return find_all_paths_aux(adjlist, start, end, [])
 
 # Function that determines all paths between ods that have lengh les or equal to given maxlengh
 def find_all_paths_len(graph, start, end, mode = 'OUT', maxlen = None):
@@ -124,6 +127,7 @@ def generate_graph_and_paths(graph_size, scaling, num_nodes, num_ods, max_length
     print(graph.ecount()) #printing the number of edges
     plot(graph, layout=layout)
 
+
     print "Moving to getting paths for all ods"
     # Generate the paths between the od pairs
     all_paths = {}
@@ -214,7 +218,7 @@ def create_xml(graph,all_paths):
         link_ids.append(e.index)
         xlinks.append(xlink)
         xlink.set('id', str(e.index))
-        xlink.set('length', str(100))   # length in meters --- FIX THIS
+        xlink.set('length', str(200))   # length in meters --- FIX THIS
         xlink.set('full_lanes', str(1)) # number of lanes --- FIX THIS
         xlink.set('start_node_id', str(e.source))
         xlink.set('end_node_id', str(e.target))
@@ -269,13 +273,27 @@ def create_xml(graph,all_paths):
             xrc.set('in_link_lanes',"1#1")
             xrc.set('out_link_lanes',"1#1")
 
-    # MN model --------------------
+    # # MN model --------------------
+    # xmodel = Element('model')
+    # xscenario.append(xmodel)
+    # xmn = Element('mn')
+    # xmodel.append(xmn)
+    # xmn.set('max_cell_length', '100')  # m
+    # xmn.text = csv2string(link_ids)
+
+    # CTM model
+    xmodels = Element('models')
+    xscenario.append(xmodels)
     xmodel = Element('model')
-    xscenario.append(xmodel)
-    xmn = Element('mn')
-    xmodel.append(xmn)
-    xmn.set('max_cell_length', '100')  # m
-    xmn.text = csv2string(link_ids)
+    xmodels.append(xmodel)
+    xmodel.set('type', 'ctm')  # m
+    xmodel.set('name', 'myctm')
+    xmodel.set('is_default', 'true')
+    xmodel_param = Element('model_params')
+    xmodel.append(xmodel_param)
+    xmodel_param.set('sim_dt', '2')
+    xmodel_param.set('max_cell_length', '100')
+
 
     # paths ---------------------
     xsubnetworks = Element('subnetworks')
@@ -285,7 +303,7 @@ def create_xml(graph,all_paths):
     for od, paths in all_paths.iteritems():
         for path in paths:
             c += 1
-            path_ids.append(c)
+            path_ids.append(c+1)
             xsubnetwork = Element('subnetwork')
             xsubnetworks.append(xsubnetwork)
             xsubnetwork.set('id',str(path_ids[c]))

@@ -59,7 +59,7 @@
 	<demands>
 		<demand commodity_id="1" subnetwork="1" start_time="0" dt="1800">1000</demand>
 		<demand commodity_id="1" subnetwork="2" start_time="0" dt="1800">1000</demand>
-		<demand commodity_id="1" subnetwork="3" start_time="0" dt="1800">100</demand>
+		<demand commodity_id="1" subnetwork="3" start_time="0" dt="1800">2000</demand>
 	</demands>
 
 </scenario>

@@ -21,7 +21,7 @@ def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,od = None, od_o
 
     # Initialize the algorithm with the solution returned by Method_of_Successive_Averages
     x_k_assignment, x_k_assignment_vector = Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt, od,od_out_indices,
-                                                                             assignment, 100, display)
+                                                                             assignment, 50, display)
 
     # If assignment is None, then return from the solver
     if x_k_assignment is None:
@@ -72,8 +72,8 @@ def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,od = None, od_o
 
 
 
-        error = np.abs(np.dot(current_cost_vector, thetha_assignment_vector - x_k_assignment_vector)/
-                      np.dot(thetha_assignment_vector,current_cost_vector))
+        error = round(np.abs(np.dot(current_cost_vector, thetha_assignment_vector - x_k_assignment_vector)/
+                      np.dot(thetha_assignment_vector,current_cost_vector)),4)
 
         if error < stopping:
             if display ==1: print "EPM Stop with error: ", error

@@ -123,8 +123,8 @@ def Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt, od = Non
         else:
             y_assignment_vector = np.asarray(y_assignment.vector_assignment())
 
-        error = np.abs(np.dot(current_cost_vector, y_assignment_vector - x_assignment_vector)/
-                       np.dot(y_assignment_vector,current_cost_vector))
+        error = round(np.abs(np.dot(current_cost_vector, y_assignment_vector - x_assignment_vector)/
+                       np.dot(y_assignment_vector,current_cost_vector)),4)
 
         #error = distance_to_Nash(assignment,current_path_costs,od)
 
