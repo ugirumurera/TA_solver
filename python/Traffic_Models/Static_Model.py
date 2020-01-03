@@ -35,7 +35,7 @@ class Static_Model_Class(Abstract_Traffic_Model_class):
     # Returns an array of link states where each entry indicates the flow per link, per commodity and per time step
     def Run_Model(self, demand_assignments, initial_state = None,T = None, Vectorize = False):
         if Vectorize:
-            list_of_link_ids = self.beats_api.get_link_ids()
+            list_of_link_ids = self.beats_api.scenario().get_link_ids()
             num_steps = demand_assignments.get_num_time_step()
 
             # create a matrix to hold the states of all the links for num_steps
@@ -45,7 +45,7 @@ class Static_Model_Class(Abstract_Traffic_Model_class):
                 path = list(demand_assignments.get_path_with_id(key[0]))
 
                 # Get the capacity of links in path
-                capacities = [self.beats_api.get_link_with_id(link_id).get_capacity_vphpl() for link_id in path]
+                capacities = [self.beats_api.scenario().get_link_with_id(link_id).get_capacity_vphpl() for link_id in path]
 
                 # Get indices of links in the path
                 # link_indices = [list_of_link_ids.index(l) for l in path]

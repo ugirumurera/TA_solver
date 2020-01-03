@@ -122,6 +122,3 @@ if connection.pid is not None:
                     error = pickle.load(f)
                 '''
                 # connection.close()
-
-                # print "\nPath costs in seconds:"
-                #path_costs.print_all_in_seconds()

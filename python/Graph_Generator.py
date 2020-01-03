@@ -194,6 +194,24 @@ def write_to_csv(graph, all_paths):
 def create_xml(graph,all_paths):
 
     xscenario = Element('scenario')
+    xscenario.set('xmlns', "opentrafficmodels")
+
+    # # Adding model
+    # xmodels = Element('models')
+    # xmodel = Element('model')
+    # xmodel.set('type', "ctm")
+    # xmodel.set('name', "myctm")
+    # xmodel.set('is_default', "true")
+    #
+    # xmodel_param = Element('model_params')
+    # xmodel_param.set('sim_dt', "2")
+    # xmodel_param.set('max_cell_length', "100")
+    # # Addition model and model_params to models element
+    # xmodel.append(xmodel_param)
+    # xmodels.append(xmodel)
+
+    # xscenario.append(xmodels)
+
 
     # network ---------------------
     xnetwork = Element('network')
@@ -336,13 +354,13 @@ def create_xml(graph,all_paths):
 def main():
 
     # user definitions
-    graph_size = 5 # grid size, leads to a grid of graph_size*graph_size nodes
+    graph_size = 50 # grid size, leads to a grid of graph_size*graph_size nodes
     scaling = 100 # number used to scale the resulting grid graph
     max_length =25  # Maximum number of nodes in paths returned
     paths_per_od = 5    # Number of paths saved per OD
 
     num_nodes = graph_size*graph_size   # Number of nodes in the graph
-    num_ods = num_nodes/2   # Number of od, have to be less that 1/2 number of nodes
+    num_ods = int(num_nodes)   # Number of od, have to be less that 1/2 number of nodes
 
     graph, all_paths = generate_graph_and_paths(graph_size, scaling, num_nodes, num_ods, max_length, paths_per_od)
 

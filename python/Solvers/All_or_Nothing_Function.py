@@ -4,7 +4,7 @@ import timeit
 
 # This function determines the all_or_nothing demand assignment by putting all OD demand on the shortest path per OD
 # Timer is used to calculate the time spent in path costs evaluation
-def all_or_nothing(model_manager, assignment, od, initial_state = None, T = None, timer = None):
+def all_or_nothing(model_manager, assignment, od, initial_state = None, T = None):
     sampling_dt = assignment.get_dt()
 
     # Initializing the demand assignment
@@ -17,11 +17,12 @@ def all_or_nothing(model_manager, assignment, od, initial_state = None, T = None
     path_costs = model_manager.evaluate(assignment,T, initial_state)
     #path_costs.print_all_in_seconds()
     elapsed1 = timeit.default_timer() - start_time1
+
     # if timer is not None:
     #     timer[0] = timer[0] + elapsed1
     #     print ("Timer is now  %s seconds" % timer[0])
 
-    print "path_eval took: ", elapsed1
+    # print "path_eval took: ", elapsed1
 
     # Below we initialize the all_or_nothing assignment
     y_assignment = Demand_Assignment_class(path_list, commodity_list,
@@ -61,11 +62,11 @@ def all_or_nothing(model_manager, assignment, od, initial_state = None, T = None
 
     #print "All_or_nothing for ", count, " ods"
 
-    elapsed1 = timeit.default_timer() - start_time1
-    print ("Changing Demand assignment took  %s seconds" % elapsed1)
+    #elapsed1 = timeit.default_timer() - start_time1
+    #print ("Changing Demand assignment took  %s seconds" % elapsed1)
 
     #y_assignment.print_all()
-    return y_assignment,path_costs
+    return y_assignment,path_costs, elapsed1
 
 def all_or_nothing_beats(graph, od, time_step=None, decomposition_flag = False):
     '''

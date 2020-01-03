@@ -13,6 +13,8 @@ def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,od = None, od_o
                                    max_iter=100, display=1, stopping=1e-2):
 
     # In this case, x_k is a demand assignment object that maps demand to paths
+    sim_time = 0
+    comm_time = 0
 
     num_steps = int(T/sampling_dt)
 
@@ -20,17 +22,20 @@ def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,od = None, od_o
     if od is None: od = list(model_manager.get_OD_Matrix(num_steps, sampling_dt))
 
     # Initialize the algorithm with the solution returned by Method_of_Successive_Averages
-    x_k_assignment, x_k_assignment_vector = Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt, od,od_out_indices,
-                                                                             assignment, 50, display)
+    x_k_assignment, x_k_assignment_vector, temp_sim_time, temp_comm_time = Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt, od,od_out_indices,
+                                                                             assignment, 20, display, stopping)
+
+    sim_time = sim_time + temp_sim_time
+    comm_time = comm_time + temp_comm_time
 
     # If assignment is None, then return from the solver
     if x_k_assignment is None:
         print "Demand dt is less than sampling dt, or demand not specified properly"
         return None, None
     # tau, sigma and epslon parameters used in the Extra Projection Method
-    tau = 0.05*100
-    sigma = 0.9
-    epslon = 0.025
+    tau = 0.5
+    sigma = 0.2
+    epslon = 0.5
 
     # Keep track of the error seen, so that if there is not change for m iteration, the algorithm stops
     previous_error = -1
@@ -46,8 +51,10 @@ def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,od = None, od_o
     for i in range(max_iter):
         if thetha_assignment is None:
             # First check if the error is low enough to terminate
-            theta_assignment, current_path_costs = all_or_nothing(model_manager, x_k_assignment, od, None,
+            theta_assignment, current_path_costs, temp_sim_time = all_or_nothing(model_manager, x_k_assignment, od, None,
                                                                   sampling_dt * num_steps)
+            sim_time = sim_time + temp_sim_time
+
             if od_out_indices is not None:
                 from mpi4py import MPI
                 comm = MPI.COMM_WORLD
@@ -62,8 +69,9 @@ def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,od = None, od_o
 
                 comm.Allreduce(theta_temp_vector, thetha_assignment_vector, op=MPI.SUM)
 
-                # elapsed1 = timeit.default_timer() - start_time1
-                # if display == 1: print ("Communication took  %s seconds" % elapsed1)
+                elapsed1 = timeit.default_timer() - start_time1
+                comm_time = comm_time + elapsed1
+                if display == 1: print ("Communication took  %s seconds" % elapsed1)
             else:
                 thetha_assignment_vector = np.asarray(theta_assignment.vector_assignment())
 
@@ -77,6 +85,8 @@ def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,od = None, od_o
 
         if error < stopping:
             if display ==1: print "EPM Stop with error: ", error
+
+            # Add calculating distance to nash here
             #path_costs = model_manager.evaluate(x_k_assignment, T)
 
             #path_costs.print_all()
@@ -84,7 +94,7 @@ def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,od = None, od_o
             #print current_cost_vector
 
             #print "\n"
-            return x_k_assignment, x_k_assignment_vector
+            return x_k_assignment, x_k_assignment_vector, sim_time, comm_time
 
         # If we did not terminate, print current error
         if display == 1: print "EPM iteration: ", i, ", error: ", error
@@ -97,6 +107,10 @@ def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,od = None, od_o
             min_error = error
         elif(previous_error == error): count += 1
         else:
+            if previous_error < error:
+                tau = tau * sigma
+                print "Adjusted tau to: ", tau
+
             previous_error = error
             count = 1
 
@@ -109,21 +123,24 @@ def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,od = None, od_o
             if display == 1: print "Error did not change for the past ", m, " iterations"
             if display == 1: print "min error: ", min_error
             # return x_k_assignment, x_k_assignment_vector
-            return min_sol,min_vec
+            return min_sol,min_vec, sim_time, comm_time
 
 
         # Step 1: Determining Z_k
         # get coefficients for cost function
-        z_k_assignment,new_tau = project_modified_assignment(model_manager, T, tau, x_k_assignment, od)
+        z_k_assignment,new_tau, temp_sim_time = project_modified_assignment(model_manager, T, tau, x_k_assignment, od)
+        sim_time = sim_time + temp_sim_time
         tau = new_tau
 
         # Step 2: Determining x_k=1
-        new_x_k_assignment,new_tau = project_modified_assignment(model_manager, T, tau, z_k_assignment, od)
+        new_x_k_assignment,new_tau, temp_sim_time = project_modified_assignment(model_manager, T, tau, z_k_assignment, od)
+        sim_time = sim_time + temp_sim_time
         tau = new_tau
 
         # Check if we need to change tau
         # All_or_nothing assignment
-        new_theta_assignment, new_path_costs = all_or_nothing(model_manager, new_x_k_assignment, od, None, sampling_dt*num_steps)
+        new_theta_assignment, new_path_costs, temp_sim_time = all_or_nothing(model_manager, new_x_k_assignment, od, None, sampling_dt*num_steps)
+        sim_time = sim_time + temp_sim_time
 
         # combine new_x_k_assignment_vection and new_thethat_assignment_vector when in parallel
 
@@ -145,24 +162,31 @@ def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,od = None, od_o
 
             comm.Allreduce(new_theta_temp_vector, new_thetha_assignment_vector, op=MPI.SUM)
             comm.Allreduce(new_x_k_temp_vector, new_x_k_assignment_vector, op=MPI.SUM)
+
+            elapsed1 = timeit.default_timer() - start_time1
+            comm_time = comm_time + elapsed1
+
         else:
             # Getting the vectors
             new_x_k_assignment_vector = np.asarray(new_x_k_assignment.vector_assignment())
             new_thetha_assignment_vector = np.asarray(new_theta_assignment.vector_assignment())
 
-        # Update tau as needed
-        old_cost_vector = np.asarray(model_manager.evaluate(x_k_assignment, T,
-                                                            initial_state=None).vector_path_costs())
-        new_cost_vector = np.asarray(model_manager.evaluate(new_x_k_assignment, T,
-                                                            initial_state=None).vector_path_costs())
-        old_theta = np.dot(old_cost_vector,np.subtract(thetha_assignment_vector, x_k_assignment_vector))
-        new_theta = np.dot(new_cost_vector, np.subtract(new_thetha_assignment_vector, new_x_k_assignment_vector))
-        new_theta_value = np.abs(np.subtract(new_theta,old_theta))
-        mod_theta_assignment = epslon * np.abs(old_theta)
 
-        if (new_theta < old_theta) and \
-                new_theta_value > mod_theta_assignment:
-            tau = tau * sigma
+
+        # #Update tau as needed
+        # old_cost_vector = np.asarray(model_manager.evaluate(x_k_assignment, T,
+        #                                                     initial_state=None).vector_path_costs())
+        # new_cost_vector = np.asarray(model_manager.evaluate(new_x_k_assignment, T,
+        #                                                     initial_state=None).vector_path_costs())
+        # old_theta = np.dot(old_cost_vector,np.subtract(thetha_assignment_vector, x_k_assignment_vector))
+        # new_theta = np.dot(new_cost_vector, np.subtract(new_thetha_assignment_vector, new_x_k_assignment_vector))
+        # new_theta_value = np.abs(np.subtract(new_theta,old_theta))
+        # mod_theta_assignment = epslon * np.abs(old_theta)
+        #
+        # if (new_theta < old_theta) and \
+        #         new_theta_value > mod_theta_assignment:
+        #     tau = tau * sigma
+        #     print "I adjusted tau to: ", tau
 
         # Otherwise, we update x_k_assignment and go back to error checking
         x_k_assignment.set_demand_with_vector(new_x_k_assignment_vector)
@@ -172,12 +196,16 @@ def Extra_Projection_Method_Solver(model_manager, T, sampling_dt,od = None, od_o
         current_cost_vector = np.asarray(new_path_costs.vector_path_costs())
 
     # return x_k_assignment, x_k_assignment_vector
-    return min_sol, min_vec
+    return min_sol, min_vec, sim_time, comm_time
 
 # Projecting the modified assignment into a simplex
 def project_modified_assignment(model_manager, T, tau, x_interm1, od):
     # Populating the Demand Assignment, based on the paths associated with ODs
+    sim_time = 0
+    start_time1 = timeit.default_timer()
     path_costs = model_manager.evaluate(x_interm1, T, initial_state=None)
+    elapsed1 = timeit.default_timer() - start_time1
+    sim_time = sim_time + elapsed1
     num_steps = x_interm1.get_num_time_step()
     stuck_flag = True
     count = 0   # Counts how many times we have gone through the while loop
@@ -185,7 +213,7 @@ def project_modified_assignment(model_manager, T, tau, x_interm1, od):
 
     while stuck_flag:
         stuck_flag = False
-        tau = tau /(mutiple**count)
+        # tau = tau /(mutiple**count)
         for o in od:
             od_demand_seq = list()
             od_cost_seq = list()
@@ -236,4 +264,4 @@ def project_modified_assignment(model_manager, T, tau, x_interm1, od):
             else:
                 break
         count += 1
-    return x_interm1, tau
+    return x_interm1, tau, sim_time

@@ -29,6 +29,9 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt,  od = None, od_
 
     num_steps = int(T / sampling_dt)
 
+    sim_time = 0    # simulation time
+    comm_time = 0   # communication time
+
     # If no subset of od provided, get od from the model manager
     if od is None:
         od = list(model_manager.get_OD_Matrix(num_steps, sampling_dt))
@@ -41,8 +44,10 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt,  od = None, od_
         init_vector = np.asarray(assignment.vector_assignment())
 
     if assignment is None or np.count_nonzero(init_vector) == 0:
-        assignment, x_assignment_vector= Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt, od, od_out_indices,
-                                                                      assignment, max_iter = 100, display = display, timer = timer)
+        assignment, x_assignment_vector, temp_sim_time, temp_comm_time = Method_of_Successive_Averages_Solver(model_manager, T, sampling_dt, od, od_out_indices,
+                                                                      assignment, max_iter = 100, display = display)
+        sim_time = sim_time + temp_sim_time
+        comm_time = comm_time + temp_comm_time
 
     #If assignment is None, then return from the solver
     if assignment is None:
@@ -57,7 +62,8 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt,  od = None, od_
     for i in range(max_iter):
         # All_or_nothing assignment
         #start_time1 = timeit.default_timer()
-        y_assignment, current_path_costs = all_or_nothing(model_manager, assignment, od, None, T, timer = timer)
+        y_assignment, current_path_costs, temp_sim_time = all_or_nothing(model_manager, assignment, od, None, T)
+        sim_time = sim_time + temp_sim_time
         #elapsed1 = timeit.default_timer() - start_time1
         #print ("All_or_nothing took  %s seconds" % elapsed1)
 
@@ -80,6 +86,8 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt,  od = None, od_
             comm.Allreduce(y_temp_vector, y_assignment_vector, op=MPI.SUM)
 
             elapsed1 = timeit.default_timer() - start_time1
+            comm_time = comm_time + elapsed1
+
             if display == 1: print ("Communication took  %s seconds" % elapsed1)
 
         else:
@@ -95,7 +103,7 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt,  od = None, od_
 
         if error < stop :
             if display == 1: print "FW Stop with error: ", error
-            return assignment, x_assignment_vector
+            return assignment, x_assignment_vector, sim_time, comm_time
 
         if display == 1: print "FW iteration: ", i, ", error: ", error
 
@@ -108,17 +116,17 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt,  od = None, od_
             norm_v = np.linalg.norm(v,1)
             if norm_v < eps:
                 if display >= 1: print 'FW stop with norm_v: {}'.format(norm_v)
-                return assignment, x_assignment_vector
+                return assignment, x_assignment_vector, sim_time, comm_time
             norm_w = np.linalg.norm(d_assignment,1)
             if norm_w < eps:
                 if display >= 1: print 'FW stop with norm_w: {}'.format(norm_w)
-                return assignment, x_assignment_vector
+                return assignment, x_assignment_vector, sim_time, comm_time
             # step 4 of Fukushima
             gamma_1 = current_cost_vector.dot(v) / norm_v
             gamma_2 = current_cost_vector.dot(d_assignment) / norm_w
             if gamma_2 > -eps:
                 if display >= 1: print 'FW stop with gamma_2: {}'.format(gamma_2)
-                return assignment, x_assignment_vector
+                return assignment, x_assignment_vector, sim_time, comm_time
             d = v if gamma_1 < gamma_2 else d_assignment
 
         else:
@@ -134,12 +142,12 @@ def Path_Based_Frank_Wolfe_Solver(model_manager, T, sampling_dt,  od = None, od_
 
         if s < eps:
             if display >= 1: print 'FW stop with step_size: {}'.format(s)
-            return assignment, x_assignment_vector
+            return assignment, x_assignment_vector, sim_time, comm_time
 
         x_assignment_vector = x_assignment_vector + s*d
         assignment.set_demand_with_vector(x_assignment_vector)
 
-    return assignment, x_assignment_vector
+    return assignment, x_assignment_vector, sim_time, comm_time
 
 def line_search(model_manager, x_assignment, x_vector, y_assignment, y_vector, d_vector, eps, timer = None):
     # alfa = 0 corresponds to when assignment is equal to original assignment x_assignment

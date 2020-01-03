@@ -13,9 +13,13 @@ from copy import copy
 import matplotlib.pyplot as plt
 import os
 import inspect
+from Solvers.Path_Based_Frank_Wolfe_Solver import Path_Based_Frank_Wolfe_Solver
 import csv
 
 plt.rcParams.update({'font.size': 18})
+
+# Flag that indicates whether we are doing decomposition or not
+decompositio_flag = False
 
 connection = Java_Connection()
 
@@ -26,21 +30,21 @@ if connection.pid is not None:
     configfile = os.path.join(this_folder, os.path.pardir, 'configfiles', 'seven_links.xml')
 
     coefficients = {}
-    T = 3600  # Time horizon of interest
+    T = 1800  # Time horizon of interest
     sim_dt = 0.0  # Duration of one time_step for the traffic model
 
-    sampling_dt = 1800     # Duration of time_step for the solver, in this case it is equal to sim_dt
+    sampling_dt = 300     # Duration of time_step for the solver, in this case it is equal to sim_dt
 
     model_manager = Link_Model_Manager_class(configfile, "static", connection.gateway, sim_dt, "bpr", coefficients)
 
     #Estimating bpr coefficients with beats
-    num_links = model_manager.otm_api.get_num_links()
+    num_links = model_manager.otm_api.scenario().get_num_links()
     avg_travel_time = np.zeros(num_links)
 
     num_coeff = 5
 
     for i in range(num_links):
-        link_info = model_manager.otm_api.get_link_with_id(long(i))
+        link_info = model_manager.otm_api.scenario().get_link_with_id(long(i))
         fft= (link_info.getFull_length() /1000
               / link_info.get_ffspeed_kph())
         coefficients[long(i)] = np.zeros(num_coeff)
@@ -50,49 +54,34 @@ if connection.pid is not None:
 
 # If scenario.beast_api is none, it means the configfile provided was not valid for the particular traffic model type
     if model_manager.is_valid():
-        num_steps = T/sampling_dt
+        num_steps = T / sampling_dt
 
-        scenario_solver = Solver_class(model_manager,)
-        assignment, assignment_vector = scenario_solver.Solver_function(T, sampling_dt, "FW")
+        # Get the OD Matrix form Model Manager
+        # OD Matrix can also be initialized from another source, as long as it fits the OD_Matrix class format
+        OD_Matrix = model_manager.get_OD_Matrix(num_steps, sampling_dt)
 
-        if assignment is None:
-            print "Solver did not run"
-        else:
-            #Save assignment into a csv file
-            this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-            outputfile = os.path.join(this_folder, os.path.pardir, 'output', 'seven_links.csv')
+        if OD_Matrix is not None:
+            # Algorithm to use
+            solver_algorithm = Path_Based_Frank_Wolfe_Solver
 
-            # We first save in the paramenters of the scenario
-            csv_file = open(outputfile, 'wb')
-            writer = csv.writer(csv_file)
-            # Saving the model type
-            writer.writerow(['model type:',model_manager.traffic_model.model_type])
-            od = model_manager.otm_api.get_od_info()
-            demand_api = [item * 3600 for item in od[0].get_total_demand_vps().getValues()]
-            od_dt = od[0].get_total_demand_vps().getDt()
-            if od_dt is None:
-                od_dt = sampling_dt
+            scenario_solver = Solver_class(model_manager, solver_algorithm)
+            assignment, solver_run_time = scenario_solver.Solver_function(T, sampling_dt, OD_Matrix, decompositio_flag)
 
-            # Saving the demand per od and time horizon value
-            writer.writerow(['demand dt (s)', 'od demand (vh)','T (s)'])
-            writer.writerow([od_dt,demand_api,T])
+            if assignment is None:
+                print "Solver did not run"
+            else:
+                # Save assignment into a pickle file
+                # this_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+                # outputfile = os.path.join(this_folder, os.path.pardir, 'output', scenario_name+'.picle')
 
-            writer.writerow(['(path ID, commodity ID)', 'array of demand (vh) per dt on path'])
-            # Now we save the assignment values to csv file
-            for key, value in assignment.get_all_demands().items():
-                writer.writerow([key, value])
+                path_costs = model_manager.evaluate(assignment, T, initial_state=None)
 
-            csv_file.close()
+                # Distance to Nash
+                print "\n"
+                error_percentage = scenario_solver.distance_to_Nash(assignment, path_costs, sampling_dt, OD_Matrix)
+                print "%.02f" % error_percentage, "% vehicles from equilibrium"
 
-            path_costs = model_manager.evaluate(assignment, T, initial_state=None)
-
-
-            #Distance to Nash
-            print "\n"
-            error_percentage = scenario_solver.distance_to_Nash(assignment, path_costs, sampling_dt)
-
-
-            print "SUCCESS!!"
+            print "\nSUCCESS!!"
 
     # kill jvm
-    connection.close()
+    # connection.close()

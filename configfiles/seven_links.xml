@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<scenario>
+<scenario xmlns="opentrafficmodels">
 
 	<commodities>
 		<commodity id="1" name="bla" pathfull="true" subnetworks="1,2,3"/>

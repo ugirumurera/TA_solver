@@ -15,23 +15,24 @@ class Abstract_Model_Manager_class():
     def __init__(self, configfile, traffic_model_name, sim_dt, gateway):
         self.gateway = gateway
         self.configfile = configfile
-        self.otm_api = gateway.entry_point.get_OTM_API()
+        self.otm_api = gateway.get()
 
         if traffic_model_name == 'static':
-            timestamps = self.otm_api.load_for_static_traffic_assignment(configfile)
-            time1 = (timestamps[1] - timestamps[0])/1000
-            time2 = (timestamps[2] - timestamps[1])/1000
-            print "Load JAXB took: ", time1, " sec"
-            print "Create Scenario took: ", time2, " sec"
+            timestamps = self.otm_api.load(configfile, True, True)
+            # time1 = (timestamps[1] - timestamps[0])/1000
+            # time2 = (timestamps[2] - timestamps[1])/1000
+            # print "Load JAXB took: ", time1, " sec"
+            # print "Create Scenario took: ", time2, " sec"
         else:
-            timestamps = self.otm_api.load(configfile)
+            # timestamps = self.otm_api.load(configfile, True, False)
+            self.otm_api.load(configfile, True, False)
 
     def is_valid(self):
         return (self.otm_api is not None) and (self.otm_api.has_scenario())
 
     def get_OD_Matrix(self, num_steps, sampling_dt):
         #Create the list of od with OD_Class object
-        od_beats = self.otm_api.get_od_info()
+        od_beats = self.otm_api.scenario().get_od_info()    # Fixme: create illigal access warnings
         ods = OD_Matrix(num_steps,sampling_dt)
         ods.set_ods_with_beats_ods(od_beats)
 

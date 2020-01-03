@@ -9,16 +9,16 @@ from copy import deepcopy
 import sys
 import timeit
 
-from Model_Manager.Link_Model_Manager import Link_Model_Manager_class
-from Java_Connection import Java_Connection
+from python.Model_Manager.Link_Model_Manager import Link_Model_Manager_class
+from python.Java_Connection import Java_Connection
 from copy import copy
 import matplotlib.pyplot as plt
-from Solvers.Solver_Class import Solver_class
+from python.Solvers.Solver_Class import Solver_class
 import os
 import inspect
 import csv
-from Solvers.Path_Based_Frank_Wolfe_Solver import Path_Based_Frank_Wolfe_Solver
-from Solvers.Frank_Wolfe_Solver_Static import Frank_Wolfe_Solver, Frank_Wolfe_Solver_with_Pickle_Objects
+from python.Solvers.Path_Based_Frank_Wolfe_Solver import Path_Based_Frank_Wolfe_Solver
+from python.Solvers.Frank_Wolfe_Solver_Static import Frank_Wolfe_Solver, Frank_Wolfe_Solver_with_Pickle_Objects
 import math
 import sys
 
@@ -57,7 +57,7 @@ def main():
     # Indicates whether we are going to use parallelism or not
     decompositio_flag = False
 
-    scenario_name = 'MetroManila_unfiltered'  # Scenario name
+    scenario_name = 'seven_links'  # Scenario name
 
     # File where to save the pickled objects
     inputfile = os.path.join(this_folder, os.path.pardir, 'output',
